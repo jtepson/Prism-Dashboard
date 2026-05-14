@@ -1,0 +1,34 @@
+name: Sync v24 with latest v24.x
+
+on:
+  push:
+    branches:
+      - v24.9
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target branch (v24)
+        uses: actions/checkout@v4
+        with:
+          ref: v24
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch v24.9
+        run: git fetch origin v24.9
+
+      - name: Hard reset v24 to v24.9
+        run: |
+          git reset --hard origin/v24.9
+
+      - name: Push updated v24
+        run: |
+          git push origin v24 --force
