@@ -5,3 +5,6 @@ target/
 .DS_Store
 .env
 application-local.properties
+
+# Vaadin generated frontend files
+src/main/frontend/generated/
