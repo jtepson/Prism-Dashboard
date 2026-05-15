@@ -5,7 +5,6 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
-import com.bms.processing.model.ThirdPartyStatus;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -20,11 +19,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import javax.swing.GroupLayout.Alignment;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @PageTitle("Upcoming")
 @Route(value = "upcoming", layout = MainLayout.class)
@@ -56,7 +50,7 @@ public class UpcomingView extends VerticalLayout {
         HorizontalLayout headerRow = new HorizontalLayout(title, addPatientButton);
         headerRow.setWidthFull();
         headerRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        headerRow.setAlignItems(Alignment.CENTER);
+        headerRow.setAlignItems(com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER);
 
         configureGrid();
 
