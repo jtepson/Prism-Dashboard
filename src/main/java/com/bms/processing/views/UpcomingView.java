@@ -261,6 +261,16 @@ public class UpcomingView extends VerticalLayout {
 
         saveButton.addClickListener(event -> {
             try {
+                if (lastName.getValue().trim().isEmpty()) {
+                    add(new Span("Last name is required."));
+                    return;
+                }
+
+                if (patientId.getValue().trim().isEmpty()) {
+                    add(new Span("Patient ID is required."));
+                    return;
+                }
+                
                 CaseRecordEntity record = new CaseRecordEntity();
                 record.setPatientLastName(lastName.getValue().trim());
                 record.setPatientFirstName(firstName.getValue().trim());
