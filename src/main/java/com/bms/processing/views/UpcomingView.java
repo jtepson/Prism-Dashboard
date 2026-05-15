@@ -205,9 +205,14 @@ public class UpcomingView extends VerticalLayout {
             record.setIntakeSheetSent(intakeSheetSent.getValue());
             record.setInvoiceSent(invoiceSent.getValue());
     
-            caseRecordService.updateUpcomingCaseDetails(record);
-            refreshUpcomingGrid();
-            dialog.close();
+            try {
+                caseRecordService.updateUpcomingCaseDetails(record);
+                refreshUpcomingGrid();
+                dialog.close();
+            } catch (InvalidWorkflowTransitionException ex) {
+                Span message = new Span(ex.getMessage());
+                add(message);
+            }
         });
     
         dialog.add(formLayout);
