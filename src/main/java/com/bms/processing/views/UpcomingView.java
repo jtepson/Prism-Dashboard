@@ -189,7 +189,7 @@ public class UpcomingView extends VerticalLayout {
         saveButton.addClickListener(event -> {
 
             if (lastName.getValue().trim().isEmpty()) {
-                add(new Span("Last name is required."));
+                showError("Last name is required.");
                 return;
             }
 
@@ -209,8 +209,7 @@ public class UpcomingView extends VerticalLayout {
                 refreshUpcomingGrid();
                 dialog.close();
             } catch (InvalidWorkflowTransitionException ex) {
-                Span message = new Span(ex.getMessage());
-                add(message);
+                showError(ex.getMessage());
             }
         });
     

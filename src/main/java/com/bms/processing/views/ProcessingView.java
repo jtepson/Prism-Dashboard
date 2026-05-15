@@ -5,7 +5,6 @@ import com.bms.processing.model.FinalOutcome;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.entity.CaseRecordEntity;
-import com.bms.processing.model.ProcessingOutcome;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.vaadin.flow.component.button.Button;
@@ -26,7 +25,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import java.util.function.Consumer;
@@ -38,9 +36,6 @@ import com.vaadin.flow.component.html.Div;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 @PageTitle("Processing")
 @Route(value = "processing", layout = MainLayout.class)
