@@ -32,7 +32,13 @@ public class CaseRecordEntity {
     private String patientFirstName;
 
     private String patientId;
+
     private String siteName;
+        @Column(name = "owner_group")
+        private String ownerGroup;
+
+        @Column(name = "assigned_to_user")
+        private String assignedToUser;
 
     @Enumerated(EnumType.STRING)
     private PatientStatus patientStatus;
@@ -347,5 +353,21 @@ public class CaseRecordEntity {
             : LocalDate.now();
 
     return Period.between(dateOfBirth, referenceDate).getYears() < 18;
+    }
+
+    public String getOwnerGroup() {
+    return ownerGroup;
+    }
+
+    public void setOwnerGroup(String ownerGroup) {
+        this.ownerGroup = ownerGroup;
+    }
+
+    public String getAssignedToUser() {
+        return assignedToUser;
+    }
+
+    public void setAssignedToUser(String assignedToUser) {
+        this.assignedToUser = assignedToUser;
     }
 }
