@@ -194,6 +194,12 @@ public class UpcomingView extends VerticalLayout {
         Button cancelButton = new Button("Cancel", e -> dialog.close());
     
         saveButton.addClickListener(event -> {
+
+            if (lastName.getValue().trim().isEmpty()) {
+                add(new Span("Last name is required."));
+                return;
+            }
+
             record.setPatientLastName(lastName.getValue().trim());
             record.setPatientFirstName(firstName.getValue().trim());
             record.setPatientId(patientId.getValue().trim());
@@ -270,7 +276,7 @@ public class UpcomingView extends VerticalLayout {
                     add(new Span("Patient ID is required."));
                     return;
                 }
-                
+
                 CaseRecordEntity record = new CaseRecordEntity();
                 record.setPatientLastName(lastName.getValue().trim());
                 record.setPatientFirstName(firstName.getValue().trim());
