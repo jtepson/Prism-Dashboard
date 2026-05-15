@@ -50,6 +50,8 @@ CREATE TABLE public.case_record (
     patient_last_name character varying(255),
     patient_status character varying(255),
     site_name character varying(255),
+	owner_group character varying(255),
+    assigned_to_user character varying(255),
     processing_outcome character varying(255),
     duramap_error_note text,
     imeka_error_note text,
