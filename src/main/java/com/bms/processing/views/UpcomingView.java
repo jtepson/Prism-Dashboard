@@ -106,10 +106,9 @@ public class UpcomingView extends VerticalLayout {
                 try {
                     caseRecordService.markImagesReceived(record);
                     refreshUpcomingGrid();
-                } catch (InvalidWorkflowTransitionException ex) {
-                    Span message = new Span(ex.getMessage());
-                    add(message);
-                }
+                    } catch (InvalidWorkflowTransitionException ex) {
+                        showError(ex.getMessage());
+                    }
             });
                 
             return markReceivedButton;
@@ -262,12 +261,7 @@ public class UpcomingView extends VerticalLayout {
         saveButton.addClickListener(event -> {
             try {
                 if (lastName.getValue().trim().isEmpty()) {
-                    add(new Span("Last name is required."));
-                    return;
-                }
-
-                if (patientId.getValue().trim().isEmpty()) {
-                    add(new Span("Patient ID is required."));
+                    showError("Last name is required.");
                     return;
                 }
 
@@ -288,8 +282,7 @@ public class UpcomingView extends VerticalLayout {
                 refreshUpcomingGrid();
                 dialog.close();
             } catch (InvalidWorkflowTransitionException ex) {
-                Span message = new Span(ex.getMessage());
-                add(message);
+                showError(ex.getMessage());
             }
         });
 
@@ -297,6 +290,15 @@ public class UpcomingView extends VerticalLayout {
         dialog.getFooter().add(cancelButton, saveButton);
         dialog.open();
     }
+
+    private void showError(String message) {
+        com.vaadin.flow.component.notification.Notification.show(
+                message,
+                3500,
+                com.vaadin.flow.component.notification.Notification.Position.MIDDLE
+        );
+    }
+
     private boolean containsIgnoreCase(String value, String filter) {
         return value != null && value.toLowerCase().contains(filter);
     }
