@@ -34,6 +34,18 @@ public class CaseRecordService {
             return false;
         }
 
+        if (record.getPatientStatus() != PatientStatus.PROCESSING) {
+            return false;
+        }
+
+        boolean neuroReady =
+                record.getNeuroreaderStatus() == ThirdPartyStatus.SENT
+                        || record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR;
+
+        if (!neuroReady) {
+            return false;
+        }
+
         if (record.isMinorAtScan()) {
             return record.getDuramapStatus() == ThirdPartyStatus.SENT
                     || record.getDuramapStatus() == ThirdPartyStatus.ERROR
@@ -44,20 +56,17 @@ public class CaseRecordService {
                 record.getImekaStatus() == ThirdPartyStatus.UPLOADED
                         || record.getImekaStatus() == ThirdPartyStatus.ERROR;
 
-        boolean neuroReady =
-                record.getNeuroreaderStatus() == ThirdPartyStatus.SENT
-                        || record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR;
-
-        boolean duraReady = true;
-
-        if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
-            duraReady =
-                    record.getDuramapStatus() == ThirdPartyStatus.SENT
-                            || record.getDuramapStatus() == ThirdPartyStatus.ERROR
-                            || record.getDuramapStatus() == ThirdPartyStatus.COMPLETED;
+        if (!imekaReady) {
+            return false;
         }
 
-        return imekaReady && neuroReady && duraReady;
+        if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
+            return record.getDuramapStatus() == ThirdPartyStatus.SENT
+                    || record.getDuramapStatus() == ThirdPartyStatus.ERROR
+                    || record.getDuramapStatus() == ThirdPartyStatus.COMPLETED;
+        }
+
+        return true;
     }
 
     public CaseRecordEntity finalizeCase(CaseRecordEntity record, boolean studyAvailableInBmsView) {
@@ -139,11 +148,15 @@ public class CaseRecordService {
 
         if (status == ThirdPartyStatus.NOT_SENT) {
             record.setImekaSentDate(null);
-        } else if (status == ThirdPartyStatus.SENT || status == ThirdPartyStatus.UPLOADED) {
+        } else if (status == ThirdPartyStatus.SENT) {
             if (sentDate == null) {
                 throw new InvalidWorkflowTransitionException("IMEKA sent date is required.");
             }
             record.setImekaSentDate(sentDate);
+        } else if (status == ThirdPartyStatus.UPLOADED) {
+            if (sentDate != null) {
+                record.setImekaSentDate(sentDate);
+            }
         }
 
         if (status != ThirdPartyStatus.ERROR) {
