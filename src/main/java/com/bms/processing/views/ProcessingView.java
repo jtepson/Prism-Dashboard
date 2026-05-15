@@ -334,6 +334,7 @@ public class ProcessingView extends VerticalLayout {
 		} else {
 			DatePicker imekaDate = new DatePicker();
 			imekaDate.setValue(record.getImekaSentDate());
+			imekaDate.setReadOnly(record.getImekaStatus() == ThirdPartyStatus.UPLOADED);
 			imekaDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
 			imekaDate.setWidth("135px");
 	

@@ -157,6 +157,10 @@ public class CaseRecordService {
             if (sentDate != null) {
                 record.setImekaSentDate(sentDate);
             }
+
+            if (record.getImekaUploadedDate() == null) {
+                record.setImekaUploadedDate(LocalDateTime.now());
+            }
         }
 
         if (status != ThirdPartyStatus.ERROR) {

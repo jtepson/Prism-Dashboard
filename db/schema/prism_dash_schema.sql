@@ -42,6 +42,7 @@ CREATE TABLE public.case_record (
     duramap_status character varying(255),
     final_outcome character varying(255),
     imeka_sent_date date,
+	imeka_uploaded_date timestamp,
     imeka_status character varying(255),
     neuroreader_sent_date date,
     neuroreader_status character varying(255),

@@ -50,6 +50,9 @@ public class CaseRecordEntity {
 
     private LocalDate imekaSentDate;
 
+    @Column(name = "imeka_uploaded_date")
+    private LocalDateTime imekaUploadedDate;
+
     @Enumerated(EnumType.STRING)
     private ThirdPartyStatus duramapStatus;
 
@@ -328,6 +331,14 @@ public class CaseRecordEntity {
             return duramapStatus;
         }
         return imekaStatus;
+    }
+
+    public LocalDateTime getImekaUploadedDate() {
+        return imekaUploadedDate;
+    }
+
+    public void setImekaUploadedDate(LocalDateTime imekaUploadedDate) {
+        this.imekaUploadedDate = imekaUploadedDate;
     }
 
     public LocalDate getActiveThirdPartySentDate() {
