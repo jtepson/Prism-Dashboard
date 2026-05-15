@@ -451,6 +451,20 @@ public class CaseRecordService {
         return repository.save(record);
     }
 
+    public CaseRecordEntity startProcessing(CaseRecordEntity record) {
+        validateRecord(record);
+
+        if (record.getPatientStatus() != PatientStatus.ACQUIRED) {
+            throw new InvalidWorkflowTransitionException(
+                    "Only ACQUIRED cases can be started for processing."
+            );
+        }
+
+        record.setPatientStatus(PatientStatus.PROCESSING);
+
+        return repository.save(record);
+    }
+
     public CaseRecordEntity markCompleted(CaseRecordEntity record) {
         validateRecord(record);
 

@@ -392,47 +392,50 @@ public class ProcessingView extends VerticalLayout {
 	}).setHeader("Third Party Sent Date").setAutoWidth(true);
 
 	
-	grid.addComponentColumn(record -> {
-    	    Span noteFlag = new Span("!");
-    	    noteFlag.getStyle()
-            	.set("font-weight", "700")
-            	.set("cursor", "pointer")
-            	.set("color", "var(--lumo-error-text-color)");
+		grid.addComponentColumn(record -> {
+				Span noteFlag = new Span("!");
+				noteFlag.getStyle()
+					.set("font-weight", "700")
+					.set("cursor", "pointer")
+					.set("color", "var(--lumo-error-text-color)");
 
-	   boolean hasNotes =
-       		(record.getNotes() != null && !record.getNotes().trim().isEmpty()) ||
-        	(record.getImekaErrorNote() != null && !record.getImekaErrorNote().trim().isEmpty()) ||
-        	(record.getDuramapErrorNote() != null && !record.getDuramapErrorNote().trim().isEmpty()) ||
-	        (record.getNeuroreaderErrorNote() != null && !record.getNeuroreaderErrorNote().trim().isEmpty());
-    	    noteFlag.setVisible(hasNotes);
+		boolean hasNotes =
+				(record.getNotes() != null && !record.getNotes().trim().isEmpty()) ||
+				(record.getImekaErrorNote() != null && !record.getImekaErrorNote().trim().isEmpty()) ||
+				(record.getDuramapErrorNote() != null && !record.getDuramapErrorNote().trim().isEmpty()) ||
+				(record.getNeuroreaderErrorNote() != null && !record.getNeuroreaderErrorNote().trim().isEmpty());
+				noteFlag.setVisible(hasNotes);
 
-	    noteFlag.getElement().setProperty("title", hasNotes ? "View notes" : "");
+			noteFlag.getElement().setProperty("title", hasNotes ? "View notes" : "");
 
-	    noteFlag.getElement().addEventListener("click", e -> openNotesDialog(record))
-		 .addEventData("event.stopPropagation()");
+			noteFlag.getElement().addEventListener("click", e -> openNotesDialog(record))
+			.addEventData("event.stopPropagation()");
 
-    	    return noteFlag;
-	}).setHeader("Notes").setAutoWidth(true);
+				return noteFlag;
+		}).setHeader("Notes").setAutoWidth(true);
 
 		grid.addComponentColumn(record -> {
-			ComboBox<PatientStatus> statusBox = new ComboBox<>();
-			statusBox.setItems(PatientStatus.ACQUIRED, PatientStatus.PROCESSING);
-			statusBox.setValue(record.getPatientStatus());
-			statusBox.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			statusBox.setWidth("140px");
+			if (record.getPatientStatus() == PatientStatus.ACQUIRED) {
+				Button startButton = new Button("Start Processing");
+				startButton.addThemeVariants(
+						ButtonVariant.LUMO_SMALL,
+						ButtonVariant.LUMO_PRIMARY
+				);
 
-			statusBox.addValueChangeListener(event -> {
-				if (event.getValue() != null) {
+				startButton.addClickListener(event -> {
 					try {
-						caseRecordService.updatePatientStatus(record, event.getValue());
+						caseRecordService.startProcessing(record);
 						refreshProcessingGrid();
+						showSuccess("Case moved to Processing.");
 					} catch (InvalidWorkflowTransitionException ex) {
 						showError(ex.getMessage());
 					}
-				}
-			});
+				});
 
-			return statusBox;
+				return startButton;
+			}
+
+			return buildStatusChip(formatEnum(record.getPatientStatus()));
 		}).setHeader("Patient Status").setAutoWidth(true);
 
 		//finalize button
@@ -889,6 +892,30 @@ public class ProcessingView extends VerticalLayout {
 		dialog.open();
 	}
 	
+	private Span buildStatusChip(String text) {
+		Span chip = new Span(text == null ? "Unknown" : text);
+		chip.getStyle()
+				.set("display", "inline-block")
+				.set("padding", "0.2rem 0.55rem")
+				.set("border-radius", "999px")
+				.set("font-size", "0.75rem")
+				.set("font-weight", "600")
+				.set("line-height", "1")
+				.set("white-space", "nowrap");
+
+		String value = text == null ? "" : text.toLowerCase();
+
+		if (value.contains("processing")) {
+			chip.getStyle().set("background", "#e3f2fd").set("color", "#0d47a1");
+		} else if (value.contains("acquired")) {
+			chip.getStyle().set("background", "#e0f7fa").set("color", "#006064");
+		} else {
+			chip.getStyle().set("background", "#eceff1").set("color", "#37474f");
+		}
+
+		return chip;
+	}
+
 	private String formatEnum(Enum<?> value) {
         return value == null ? "" : value.name().replace("_", " ");
     }
