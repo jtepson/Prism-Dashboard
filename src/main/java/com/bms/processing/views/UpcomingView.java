@@ -269,6 +269,7 @@ public class UpcomingView extends VerticalLayout {
                 record.setPatientFirstName(firstName.getValue().trim());
                 record.setPatientId(patientId.getValue().trim());
                 record.setSiteName(siteName.getValue().trim());
+                record.setOwnerGroup("UNASSIGNED");
                 record.setDateOfBirth(dateOfBirth.getValue());
                 record.setDateScanned(dateScanned.getValue());
                 record.setFunder(funder.getValue().trim());
