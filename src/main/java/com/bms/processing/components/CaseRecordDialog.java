@@ -3,6 +3,7 @@ package com.bms.processing.components;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -162,6 +163,30 @@ public class CaseRecordDialog extends Dialog {
                 )
         );
 
+        ComboBox<String> imekaStatus = new ComboBox<>("IMEKA Status");
+        imekaStatus.setItems("NOT_SENT", "SENT", "UPLOADED", "ERROR");
+        imekaStatus.setValue(
+                record.getImekaStatus() != null
+                        ? record.getImekaStatus().name()
+                        : null
+        );
+
+        ComboBox<String> duramapStatus = new ComboBox<>("DuraMap Status");
+        duramapStatus.setItems("NOT_SENT", "SENT", "ERROR");
+        duramapStatus.setValue(
+                record.getDuramapStatus() != null
+                        ? record.getDuramapStatus().name()
+                        : null
+        );
+
+        ComboBox<String> neuroreaderStatus = new ComboBox<>("Neuroreader Status");
+        neuroreaderStatus.setItems("NOT_SENT", "SENT", "ERROR");
+        neuroreaderStatus.setValue(
+                record.getNeuroreaderStatus() != null
+                        ? record.getNeuroreaderStatus().name()
+                        : null
+        );
+        
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(true);
 
@@ -237,8 +262,29 @@ public class CaseRecordDialog extends Dialog {
 
                 outcomesDetails.setOpened(false);
 
+                FormLayout processingEditForm = new FormLayout();
+                processingEditForm.setWidthFull();
+                processingEditForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                processingEditForm.add(
+                        imekaStatus,
+                        duramapStatus,
+                        neuroreaderStatus
+                );
+
+                Details processingEditDetails = new Details(
+                        "Processing Controls",
+                        processingEditForm
+                );
+
+                processingEditDetails.setOpened(true);
+
                 content.add(
                         workflowDetails,
+                        processingEditDetails,
                         thirdPartyDetails,
                         notesDetails,
                         outcomesDetails
