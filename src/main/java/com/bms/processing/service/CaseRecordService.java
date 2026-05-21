@@ -221,10 +221,6 @@ public class CaseRecordService {
         validateRecord(record);
         validateStatus(status, "Neuroreader");
 
-        if (record.isMinorAtScan()) {
-            throw new InvalidWorkflowTransitionException("Neuroreader is not used for minor cases.");
-        }
-
         if (status == ThirdPartyStatus.COMPLETED || status == ThirdPartyStatus.UPLOADED) {
             throw new InvalidWorkflowTransitionException("Neuroreader does not use COMPLETED or UPLOADED.");
         }
@@ -284,10 +280,6 @@ public class CaseRecordService {
 
     public CaseRecordEntity updateNeuroreaderSentDate(CaseRecordEntity record, LocalDate sentDate) {
         validateRecord(record);
-
-        if (record.isMinorAtScan()) {
-            throw new InvalidWorkflowTransitionException("Neuroreader is not used for minor cases.");
-        }
 
         if (record.getNeuroreaderStatus() == null || record.getNeuroreaderStatus() == ThirdPartyStatus.NOT_SENT) {
             throw new InvalidWorkflowTransitionException("Set a Neuroreader status before assigning a sent date.");
