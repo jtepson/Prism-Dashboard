@@ -494,49 +494,41 @@ public class ProcessingView extends VerticalLayout {
 			return buildStatusChip(formatEnum(record.getPatientStatus()));
 		}).setHeader("Patient Status").setAutoWidth(true);
 
-		//finalize button
 		grid.addComponentColumn(record -> {
+			VerticalLayout actions = new VerticalLayout();
+			actions.setPadding(false);
+			actions.setSpacing(false);
+			actions.setMargin(false);
+
 			Button finalizeButton = new Button("Finalize");
-		
 			finalizeButton.addThemeVariants(
 					ButtonVariant.LUMO_SMALL,
 					ButtonVariant.LUMO_SUCCESS
 			);
-		
+
 			boolean readyToFinalize = caseRecordService.isReadyToFinalize(record);
-		
 			finalizeButton.setEnabled(readyToFinalize);
-		
+
 			if (!readyToFinalize) {
 				finalizeButton.getElement().setProperty(
 						"title",
 						"Case not ready for finalization"
 				);
 			}
-		
+
 			finalizeButton.addClickListener(event -> openFinalizeDialog(record));
-		
-			return finalizeButton;
-		
-		}).setHeader("Finalize").setAutoWidth(true);
 
-		grid.addComponentColumn(record -> new Span("|"))
-        .setHeader("")
-        .setAutoWidth(true);
-
-		
-		//error button
-		grid.addComponentColumn(record -> {
 			Button errorButton = new Button("Error");
 			errorButton.addThemeVariants(
 					ButtonVariant.LUMO_SMALL,
 					ButtonVariant.LUMO_ERROR
 			);
-		
+
 			errorButton.addClickListener(event -> openSubmitErrorDialog(record));
-		
-			return errorButton;
-		}).setHeader("Error").setAutoWidth(true);
+
+			actions.add(finalizeButton, errorButton);
+			return actions;
+		}).setHeader("").setAutoWidth(true);
 
 		}
 
