@@ -251,29 +251,8 @@ public class CaseRecordDialog extends Dialog {
 
             case PROCESSING -> {
 
-                FormLayout processingEditForm = new FormLayout();
-                processingEditForm.setWidthFull();
-                processingEditForm.setResponsiveSteps(
-                        new FormLayout.ResponsiveStep("0", 1),
-                        new FormLayout.ResponsiveStep("700px", 2)
-                );
-
-                processingEditForm.add(
-                        imekaStatus,
-                        duramapStatus,
-                        neuroreaderStatus
-                );
-
-                Details processingEditDetails = new Details(
-                        "Processing Controls",
-                        processingEditForm
-                );
-
-                processingEditDetails.setOpened(true);
-
                 content.add(
                         workflowDetails,
-                        processingEditDetails,
                         thirdPartyDetails,
                         notesDetails
                 );
