@@ -718,7 +718,12 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(records);
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(event.getItem(), caseRecordService, this::rebuildDashboard).open()
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.SUMMARY,
+                        this::rebuildDashboard
+                ).open()
         );
         return grid;
     }

@@ -63,7 +63,12 @@ public class ProcessingView extends VerticalLayout {
 		refreshProcessingGrid();
 
 		grid.addItemClickListener(event ->
-				new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshProcessingGrid).open()
+			new CaseRecordDialog(
+                event.getItem(),
+                caseRecordService,
+                CaseRecordDialog.Mode.PROCESSING,
+                this::refreshProcessingGrid
+            ).open()
 		);
 
         add(searchField, grid);

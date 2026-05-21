@@ -49,7 +49,12 @@ public class CompletedView extends VerticalLayout {
         refreshCompletedGrid();
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshCompletedGrid).open()
+                new CaseRecordDialog(
+                    event.getItem(),
+                    caseRecordService,
+                    CaseRecordDialog.Mode.COMPLETED,
+                    this::refreshCompletedGrid
+                ).open()
         );
 
         add(header, subtitle, searchField, grid);

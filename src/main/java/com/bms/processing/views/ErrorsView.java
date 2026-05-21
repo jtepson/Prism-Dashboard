@@ -50,7 +50,12 @@ public class ErrorsView extends VerticalLayout {
         refreshErrorsGrid();
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshErrorsGrid).open()
+                new CaseRecordDialog(
+                    event.getItem(),
+                    caseRecordService,
+                    CaseRecordDialog.Mode.ERRORS,
+                    this::refreshErrorsGrid
+                ).open()
         );
 
         add(header, subtitle, searchField, grid);

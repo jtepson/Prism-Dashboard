@@ -21,17 +21,29 @@ import java.time.LocalDateTime;
 
 public class CaseRecordDialog extends Dialog {
 
+    public enum Mode {
+        SUMMARY,
+        UPCOMING,
+        PROCESSING,
+        PROCESSED,
+        COMPLETED,
+        ERRORS
+    }
+    
     private final CaseRecordService caseRecordService;
     private final CaseRecordEntity record;
+    private final Mode mode;
     private final Runnable afterSave;
 
     public CaseRecordDialog(
             CaseRecordEntity record,
             CaseRecordService caseRecordService,
+            Mode mode,
             Runnable afterSave
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
+        this.mode = mode;
         this.afterSave = afterSave;
 
         setHeaderTitle("Patient Summary");
@@ -52,6 +64,24 @@ public class CaseRecordDialog extends Dialog {
 
         TextField siteName = new TextField("Site");
         siteName.setValue(nullSafe(record.getSiteName()));
+
+        DatePicker dateOfBirth = new DatePicker("Date of Birth");
+        dateOfBirth.setValue(record.getDateOfBirth());
+
+        DatePicker dateScanned = new DatePicker("Date Scanned");
+        dateScanned.setValue(record.getDateScanned());
+
+        TextField funder = new TextField("Funder");
+        funder.setValue(nullSafe(record.getFunder()));
+
+        Checkbox intakeSheetDone = new Checkbox("Intake Sheet Done");
+        intakeSheetDone.setValue(Boolean.TRUE.equals(record.getIntakeSheetDone()));
+
+        Checkbox intakeSheetSent = new Checkbox("Intake Sheet Sent");
+        intakeSheetSent.setValue(Boolean.TRUE.equals(record.getIntakeSheetSent()));
+
+        Checkbox invoiceSent = new Checkbox("Invoice Sent");
+        invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
 
         FormLayout patientForm = new FormLayout();
         patientForm.setWidthFull();
@@ -117,12 +147,48 @@ public class CaseRecordDialog extends Dialog {
         Details notesDetails = new Details("Notes", notesLayout);
         notesDetails.setOpened(false);
 
-        VerticalLayout content = new VerticalLayout(
-                patientDetails,
-                workflowDetails,
-                thirdPartyDetails,
-                notesDetails
-        );
+        VerticalLayout content = new VerticalLayout();
+        content.add(patientDetails);
+        switch (mode) {
+            case SUMMARY -> {
+                content.add(
+                        workflowDetails,
+                        thirdPartyDetails,
+                        notesDetails
+                );
+            }
+            case UPCOMING -> {
+                content.add(workflowDetails);
+            }
+            case PROCESSING -> {
+                content.add(
+                        workflowDetails,
+                        thirdPartyDetails,
+                        notesDetails
+                );
+            }
+            case PROCESSED -> {
+                content.add(
+                        workflowDetails,
+                        thirdPartyDetails,
+                        notesDetails
+                );
+            }
+            case COMPLETED -> {
+                content.add(
+                        workflowDetails,
+                        thirdPartyDetails,
+                        notesDetails
+                );
+            }
+            case ERRORS -> {
+                content.add(
+                        workflowDetails,
+                        thirdPartyDetails,
+                        notesDetails
+                );
+            }
+        }
         content.setPadding(false);
         content.setSpacing(true);
         content.setWidthFull();
@@ -246,4 +312,6 @@ public class CaseRecordDialog extends Dialog {
                 value.getMinute()
         );
     }
+
+
 }

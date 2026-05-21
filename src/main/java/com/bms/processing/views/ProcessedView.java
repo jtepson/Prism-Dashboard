@@ -5,6 +5,7 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -46,6 +47,15 @@ public class ProcessedView extends VerticalLayout {
 
         configureGrid();
         refreshProcessedGrid();
+        
+        grid.addItemClickListener(event ->
+            new CaseRecordDialog(
+                event.getItem(),
+                caseRecordService,
+                CaseRecordDialog.Mode.PROCESSED,
+                this::refreshProcessedGrid
+            ).open()
+    );
 
         add(header, subtitle, searchField, grid);
         expand(grid);
