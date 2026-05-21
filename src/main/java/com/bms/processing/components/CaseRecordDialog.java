@@ -91,7 +91,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("700px", 2)
         );
-        patientForm.add(lastName, firstName, patientId, siteName);
+        patientForm.add(lastName, firstName, patientId, siteName, dateOfBirth, dateScanned);
 
         Details patientDetails = new Details("Patient Information", patientForm);
         patientDetails.setOpened(true);
