@@ -103,12 +103,24 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("700px", 2)
         );
         workflowForm.add(
-                buildDisplayField("Patient Status", formatEnum(record.getPatientStatus())),
-                buildDisplayField("Date Scanned", formatDate(record.getDateScanned())),
-                buildDisplayField("Images Received", formatDate(record.getImagesReceivedDate())),
-                buildDisplayField("Processed", formatDateTimeCompact(record.getProcessedDate())),
-                buildDisplayField("Completed", formatDateTimeCompact(record.getCompletedDate())),
-                buildDisplayField("Invoice Sent", Boolean.TRUE.equals(record.getInvoiceSent()) ? "Yes" : "No")
+                buildDisplayField(
+                        "Date Scanned",
+                        formatDate(record.getDateScanned())
+                ),
+                buildDisplayField(
+                        "Acquired Date",
+                        formatDate(record.getImagesReceivedDate())
+                ),
+                buildDisplayField(
+                        "Workflow Status",
+                        formatEnum(record.getPatientStatus())
+                ),
+                buildDisplayField(
+                        "Invoice Sent",
+                        Boolean.TRUE.equals(record.getInvoiceSent())
+                                ? "Yes"
+                                : "No"
+                )
         );
 
         Details workflowDetails = new Details("Workflow Details", workflowForm);
@@ -121,12 +133,30 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("700px", 2)
         );
         thirdPartyForm.add(
-                buildDisplayField("IMEKA Status", formatEnum(record.getImekaStatus())),
-                buildDisplayField("IMEKA Sent", formatDate(record.getImekaSentDate())),
-                buildDisplayField("DuraMap Status", formatEnum(record.getDuramapStatus())),
-                buildDisplayField("DuraMap Sent", formatDate(record.getDuramapSentDate())),
-                buildDisplayField("Neuroreader Status", formatEnum(record.getNeuroreaderStatus())),
-                buildDisplayField("Neuroreader Sent", formatDate(record.getNeuroreaderSentDate()))
+                buildDisplayField(
+                        "IMEKA Status",
+                        formatEnum(record.getImekaStatus())
+                ),
+                buildDisplayField(
+                        "IMEKA Sent",
+                        formatDate(record.getImekaSentDate())
+                ),
+                buildDisplayField(
+                        "DuraMap Status",
+                        formatEnum(record.getDuramapStatus())
+                ),
+                buildDisplayField(
+                        "DuraMap Sent",
+                        formatDate(record.getDuramapSentDate())
+                ),
+                buildDisplayField(
+                        "Neuroreader Status",
+                        formatEnum(record.getNeuroreaderStatus())
+                ),
+                buildDisplayField(
+                        "Neuroreader Sent",
+                        formatDate(record.getNeuroreaderSentDate())
+                )
         );
 
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
@@ -159,6 +189,7 @@ public class CaseRecordDialog extends Dialog {
                         notesDetails
                 );
             }
+
             case UPCOMING -> {
 
                 FormLayout upcomingForm = new FormLayout();
@@ -189,11 +220,25 @@ public class CaseRecordDialog extends Dialog {
                         notesDetails
                 );
             }
+
             case PROCESSING -> {
+
+                Details outcomesDetails = new Details(
+                        "Special Outcomes",
+                        new VerticalLayout(
+                                new Button("Rescan"),
+                                new Button("Unprocessable"),
+                                new Button("DuraMap Fallback")
+                        )
+                );
+
+                outcomesDetails.setOpened(false);
+
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
-                        notesDetails
+                        notesDetails,
+                        outcomesDetails
                 );
             }
             case PROCESSED -> {
