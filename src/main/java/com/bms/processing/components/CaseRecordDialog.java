@@ -251,17 +251,6 @@ public class CaseRecordDialog extends Dialog {
 
             case PROCESSING -> {
 
-                Details outcomesDetails = new Details(
-                        "Special Outcomes",
-                        new VerticalLayout(
-                                new Button("Rescan"),
-                                new Button("Unprocessable"),
-                                new Button("DuraMap Fallback")
-                        )
-                );
-
-                outcomesDetails.setOpened(false);
-
                 FormLayout processingEditForm = new FormLayout();
                 processingEditForm.setWidthFull();
                 processingEditForm.setResponsiveSteps(
@@ -286,8 +275,7 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         processingEditDetails,
                         thirdPartyDetails,
-                        notesDetails,
-                        outcomesDetails
+                        notesDetails
                 );
             }
             case PROCESSED -> {
@@ -327,6 +315,13 @@ public class CaseRecordDialog extends Dialog {
             }
 
             try {
+                record.setDateOfBirth(dateOfBirth.getValue());
+                record.setSex(sex.getValue());
+                record.setDateScanned(dateScanned.getValue());
+                record.setFunder(funder.getValue());
+                record.setIntakeSheetDone(intakeSheetDone.getValue());
+                record.setIntakeSheetSent(intakeSheetSent.getValue());
+                record.setInvoiceSent(invoiceSent.getValue());
                 caseRecordService.updateSummaryIdentityFields(
                         record,
                         lastName.getValue(),
