@@ -5,6 +5,7 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.UI;
@@ -724,7 +725,9 @@ public class SummaryView extends VerticalLayout {
         }
 
         grid.setItems(records);
-        grid.addItemClickListener(event -> openSummaryPatientDialog(event.getItem()));
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(event.getItem(), caseRecordService, this::rebuildDashboard).open()
+        );
         return grid;
     }
 
@@ -945,106 +948,6 @@ public class SummaryView extends VerticalLayout {
             default -> "";
         };
     }
-
-    private void openSummaryPatientDialog(CaseRecordEntity record) {
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Patient Summary");
-        dialog.setWidth("860px");
-
-        TextField lastName = new TextField("Last Name");
-        lastName.setValue(nullSafe(record.getPatientLastName()));
-
-        TextField firstName = new TextField("First Name");
-        firstName.setValue(nullSafe(record.getPatientFirstName()));
-
-        TextField patientId = new TextField("Patient ID");
-        patientId.setValue(nullSafe(record.getPatientId()));
-
-        TextField siteName = new TextField("Site");
-        siteName.setValue(nullSafe(record.getSiteName()));
-
-        H4 patientInfoHeader = new H4("Patient Information");
-        patientInfoHeader.getStyle().set("margin", "0");
-
-        FormLayout editableForm = new FormLayout();
-        editableForm.setWidthFull();
-        editableForm.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("700px", 2)
-        );
-        editableForm.add(lastName, firstName, patientId, siteName);
-
-        H4 workflowHeader = new H4("Workflow Details");
-        workflowHeader.getStyle().set("margin", "0.25rem 0 0 0");
-
-        FormLayout workflowForm = new FormLayout();
-        workflowForm.setWidthFull();
-        workflowForm.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("700px", 2)
-        );
-
-        workflowForm.add(
-                buildDisplayField("Patient Status", formatEnum(record.getPatientStatus())),
-                buildDisplayField("Date Scanned", formatDate(record.getDateScanned())),
-                buildDisplayField("Acquired", formatDate(record.getImagesReceivedDate())),
-                buildDisplayField("Processed", formatDateTimeCompact(record.getProcessedDate())),
-                buildDisplayField("Completed", formatDateTimeCompact(record.getCompletedDate())),
-                buildDisplayField("IMEKA Status", formatEnum(record.getImekaStatus())),
-                buildDisplayField("DuraMap Status", formatEnum(record.getDuramapStatus())),
-                buildDisplayField("Neuroreader Status", formatEnum(record.getNeuroreaderStatus()))
-        );
-
-        H4 notesHeader = new H4("Notes");
-        notesHeader.getStyle().set("margin", "0.25rem 0 0 0");
-
-        VerticalLayout notesLayout = new VerticalLayout();
-        notesLayout.setPadding(false);
-        notesLayout.setSpacing(true);
-        notesLayout.setWidthFull();
-
-        addReadOnlyNoteSection(notesLayout, "Notes", record.getNotes());
-        addReadOnlyNoteSection(notesLayout, "IMEKA Error Note", record.getImekaErrorNote());
-        addReadOnlyNoteSection(notesLayout, "DuraMap Error Note", record.getDuramapErrorNote());
-        addReadOnlyNoteSection(notesLayout, "Neuroreader Error Note", record.getNeuroreaderErrorNote());
-
-        VerticalLayout content = new VerticalLayout(
-                patientInfoHeader,
-                editableForm,
-                workflowHeader,
-                workflowForm,
-                notesHeader,
-                notesLayout
-        );
-        content.setPadding(false);
-        content.setSpacing(true);
-        content.setWidthFull();
-
-        Button cancelButton = new Button("Cancel", e -> dialog.close());
-
-        Button saveButton = new Button("Save");
-                saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-                saveButton.addClickListener(event -> {
-                try {
-                        caseRecordService.updateSummaryIdentityFields(
-                                record,
-                                lastName.getValue(),
-                                firstName.getValue(),
-                                patientId.getValue(),
-                                siteName.getValue()
-                        );
-                        dialog.close();
-                        rebuildDashboard();
-                } catch (InvalidWorkflowTransitionException ex) {
-                        Span message = new Span(ex.getMessage());
-                        add(message);
-                }
-        });
-
-                dialog.add(content);
-                dialog.getFooter().add(cancelButton, saveButton);
-                dialog.open();
-        }    
     
     private void addRowsViewBaseColumns(Grid<CaseRecordEntity> grid) {
         grid.addColumn(CaseRecordEntity::getPatientLastName)
