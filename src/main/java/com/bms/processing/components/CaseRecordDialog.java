@@ -160,7 +160,34 @@ public class CaseRecordDialog extends Dialog {
                 );
             }
             case UPCOMING -> {
-                content.add(workflowDetails);
+
+                FormLayout upcomingForm = new FormLayout();
+                upcomingForm.setWidthFull();
+                upcomingForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                upcomingForm.add(
+                        dateOfBirth,
+                        dateScanned,
+                        funder,
+                        intakeSheetDone,
+                        intakeSheetSent,
+                        invoiceSent
+                );
+
+                Details upcomingDetails = new Details(
+                        "Upcoming Information",
+                        upcomingForm
+                );
+
+                upcomingDetails.setOpened(true);
+
+                content.add(
+                        upcomingDetails,
+                        notesDetails
+                );
             }
             case PROCESSING -> {
                 content.add(
