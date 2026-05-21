@@ -105,6 +105,7 @@ public class ProcessingView extends VerticalLayout {
 		//changing this around to allow for duramap to be the default, and if patient is not a minor, then hey they have IMEKA as an option. 
 			if (record.isMinorAtScan()) {
 				stack.add(thirdPartyLabel("DuraMap"));
+				stack.add(thirdPartyLabel("Neuroreader"));
 			} else {
 				stack.add(thirdPartyLabel("IMEKA"));
 				
@@ -330,6 +331,49 @@ public class ProcessingView extends VerticalLayout {
 			});
 	
 			stack.add(duraDate);
+
+			ComboBox<ThirdPartyStatus> nr = new ComboBox<>();
+			nr.setItems(
+					ThirdPartyStatus.NOT_SENT,
+					ThirdPartyStatus.SENT,
+					ThirdPartyStatus.ERROR
+			);
+			nr.setValue(record.getNeuroreaderStatus());
+			nr.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
+			nr.setWidth("110px");
+
+			nr.addValueChangeListener(e -> {
+				if (e.getValue() != null) {
+					if (e.getValue() == ThirdPartyStatus.ERROR) {
+						promptRequiredErrorNote(
+								"Neuroreader Error Note Required",
+								record.getNeuroreaderErrorNote(),
+								noteValue -> {
+									try {
+										applyThirdPartyStatus(
+												record,
+												"Neuroreader",
+												ThirdPartyStatus.ERROR,
+												noteValue,
+												record.getNeuroreaderSentDate()
+										);
+										refreshProcessingGrid();
+									} catch (InvalidWorkflowTransitionException ex) {
+										showError(ex.getMessage());
+									}
+								}
+						);
+					} else {
+						handleThirdPartyStatusSelection(
+								record,
+								"Neuroreader",
+								e.getValue()
+						);
+					}
+				}
+			});
+
+			stack.add(nr);
 	
 		} else {
 			DatePicker imekaDate = new DatePicker();
