@@ -59,6 +59,9 @@ public class UpcomingView extends VerticalLayout {
         grid.addItemClickListener(event ->
                 new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshUpcomingGrid).open()
         );
+
+        add(headerRow, subtitle, searchField, grid);
+        expand(grid);
     }
 
     private void configureGrid() {
