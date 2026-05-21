@@ -438,7 +438,7 @@ public class CaseRecordService {
         record.setDuramapErrorNote(null);
 
         if (record.isMinorAtScan()) {
-            // minors do not use IMEKA or Neuroreader
+            // minors do not use IMEKA
             record.setImekaStatus(ThirdPartyStatus.NOT_SENT);
             record.setImekaSentDate(null);
             record.setImekaErrorNote(null);
