@@ -136,33 +136,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("700px", 2)
         );
-        thirdPartyForm.add(
-                buildDisplayField(
-                        "IMEKA Status",
-                        formatEnum(record.getImekaStatus())
-                ),
-                buildDisplayField(
-                        "IMEKA Sent",
-                        formatDate(record.getImekaSentDate())
-                ),
-                buildDisplayField(
-                        "DuraMap Status",
-                        formatEnum(record.getDuramapStatus())
-                ),
-                buildDisplayField(
-                        "DuraMap Sent",
-                        formatDate(record.getDuramapSentDate())
-                ),
-                buildDisplayField(
-                        "Neuroreader Status",
-                        formatEnum(record.getNeuroreaderStatus())
-                ),
-                buildDisplayField(
-                        "Neuroreader Sent",
-                        formatDate(record.getNeuroreaderSentDate())
-                )
-        );
-
+        
         ComboBox<String> imekaStatus = new ComboBox<>("IMEKA Status");
         imekaStatus.setItems("NOT_SENT", "SENT", "UPLOADED", "ERROR");
         imekaStatus.setValue(
@@ -186,6 +160,42 @@ public class CaseRecordDialog extends Dialog {
                         ? record.getNeuroreaderStatus().name()
                         : null
         );
+
+        if (mode == Mode.PROCESSING) {
+            thirdPartyForm.add(
+                    imekaStatus,
+                    duramapStatus,
+                    neuroreaderStatus
+            );
+        } else {
+            thirdPartyForm.add(
+                    buildDisplayField(
+                            "IMEKA Status",
+                            formatEnum(record.getImekaStatus())
+                    ),
+                    buildDisplayField(
+                            "IMEKA Sent",
+                            formatDate(record.getImekaSentDate())
+                    ),
+                    buildDisplayField(
+                            "DuraMap Status",
+                            formatEnum(record.getDuramapStatus())
+                    ),
+                    buildDisplayField(
+                            "DuraMap Sent",
+                            formatDate(record.getDuramapSentDate())
+                    ),
+                    buildDisplayField(
+                            "Neuroreader Status",
+                            formatEnum(record.getNeuroreaderStatus())
+                    ),
+                    buildDisplayField(
+                            "Neuroreader Sent",
+                            formatDate(record.getNeuroreaderSentDate())
+                    )
+            );
+        }
+
         
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(true);
