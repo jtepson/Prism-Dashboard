@@ -320,7 +320,7 @@ public class ProcessingView extends VerticalLayout {
 			duraDate.setValue(record.getDuramapSentDate());
 			duraDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
 			duraDate.setWidth("135px");
-	
+
 			duraDate.addValueChangeListener(e -> {
 				try {
 					caseRecordService.updateDuramapSentDate(record, e.getValue());
@@ -329,52 +329,25 @@ public class ProcessingView extends VerticalLayout {
 					showError(ex.getMessage());
 				}
 			});
-	
+
 			stack.add(duraDate);
 
-			ComboBox<ThirdPartyStatus> nr = new ComboBox<>();
-			nr.setItems(
-					ThirdPartyStatus.NOT_SENT,
-					ThirdPartyStatus.SENT,
-					ThirdPartyStatus.ERROR
-			);
-			nr.setValue(record.getNeuroreaderStatus());
-			nr.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			nr.setWidth("110px");
+			DatePicker nrDate = new DatePicker();
+			nrDate.setValue(record.getNeuroreaderSentDate());
+			nrDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
+			nrDate.setWidth("135px");
 
-			nr.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptRequiredErrorNote(
-								"Neuroreader Error Note Required",
-								record.getNeuroreaderErrorNote(),
-								noteValue -> {
-									try {
-										applyThirdPartyStatus(
-												record,
-												"Neuroreader",
-												ThirdPartyStatus.ERROR,
-												noteValue,
-												record.getNeuroreaderSentDate()
-										);
-										refreshProcessingGrid();
-									} catch (InvalidWorkflowTransitionException ex) {
-										showError(ex.getMessage());
-									}
-								}
-						);
-					} else {
-						handleThirdPartyStatusSelection(
-								record,
-								"Neuroreader",
-								e.getValue()
-						);
-					}
+			nrDate.addValueChangeListener(e -> {
+				try {
+					caseRecordService.updateNeuroreaderSentDate(record, e.getValue());
+					refreshProcessingGrid();
+				} catch (InvalidWorkflowTransitionException ex) {
+					showError(ex.getMessage());
 				}
 			});
 
-			stack.add(nr);
-	
+			stack.add(nrDate);
+
 		} else {
 			DatePicker imekaDate = new DatePicker();
 			imekaDate.setValue(record.getImekaSentDate());
