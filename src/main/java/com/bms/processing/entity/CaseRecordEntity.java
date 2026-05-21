@@ -86,6 +86,9 @@ public class CaseRecordEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
+    @Column(name = "sex")
+    private String sex;
+
     @Column(name = "date_scanned")
     private LocalDate dateScanned;
 
@@ -266,6 +269,14 @@ public class CaseRecordEntity {
     
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
     }
     
     public LocalDate getDateScanned() {

@@ -70,6 +70,9 @@ public class CaseRecordDialog extends Dialog {
         DatePicker dateOfBirth = new DatePicker("Date of Birth");
         dateOfBirth.setValue(record.getDateOfBirth());
 
+        TextField sex = new TextField("Sex");
+        sex.setValue(nullSafe(record.getSex()));
+
         DatePicker dateScanned = new DatePicker("Date Scanned");
         dateScanned.setValue(record.getDateScanned());
 
@@ -91,7 +94,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("700px", 2)
         );
-        patientForm.add(lastName, firstName, patientId, siteName, dateOfBirth, dateScanned);
+        patientForm.add(lastName, firstName, patientId, siteName, dateOfBirth, dateScanned, sex);
 
         Details patientDetails = new Details("Patient Information", patientForm);
         patientDetails.setOpened(true);
