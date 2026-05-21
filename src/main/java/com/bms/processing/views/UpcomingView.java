@@ -5,6 +5,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -53,12 +54,11 @@ public class UpcomingView extends VerticalLayout {
         headerRow.setAlignItems(com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER);
 
         configureGrid();
-
         refreshUpcomingGrid();
-        grid.addItemClickListener(event -> openEditPatientDialog(event.getItem()));
 
-        add(headerRow, subtitle, searchField, grid);
-        expand(grid);
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshUpcomingGrid).open()
+        );
     }
 
     private void configureGrid() {

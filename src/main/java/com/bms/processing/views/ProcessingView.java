@@ -7,6 +7,7 @@ import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -59,14 +60,12 @@ public class ProcessingView extends VerticalLayout {
 		searchField.addValueChangeListener(event -> refreshProcessingGrid());
 
         configureGrid();
+		refreshProcessingGrid();
 
-	refreshProcessingGrid();
-
-	grid.addItemClickListener(event -> openEditDialog(event.getItem()));
-        add(searchField, grid);
-        expand(grid);
+		grid.addItemClickListener(event ->
+				new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshProcessingGrid).open()
+		);
     }
-
 	
     private void configureGrid() {
 	grid.setSizeFull();

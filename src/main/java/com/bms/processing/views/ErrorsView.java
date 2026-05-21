@@ -5,6 +5,7 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -47,6 +48,10 @@ public class ErrorsView extends VerticalLayout {
 
         configureGrid();
         refreshErrorsGrid();
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(event.getItem(), caseRecordService, this::refreshErrorsGrid).open()
+        );
 
         add(header, subtitle, searchField, grid);
         expand(grid);
