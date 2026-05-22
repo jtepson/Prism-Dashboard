@@ -151,14 +151,6 @@ public class CaseRecordDialog extends Dialog {
         imekaSentDate.setValue(record.getImekaSentDate());
         imekaSentDate.setReadOnly(record.getImekaStatus() == ThirdPartyStatus.UPLOADED);
 
-        TextField imekaErrorNote = new TextField("IMEKA Error Note");
-        imekaErrorNote.setValue(nullSafe(record.getImekaErrorNote()));
-        imekaErrorNote.setVisible("ERROR".equals(imekaStatus.getValue()));
-
-        imekaStatus.addValueChangeListener(event ->
-                imekaErrorNote.setVisible("ERROR".equals(event.getValue()))
-        );
-
         ComboBox<String> duramapStatus = new ComboBox<>("DuraMap Status");
         duramapStatus.setItems("NOT_SENT", "SENT", "ERROR");
         duramapStatus.setValue(
@@ -170,14 +162,6 @@ public class CaseRecordDialog extends Dialog {
         DatePicker duramapSentDate = new DatePicker("DuraMap Sent Date");
         duramapSentDate.setValue(record.getDuramapSentDate());
 
-        TextField duramapErrorNote = new TextField("DuraMap Error Note");
-        duramapErrorNote.setValue(nullSafe(record.getDuramapErrorNote()));
-        duramapErrorNote.setVisible("ERROR".equals(duramapStatus.getValue()));
-
-        duramapStatus.addValueChangeListener(event ->
-                duramapErrorNote.setVisible("ERROR".equals(event.getValue()))
-        );
-
         ComboBox<String> neuroreaderStatus = new ComboBox<>("Neuroreader Status");
         neuroreaderStatus.setItems("NOT_SENT", "SENT", "ERROR");
         neuroreaderStatus.setValue(
@@ -188,14 +172,6 @@ public class CaseRecordDialog extends Dialog {
 
         DatePicker neuroreaderSentDate = new DatePicker("Neuroreader Sent Date");
         neuroreaderSentDate.setValue(record.getNeuroreaderSentDate());
-
-        TextField neuroreaderErrorNote = new TextField("Neuroreader Error Note");
-        neuroreaderErrorNote.setValue(nullSafe(record.getNeuroreaderErrorNote()));
-        neuroreaderErrorNote.setVisible("ERROR".equals(neuroreaderStatus.getValue()));
-
-        neuroreaderStatus.addValueChangeListener(event ->
-                neuroreaderErrorNote.setVisible("ERROR".equals(event.getValue()))
-        );
 
         if (mode == Mode.PROCESSING) {
             if (!record.isMinorAtScan()) {
