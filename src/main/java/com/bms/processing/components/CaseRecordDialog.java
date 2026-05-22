@@ -241,6 +241,34 @@ public class CaseRecordDialog extends Dialog {
         TextArea neuroreaderError = new TextArea("Neuroreader Error Note");
         neuroreaderError.setWidthFull();
         neuroreaderError.setValue(nullSafe(record.getNeuroreaderErrorNote()));
+
+        imekaError.setVisible("ERROR".equals(imekaStatus.getValue()));
+
+        duramapError.setVisible(
+                "ERROR".equals(duramapStatus.getValue())
+        );
+
+        neuroreaderError.setVisible(
+                "ERROR".equals(neuroreaderStatus.getValue())
+        );
+
+        imekaStatus.addValueChangeListener(event ->
+                imekaError.setVisible(
+                        "ERROR".equals(event.getValue())
+                )
+        );
+
+        duramapStatus.addValueChangeListener(event ->
+                duramapError.setVisible(
+                        "ERROR".equals(event.getValue())
+                )
+        );
+
+        neuroreaderStatus.addValueChangeListener(event ->
+                neuroreaderError.setVisible(
+                        "ERROR".equals(event.getValue())
+                )
+        );
         
         VerticalLayout notesLayout = new VerticalLayout();
         notesLayout.setPadding(false);
