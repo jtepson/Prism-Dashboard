@@ -19,6 +19,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextArea;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -251,20 +252,47 @@ public class CaseRecordDialog extends Dialog {
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(true);
 
+        TextArea notes = new TextArea("General Notes");
+        notes.setWidthFull();
+        notes.setValue(nullSafe(record.getNotes()));
+
+        TextArea imekaError = new TextArea("IMEKA Error Note");
+        imekaError.setWidthFull();
+        imekaError.setValue(nullSafe(record.getImekaErrorNote()));
+
+        TextArea duramapError = new TextArea("DuraMap Error Note");
+        duramapError.setWidthFull();
+        duramapError.setValue(nullSafe(record.getDuramapErrorNote()));
+
+        TextArea neuroreaderError = new TextArea("Neuroreader Error Note");
+        neuroreaderError.setWidthFull();
+        neuroreaderError.setValue(nullSafe(record.getNeuroreaderErrorNote()));
+        
         VerticalLayout notesLayout = new VerticalLayout();
         notesLayout.setPadding(false);
         notesLayout.setSpacing(true);
         notesLayout.setWidthFull();
 
-        addReadOnlyNoteSection(notesLayout, "Notes", record.getNotes());
-        addReadOnlyNoteSection(notesLayout, "IMEKA Error Note", record.getImekaErrorNote());
-        addReadOnlyNoteSection(notesLayout, "DuraMap Error Note", record.getDuramapErrorNote());
-        addReadOnlyNoteSection(notesLayout, "Neuroreader Error Note", record.getNeuroreaderErrorNote());
+        if (mode == Mode.PROCESSING) {
 
-        if (notesLayout.getComponentCount() == 0) {
-            notesLayout.add(new Span("No notes."));
+            notesLayout.add(
+                    notes,
+                    imekaError,
+                    duramapError,
+                    neuroreaderError
+            );
+
+        } else {
+
+            addReadOnlyNoteSection(notesLayout, "Notes", record.getNotes());
+            addReadOnlyNoteSection(notesLayout, "IMEKA Error Note", record.getImekaErrorNote());
+            addReadOnlyNoteSection(notesLayout, "DuraMap Error Note", record.getDuramapErrorNote());
+            addReadOnlyNoteSection(notesLayout, "Neuroreader Error Note", record.getNeuroreaderErrorNote());
+
+            if (notesLayout.getComponentCount() == 0) {
+                notesLayout.add(new Span("No notes."));
+            }
         }
-
         Details notesDetails = new Details("Notes", notesLayout);
         notesDetails.setOpened(false);
 
