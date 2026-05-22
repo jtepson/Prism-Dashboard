@@ -1,6 +1,7 @@
 package com.bms.processing.components;
 
 import com.bms.processing.entity.CaseRecordEntity;
+import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -318,6 +319,27 @@ public class CaseRecordDialog extends Dialog {
                         patientId.getValue(),
                         siteName.getValue()
                 );
+
+                if (mode == Mode.PROCESSING) {
+
+                    if (imekaStatus.getValue() != null) {
+                        record.setImekaStatus(
+                                ThirdPartyStatus.valueOf(imekaStatus.getValue())
+                        );
+                    }
+
+                    if (duramapStatus.getValue() != null) {
+                        record.setDuramapStatus(
+                                ThirdPartyStatus.valueOf(duramapStatus.getValue())
+                        );
+                    }
+
+                    if (neuroreaderStatus.getValue() != null) {
+                        record.setNeuroreaderStatus(
+                                ThirdPartyStatus.valueOf(neuroreaderStatus.getValue())
+                        );
+                    }
+                }
 
                 if (afterSave != null) {
                     afterSave.run();
