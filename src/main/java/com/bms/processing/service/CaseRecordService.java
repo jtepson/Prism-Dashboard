@@ -79,7 +79,7 @@ public class CaseRecordService {
         }
 
         if (!isReadyToFinalize(record)) {
-            throw new InvalidWorkflowTransitionException("Case is not ready for finalization.");
+            throw new InvalidWorkflowTransitionException("Case is not ready to finalize.");
         }
 
         boolean hasInternalErrors =
