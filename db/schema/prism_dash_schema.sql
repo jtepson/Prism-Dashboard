@@ -60,6 +60,7 @@ CREATE TABLE public.case_record (
     images_received_date date,
     patient_first_name character varying(255),
     date_of_birth date,
+	sex character varying(10),
     date_scanned date,
     funder character varying(255),
     intake_sheet_done boolean,
@@ -74,8 +75,19 @@ CREATE TABLE public.case_record (
     CONSTRAINT case_record_processing_outcome_check CHECK (((processing_outcome)::text = ANY ((ARRAY['PENDING'::character varying, 'UPLOADED'::character varying, 'DURAMAP_SENT'::character varying])::text[])))
 );
 
+CREATE TABLE public.site (
+    id BIGSERIAL PRIMARY KEY,
+    facility_name character varying(255),
+    address character varying(255),
+    primary_contact character varying(255),
+    transfer_method character varying(255),
+    imeka_certified boolean,
+    scanner_brand character varying(255),
+    magnet_strength character varying(255)
+);
 
 ALTER TABLE public.case_record OWNER TO bms;
+ALTER TABLE public.site OWNER TO bms;
 
 --
 -- Name: case_record_id_seq; Type: SEQUENCE; Schema: public; Owner: bms
