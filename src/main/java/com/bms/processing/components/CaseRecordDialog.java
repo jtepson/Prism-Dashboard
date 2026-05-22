@@ -339,6 +339,10 @@ public class CaseRecordDialog extends Dialog {
                                 ThirdPartyStatus.valueOf(neuroreaderStatus.getValue())
                         );
                     }
+
+                    if (mode == Mode.PROCESSING) {
+                        caseRecordService.saveEditedCase(record);
+                    }
                 }
 
                 if (afterSave != null) {
