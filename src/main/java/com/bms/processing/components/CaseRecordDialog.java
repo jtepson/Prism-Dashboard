@@ -333,6 +333,15 @@ public class CaseRecordDialog extends Dialog {
                         siteName.getValue()
                 );
 
+                if (mode == Mode.PROCESSING) {
+                    caseRecordService.updateNeuroreaderStatus(
+                            record,
+                            ThirdPartyStatus.valueOf(neuroreaderStatus.getValue()),
+                            neuroreaderErrorNote.getValue(),
+                            neuroreaderSentDate.getValue()
+                    );
+                }
+
                 if (afterSave != null) {
                     afterSave.run();
                 }
