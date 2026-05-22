@@ -20,17 +20,24 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.bms.processing.entity.SiteEntity;
+import com.bms.processing.service.SiteService;
 
 @PageTitle("Upcoming")
 @Route(value = "upcoming", layout = MainLayout.class)
 public class UpcomingView extends VerticalLayout {
 
+    private final SiteService siteService;
     private final CaseRecordService caseRecordService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
-    public UpcomingView(CaseRecordService caseRecordService) {
+    public UpcomingView(
+            CaseRecordService caseRecordService,
+            SiteService siteService
+    ) {
         this.caseRecordService = caseRecordService;
+        this.siteService = siteService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
