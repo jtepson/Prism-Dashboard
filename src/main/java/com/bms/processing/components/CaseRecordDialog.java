@@ -154,6 +154,17 @@ public class CaseRecordDialog extends Dialog {
                         : null
         );
 
+        DatePicker duramapSentDate = new DatePicker("DuraMap Sent Date");
+        duramapSentDate.setValue(record.getDuramapSentDate());
+
+        TextField duramapErrorNote = new TextField("DuraMap Error Note");
+        duramapErrorNote.setValue(nullSafe(record.getDuramapErrorNote()));
+        duramapErrorNote.setVisible("ERROR".equals(duramapStatus.getValue()));
+
+        duramapStatus.addValueChangeListener(event ->
+                duramapErrorNote.setVisible("ERROR".equals(event.getValue()))
+        );
+
         ComboBox<String> neuroreaderStatus = new ComboBox<>("Neuroreader Status");
         neuroreaderStatus.setItems("NOT_SENT", "SENT", "ERROR");
         neuroreaderStatus.setValue(
@@ -177,6 +188,8 @@ public class CaseRecordDialog extends Dialog {
             thirdPartyForm.add(
                     imekaStatus,
                     duramapStatus,
+                    duramapSentDate,
+                    duramapErrorNote,
                     neuroreaderStatus,
                     neuroreaderSentDate,
                     neuroreaderErrorNote
@@ -334,6 +347,12 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 if (mode == Mode.PROCESSING) {
+                    caseRecordService.updateDuramapStatus(
+                            record,
+                            ThirdPartyStatus.valueOf(duramapStatus.getValue()),
+                            duramapErrorNote.getValue(),
+                            duramapSentDate.getValue()
+                    );
                     caseRecordService.updateNeuroreaderStatus(
                             record,
                             ThirdPartyStatus.valueOf(neuroreaderStatus.getValue()),
