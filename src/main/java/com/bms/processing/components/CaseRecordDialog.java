@@ -320,31 +320,6 @@ public class CaseRecordDialog extends Dialog {
                         siteName.getValue()
                 );
 
-                if (mode == Mode.PROCESSING) {
-
-                    if (imekaStatus.getValue() != null) {
-                        record.setImekaStatus(
-                                ThirdPartyStatus.valueOf(imekaStatus.getValue())
-                        );
-                    }
-
-                    if (duramapStatus.getValue() != null) {
-                        record.setDuramapStatus(
-                                ThirdPartyStatus.valueOf(duramapStatus.getValue())
-                        );
-                    }
-
-                    if (neuroreaderStatus.getValue() != null) {
-                        record.setNeuroreaderStatus(
-                                ThirdPartyStatus.valueOf(neuroreaderStatus.getValue())
-                        );
-                    }
-
-                    if (mode == Mode.PROCESSING) {
-                        caseRecordService.saveEditedCase(record);
-                    }
-                }
-
                 if (afterSave != null) {
                     afterSave.run();
                 }
