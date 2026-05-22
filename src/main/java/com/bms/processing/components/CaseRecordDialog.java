@@ -162,11 +162,24 @@ public class CaseRecordDialog extends Dialog {
                         : null
         );
 
+        DatePicker neuroreaderSentDate = new DatePicker("Neuroreader Sent Date");
+        neuroreaderSentDate.setValue(record.getNeuroreaderSentDate());
+
+        TextField neuroreaderErrorNote = new TextField("Neuroreader Error Note");
+        neuroreaderErrorNote.setValue(nullSafe(record.getNeuroreaderErrorNote()));
+        neuroreaderErrorNote.setVisible("ERROR".equals(neuroreaderStatus.getValue()));
+
+        neuroreaderStatus.addValueChangeListener(event ->
+                neuroreaderErrorNote.setVisible("ERROR".equals(event.getValue()))
+        );
+
         if (mode == Mode.PROCESSING) {
             thirdPartyForm.add(
                     imekaStatus,
                     duramapStatus,
-                    neuroreaderStatus
+                    neuroreaderStatus,
+                    neuroreaderSentDate,
+                    neuroreaderErrorNote
             );
         } else {
             thirdPartyForm.add(
