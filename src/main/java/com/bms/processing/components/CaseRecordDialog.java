@@ -197,57 +197,31 @@ public class CaseRecordDialog extends Dialog {
                 neuroreaderErrorNote.setVisible("ERROR".equals(event.getValue()))
         );
 
-        
-
         if (mode == Mode.PROCESSING) {
             if (!record.isMinorAtScan()) {
                 thirdPartyForm.add(
                         imekaStatus,
-                        imekaSentDate,
-                        imekaErrorNote
+                        imekaSentDate
+                );
+
+                if ("ERROR".equals(imekaStatus.getValue())) {
+                    thirdPartyForm.add(
+                            duramapStatus,
+                            duramapSentDate
+                    );
+                }
+            } else {
+                thirdPartyForm.add(
+                        duramapStatus,
+                        duramapSentDate
                 );
             }
+
             thirdPartyForm.add(
-                    duramapStatus,
-                    duramapSentDate,
-                    duramapErrorNote,
                     neuroreaderStatus,
-                    neuroreaderSentDate,
-                    neuroreaderErrorNote
-            );
-        } else {
-            thirdPartyForm.add(
-                    buildDisplayField(
-                            "IMEKA Status",
-                            formatEnum(record.getImekaStatus())
-                    ),
-                    buildDisplayField(
-                            "IMEKA Sent",
-                            formatDate(record.getImekaSentDate())
-                    ),
-                    buildDisplayField(
-                            "IMEKA Uploaded",
-                            formatDateTimeCompact(record.getImekaUploadedDate())
-                    ),
-                    buildDisplayField(
-                            "DuraMap Status",
-                            formatEnum(record.getDuramapStatus())
-                    ),
-                    buildDisplayField(
-                            "DuraMap Sent",
-                            formatDate(record.getDuramapSentDate())
-                    ),
-                    buildDisplayField(
-                            "Neuroreader Status",
-                            formatEnum(record.getNeuroreaderStatus())
-                    ),
-                    buildDisplayField(
-                            "Neuroreader Sent",
-                            formatDate(record.getNeuroreaderSentDate())
-                    )
+                    neuroreaderSentDate
             );
         }
-
         
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(true);
@@ -403,20 +377,22 @@ public class CaseRecordDialog extends Dialog {
                         caseRecordService.updateImekaStatus(
                                 record,
                                 ThirdPartyStatus.valueOf(imekaStatus.getValue()),
-                                imekaErrorNote.getValue(),
+                                imekaError.getValue(),
                                 imekaSentDate.getValue()
                         );
                     }
-                    caseRecordService.updateDuramapStatus(
-                            record,
-                            ThirdPartyStatus.valueOf(duramapStatus.getValue()),
-                            duramapErrorNote.getValue(),
-                            duramapSentDate.getValue()
-                    );
+                    if (record.isMinorAtScan() || "ERROR".equals(imekaStatus.getValue())) {
+                        caseRecordService.updateDuramapStatus(
+                                record,
+                                ThirdPartyStatus.valueOf(duramapStatus.getValue()),
+                                duramapError.getValue(),
+                                duramapSentDate.getValue()
+                        );
+                    }
                     caseRecordService.updateNeuroreaderStatus(
                             record,
                             ThirdPartyStatus.valueOf(neuroreaderStatus.getValue()),
-                            neuroreaderErrorNote.getValue(),
+                            neuroreaderError.getValue(),
                             neuroreaderSentDate.getValue()
                     );
                 }
