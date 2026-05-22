@@ -252,8 +252,37 @@ public class UpcomingView extends VerticalLayout {
         
         ComboBox<SiteEntity> siteName = new ComboBox<>("Site Name");
         siteName.setItems(siteService.getAllSites());
-        siteName.setItemLabelGenerator(SiteEntity::getFacilityName);
+        siteName.setItemLabelGenerator(site ->
+                site.getId() == null ? "+ Add new site" : site.getFacilityName()
+        );
         siteName.setWidthFull();
+
+        SiteEntity addNewSiteOption = new SiteEntity();
+        addNewSiteOption.setFacilityName("+ Add new site");
+
+        siteName.setItems(
+                java.util.stream.Stream.concat(
+                        siteService.getAllSites().stream(),
+                        java.util.stream.Stream.of(addNewSiteOption)
+                ).toList()
+        );
+
+        siteName.addValueChangeListener(event -> {
+            SiteEntity selected = event.getValue();
+
+            if (selected != null && selected.getId() == null) {
+                siteName.clear();
+                openAddSiteDialog(newSite -> {
+                    siteName.setItems(
+                            java.util.stream.Stream.concat(
+                                    siteService.getAllSites().stream(),
+                                    java.util.stream.Stream.of(addNewSiteOption)
+                            ).toList()
+                    );
+                    siteName.setValue(newSite);
+                });
+            }
+        });
 
         TextField funder = new TextField("Funder");
 
@@ -315,6 +344,87 @@ public class UpcomingView extends VerticalLayout {
             } catch (InvalidWorkflowTransitionException ex) {
                 showError(ex.getMessage());
             }
+        });
+
+        dialog.add(formLayout);
+        dialog.getFooter().add(cancelButton, saveButton);
+        dialog.open();
+    }
+
+    private void openAddSiteDialog(java.util.function.Consumer<SiteEntity> onSiteCreated) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Add Site");
+        dialog.setWidth("700px");
+
+        TextField facilityName = new TextField("Facility Name");
+        facilityName.setWidthFull();
+
+        TextField address = new TextField("Address");
+        address.setWidthFull();
+
+        TextField primaryContact = new TextField("Primary Contact");
+        primaryContact.setWidthFull();
+
+        TextField transferMethod = new TextField("Transfer Method");
+        transferMethod.setWidthFull();
+
+        Checkbox imekaCertified = new Checkbox("IMEKA Certified");
+
+        TextField scannerBrand = new TextField("Scanner Brand");
+        scannerBrand.setWidthFull();
+
+        TextField magnetStrength = new TextField("Magnet Strength");
+        magnetStrength.setWidthFull();
+
+        FormLayout formLayout = new FormLayout();
+        formLayout.setWidthFull();
+        formLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("700px", 2)
+        );
+
+        formLayout.add(
+                facilityName,
+                address,
+                primaryContact,
+                transferMethod,
+                imekaCertified,
+                scannerBrand,
+                magnetStrength
+        );
+
+        Button cancelButton = new Button("Cancel", e -> dialog.close());
+
+        Button saveButton = new Button("Save");
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        saveButton.addClickListener(event -> {
+            if (facilityName.getValue().trim().isEmpty()) {
+                showError("Facility name is required.");
+                return;
+            }
+
+            if (siteService.exists(facilityName.getValue().trim())) {
+                showError("A site with this facility name already exists.");
+                return;
+            }
+
+            SiteEntity site = new SiteEntity();
+            site.setFacilityName(facilityName.getValue().trim());
+            site.setAddress(address.getValue().trim());
+            site.setPrimaryContact(primaryContact.getValue().trim());
+            site.setTransferMethod(transferMethod.getValue().trim());
+            site.setImekaCertified(imekaCertified.getValue());
+            site.setScannerBrand(scannerBrand.getValue().trim());
+            site.setMagnetStrength(magnetStrength.getValue().trim());
+
+            SiteEntity saved = siteService.save(site);
+
+            if (onSiteCreated != null) {
+                onSiteCreated.accept(saved);
+            }
+
+            dialog.close();
         });
 
         dialog.add(formLayout);
