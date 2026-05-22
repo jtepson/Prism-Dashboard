@@ -422,6 +422,15 @@ public class CaseRecordDialog extends Dialog {
                 }
 
                 if (afterSave != null) {
+                    if (mode == Mode.PROCESSING) {
+
+                        record.setNotes(notes.getValue());
+                        record.setImekaErrorNote(imekaError.getValue());
+                        record.setDuramapErrorNote(duramapError.getValue());
+                        record.setNeuroreaderErrorNote(neuroreaderError.getValue());
+
+                        caseRecordService.saveEditedCase(record);
+                    }
                     afterSave.run();
                 }
 
