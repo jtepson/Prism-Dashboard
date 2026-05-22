@@ -146,6 +146,18 @@ public class CaseRecordDialog extends Dialog {
                         : null
         );
 
+        DatePicker imekaSentDate = new DatePicker("IMEKA Sent Date");
+        imekaSentDate.setValue(record.getImekaSentDate());
+        imekaSentDate.setReadOnly(record.getImekaStatus() == ThirdPartyStatus.UPLOADED);
+
+        TextField imekaErrorNote = new TextField("IMEKA Error Note");
+        imekaErrorNote.setValue(nullSafe(record.getImekaErrorNote()));
+        imekaErrorNote.setVisible("ERROR".equals(imekaStatus.getValue()));
+
+        imekaStatus.addValueChangeListener(event ->
+                imekaErrorNote.setVisible("ERROR".equals(event.getValue()))
+        );
+
         ComboBox<String> duramapStatus = new ComboBox<>("DuraMap Status");
         duramapStatus.setItems("NOT_SENT", "SENT", "ERROR");
         duramapStatus.setValue(
@@ -184,9 +196,17 @@ public class CaseRecordDialog extends Dialog {
                 neuroreaderErrorNote.setVisible("ERROR".equals(event.getValue()))
         );
 
+        
+
         if (mode == Mode.PROCESSING) {
+            if (!record.isMinorAtScan()) {
+                thirdPartyForm.add(
+                        imekaStatus,
+                        imekaSentDate,
+                        imekaErrorNote
+                );
+            }
             thirdPartyForm.add(
-                    imekaStatus,
                     duramapStatus,
                     duramapSentDate,
                     duramapErrorNote,
@@ -347,6 +367,14 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 if (mode == Mode.PROCESSING) {
+                    if (!record.isMinorAtScan()) {
+                        caseRecordService.updateImekaStatus(
+                                record,
+                                ThirdPartyStatus.valueOf(imekaStatus.getValue()),
+                                imekaErrorNote.getValue(),
+                                imekaSentDate.getValue()
+                        );
+                    }
                     caseRecordService.updateDuramapStatus(
                             record,
                             ThirdPartyStatus.valueOf(duramapStatus.getValue()),
