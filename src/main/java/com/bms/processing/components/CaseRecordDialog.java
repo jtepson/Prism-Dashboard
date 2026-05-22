@@ -225,6 +225,10 @@ public class CaseRecordDialog extends Dialog {
                             formatDate(record.getImekaSentDate())
                     ),
                     buildDisplayField(
+                            "IMEKA Uploaded",
+                            formatDateTimeCompact(record.getImekaUploadedDate())
+                    ),
+                    buildDisplayField(
                             "DuraMap Status",
                             formatEnum(record.getDuramapStatus())
                     ),
