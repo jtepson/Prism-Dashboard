@@ -22,6 +22,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
+import com.vaadin.flow.component.combobox.ComboBox;
 
 @PageTitle("Upcoming")
 @Route(value = "upcoming", layout = MainLayout.class)
@@ -160,8 +161,10 @@ public class UpcomingView extends VerticalLayout {
         TextField patientId = new TextField("Patient ID");
         patientId.setValue(record.getPatientId() != null ? record.getPatientId() : "");
     
-        TextField siteName = new TextField("Site Name");
-        siteName.setValue(record.getSiteName() != null ? record.getSiteName() : "");
+        ComboBox<SiteEntity> siteName = new ComboBox<>("Site Name");
+        siteName.setItems(siteService.getAllSites());
+        siteName.setItemLabelGenerator(SiteEntity::getFacilityName);
+        siteName.setWidthFull();
     
         TextField funder = new TextField("Funder");
         funder.setValue(record.getFunder() != null ? record.getFunder() : "");
@@ -211,7 +214,11 @@ public class UpcomingView extends VerticalLayout {
             record.setPatientLastName(lastName.getValue().trim());
             record.setPatientFirstName(firstName.getValue().trim());
             record.setPatientId(patientId.getValue().trim());
-            record.setSiteName(siteName.getValue().trim());
+            record.setSiteName(
+                    siteName.getValue() != null
+                            ? siteName.getValue().getFacilityName()
+                            : ""
+            );
             record.setDateOfBirth(dateOfBirth.getValue());
             record.setDateScanned(dateScanned.getValue());
             record.setFunder(funder.getValue().trim());
@@ -242,7 +249,12 @@ public class UpcomingView extends VerticalLayout {
         TextField lastName = new TextField("Patient Last");
         TextField firstName = new TextField("Patient First");
         TextField patientId = new TextField("Patient ID");
-        TextField siteName = new TextField("Site Name");
+        
+        ComboBox<SiteEntity> siteName = new ComboBox<>("Site Name");
+        siteName.setItems(siteService.getAllSites());
+        siteName.setItemLabelGenerator(SiteEntity::getFacilityName);
+        siteName.setWidthFull();
+
         TextField funder = new TextField("Funder");
 
         DatePicker dateOfBirth = new DatePicker("Date of Birth");
@@ -283,7 +295,11 @@ public class UpcomingView extends VerticalLayout {
                 record.setPatientLastName(lastName.getValue().trim());
                 record.setPatientFirstName(firstName.getValue().trim());
                 record.setPatientId(patientId.getValue().trim());
-                record.setSiteName(siteName.getValue().trim());
+                record.setSiteName(
+                        siteName.getValue() != null
+                                ? siteName.getValue().getFacilityName()
+                                : ""
+                );
                 record.setOwnerGroup("UNASSIGNED");
                 record.setDateOfBirth(dateOfBirth.getValue());
                 record.setDateScanned(dateScanned.getValue());
