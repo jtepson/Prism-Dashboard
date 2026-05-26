@@ -1111,4 +1111,17 @@ public class SummaryView extends VerticalLayout {
 
         return metrics;
     }
+
+    private HorizontalLayout buildDashboardHeader(H2 title, Span subtitle, Div toolbarCard) {
+        VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
+        titleBlock.setPadding(false);
+        titleBlock.setSpacing(false);
+
+        HorizontalLayout header = new HorizontalLayout(titleBlock, toolbarCard);
+        header.setWidthFull();
+        header.setAlignItems(Alignment.CENTER);
+        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        return header;
+    }
 }
