@@ -73,9 +73,9 @@ public class CaseRecordDialog extends Dialog {
         patientId.setValue(nullSafe(record.getPatientId()));
 
         Component siteField;
+        final ComboBox<SiteEntity>[] editableSiteName = new ComboBox[1];
 
         if (mode == Mode.UPCOMING || mode == Mode.PROCESSING) {
-
         ComboBox<SiteEntity> siteName = new ComboBox<>("Site");
         siteName.setItems(siteService.getAllSites());
         siteName.setItemLabelGenerator(SiteEntity::getFacilityName);
@@ -85,6 +85,7 @@ public class CaseRecordDialog extends Dialog {
                 .findFirst()
                 .ifPresent(siteName::setValue);
         siteField = siteName;
+        editableSiteName[0] = siteName;
         } else {
         TextField siteName = new TextField("Site");
         siteName.setValue(nullSafe(record.getSiteName()));
@@ -390,12 +391,16 @@ public class CaseRecordDialog extends Dialog {
                 record.setIntakeSheetDone(intakeSheetDone.getValue());
                 record.setIntakeSheetSent(intakeSheetSent.getValue());
                 record.setInvoiceSent(invoiceSent.getValue());
+                String selectedSiteName = record.getSiteName();
+                if (editableSiteName[0] != null && editableSiteName[0].getValue() != null) {
+                        selectedSiteName = editableSiteName[0].getValue().getFacilityName();
+                }
                 caseRecordService.updateSummaryIdentityFields(
                         record,
                         lastName.getValue(),
                         firstName.getValue(),
                         patientId.getValue(),
-                        record.getSiteName()
+                        selectedSiteName
                 );
 
                 if (mode == Mode.PROCESSING) {
