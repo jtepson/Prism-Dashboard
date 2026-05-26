@@ -348,12 +348,30 @@ public class CaseRecordDialog extends Dialog {
                 );
             }
             case PROCESSED -> {
+
+                FormLayout bmsReviewForm = new FormLayout();
+                bmsReviewForm.setWidthFull();
+                bmsReviewForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                bmsReviewForm.add(
+                        invoiceSent,
+                        buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
+                        buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate()))
+                );
+
+                Details bmsReviewDetails = new Details("BMS Review", bmsReviewForm);
+                bmsReviewDetails.setOpened(true);
+
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
+                        bmsReviewDetails,
                         notesDetails
                 );
-            }
+                }
             case COMPLETED -> {
                 content.add(
                         workflowDetails,
