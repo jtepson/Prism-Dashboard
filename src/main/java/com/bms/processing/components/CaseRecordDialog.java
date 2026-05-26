@@ -473,7 +473,7 @@ public class CaseRecordDialog extends Dialog {
                     }
 
                     if (mode == Mode.PROCESSED) {
-                        record.setNotes(finalWorkflowNotes.getValue());
+                        record.setFinalWorkflowNotes(finalWorkflowNotes.getValue());
                         caseRecordService.updateInvoiceSent(record, invoiceSent.getValue());
                         caseRecordService.saveEditedCase(record);
                     }
