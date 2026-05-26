@@ -6,6 +6,7 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.DashboardMetricCard;
+import com.bms.processing.components.DashboardWidget;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -96,7 +97,7 @@ public class SummaryView extends VerticalLayout {
         dashboardBody.setSpacing(true);
         dashboardBody.setWidthFull();
 
-        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, dashboardBody);
+        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, buildDashboardGrid());
         expand(dashboardBody);
 
         normalizeSectionOrderSelections();
@@ -1111,6 +1112,8 @@ public class SummaryView extends VerticalLayout {
                         "#16a34a"
                 )
         );
+        metrics.getStyle()
+        .set("margin-bottom", "1rem");
 
         return metrics;
     }
@@ -1126,5 +1129,34 @@ public class SummaryView extends VerticalLayout {
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         return header;
+    }
+
+    private Component buildDashboardGrid() {
+
+        VerticalLayout leftColumn = new VerticalLayout(
+                new DashboardWidget("Needs Attention", new Span("Coming soon")),
+                new DashboardWidget("Recent Activity", new Span("Coming soon")),
+                new DashboardWidget("Completed (30 Days)", new Span("Coming soon"))
+        );
+
+        VerticalLayout rightColumn = new VerticalLayout(
+                new DashboardWidget("Processing Queue", new Span("Coming soon")),
+                new DashboardWidget("Upcoming", new Span("Coming soon")),
+                new DashboardWidget("Errors", new Span("Coming soon"))
+        );
+
+        leftColumn.setPadding(false);
+        rightColumn.setPadding(false);
+
+        HorizontalLayout dashboardGrid =
+                new HorizontalLayout(leftColumn, rightColumn);
+
+        dashboardGrid.setWidthFull();
+        dashboardGrid.setAlignItems(Alignment.START);
+
+        leftColumn.setWidth("50%");
+        rightColumn.setWidth("50%");
+
+        return dashboardGrid;
     }
 }
