@@ -5,6 +5,7 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.components.DashboardMetricCard;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -95,7 +96,7 @@ public class SummaryView extends VerticalLayout {
         dashboardBody.setSpacing(true);
         dashboardBody.setWidthFull();
 
-        add(title, subtitle, searchField, toolbarCard, dashboardBody);
+        add(title, subtitle, buildMetricSection(), searchField, toolbarCard, dashboardBody);
         expand(dashboardBody);
 
         normalizeSectionOrderSelections();
@@ -1073,5 +1074,41 @@ public class SummaryView extends VerticalLayout {
     }
 
     private record SectionDefinition(String title, List<CaseRecordEntity> records, String route) {
+    }
+
+    private HorizontalLayout buildMetricSection() {
+
+        HorizontalLayout metrics = new HorizontalLayout();
+        metrics.setWidthFull();
+        metrics.setSpacing(true);
+
+        metrics.add(
+                new DashboardMetricCard(
+                        "Upcoming",
+                        getUpcomingRecords().size(),
+                        "Awaiting intake",
+                        "#7c3aed"
+                ),
+                new DashboardMetricCard(
+                        "Processing",
+                        getProcessingRecords().size(),
+                        "In progress",
+                        "#2563eb"
+                ),
+                new DashboardMetricCard(
+                        "Errors",
+                        getErrorRecords().size(),
+                        "Needs attention",
+                        "#dc2626"
+                ),
+                new DashboardMetricCard(
+                        "Completed",
+                        getCompletedLast30Records().size(),
+                        "Last 30 days",
+                        "#16a34a"
+                )
+        );
+
+        return metrics;
     }
 }
