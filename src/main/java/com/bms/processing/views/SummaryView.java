@@ -96,7 +96,7 @@ public class SummaryView extends VerticalLayout {
         dashboardBody.setSpacing(true);
         dashboardBody.setWidthFull();
 
-        add(title, subtitle, buildMetricSection(), searchField, toolbarCard, dashboardBody);
+        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, dashboardBody);
         expand(dashboardBody);
 
         normalizeSectionOrderSelections();
