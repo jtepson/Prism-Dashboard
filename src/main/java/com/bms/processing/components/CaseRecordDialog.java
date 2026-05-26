@@ -388,9 +388,28 @@ public class CaseRecordDialog extends Dialog {
                 );
                 }
             case COMPLETED -> {
+
+                FormLayout archiveForm = new FormLayout();
+                archiveForm.setWidthFull();
+                archiveForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                archiveForm.add(
+                        buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
+                        buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate())),
+                        buildDisplayField("Invoice Sent", Boolean.TRUE.equals(record.getInvoiceSent()) ? "Yes" : "No"),
+                        buildDisplayField("Final Workflow Notes", nullSafe(record.getFinalWorkflowNotes()))
+                );
+
+                Details archiveDetails = new Details("Archived Record", archiveForm);
+                archiveDetails.setOpened(true);
+
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
+                        archiveDetails,
                         notesDetails
                 );
             }
@@ -487,7 +506,11 @@ public class CaseRecordDialog extends Dialog {
         });
 
         add(content);
-        getFooter().add(cancelButton, saveButton);
+        if (mode == Mode.COMPLETED) {
+                getFooter().add(cancelButton);
+        } else {
+                getFooter().add(cancelButton, saveButton);
+        }
     }
 
     private Component buildDisplayField(String label, String value) {
