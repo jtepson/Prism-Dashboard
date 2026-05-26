@@ -1080,7 +1080,10 @@ public class SummaryView extends VerticalLayout {
 
         HorizontalLayout metrics = new HorizontalLayout();
         metrics.setWidthFull();
+        metrics.setPadding(false);
         metrics.setSpacing(true);
+        metrics.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        
 
         metrics.add(
                 new DashboardMetricCard(
