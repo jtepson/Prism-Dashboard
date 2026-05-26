@@ -66,6 +66,9 @@ public class CaseRecordEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "final_workflow_notes", columnDefinition = "TEXT")
+    private String finalWorkflowNotes;
+
     @Column(columnDefinition = "TEXT")
     private String imekaErrorNote;
 
@@ -391,5 +394,13 @@ public class CaseRecordEntity {
 
     public void setAssignedToUser(String assignedToUser) {
         this.assignedToUser = assignedToUser;
+    }
+
+    public String getFinalWorkflowNotes() {
+    return finalWorkflowNotes;
+    }
+
+    public void setFinalWorkflowNotes(String finalWorkflowNotes) {
+        this.finalWorkflowNotes = finalWorkflowNotes;
     }
 }

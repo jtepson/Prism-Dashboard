@@ -56,6 +56,7 @@ CREATE TABLE public.case_record (
     processing_outcome character varying(255),
     duramap_error_note text,
     imeka_error_note text,
+    final_workflow_notes text,
     neuroreader_error_note text,
     images_received_date date,
     patient_first_name character varying(255),
