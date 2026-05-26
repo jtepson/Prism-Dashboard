@@ -242,6 +242,10 @@ public class CaseRecordDialog extends Dialog {
         imekaError.setWidthFull();
         imekaError.setValue(nullSafe(record.getImekaErrorNote()));
 
+        TextArea finalWorkflowNotes = new TextArea("Final Workflow Notes");
+        finalWorkflowNotes.setWidthFull();
+        finalWorkflowNotes.setValue("");
+
         TextArea duramapError = new TextArea("DuraMap Error Note");
         duramapError.setWidthFull();
         duramapError.setValue(nullSafe(record.getDuramapErrorNote()));
@@ -371,10 +375,6 @@ public class CaseRecordDialog extends Dialog {
                         buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate()))
                 );
 
-                TextArea finalWorkflowNotes = new TextArea("Final Workflow Notes");
-                finalWorkflowNotes.setWidthFull();
-                finalWorkflowNotes.setValue(nullSafe(record.getNotes()));
-
                 bmsReviewForm.add(finalWorkflowNotes);
 
                 Details bmsReviewDetails = new Details("BMS Review", bmsReviewForm);
@@ -469,6 +469,12 @@ public class CaseRecordDialog extends Dialog {
                         record.setDuramapErrorNote(duramapError.getValue());
                         record.setNeuroreaderErrorNote(neuroreaderError.getValue());
 
+                        caseRecordService.saveEditedCase(record);
+                    }
+
+                    if (mode == Mode.PROCESSED) {
+                        record.setNotes(finalWorkflowNotes.getValue());
+                        caseRecordService.updateInvoiceSent(record, invoiceSent.getValue());
                         caseRecordService.saveEditedCase(record);
                     }
                     afterSave.run();
