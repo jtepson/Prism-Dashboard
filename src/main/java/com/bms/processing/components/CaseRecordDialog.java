@@ -414,9 +414,35 @@ public class CaseRecordDialog extends Dialog {
                 );
             }
             case ERRORS -> {
+
+                FormLayout errorReviewForm = new FormLayout();
+                errorReviewForm.setWidthFull();
+                errorReviewForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                errorReviewForm.add(
+                        buildDisplayField("Workflow Status", formatEnum(record.getPatientStatus())),
+                        buildDisplayField("General Notes", nullSafe(record.getNotes())),
+                        buildDisplayField("IMEKA Error Note", nullSafe(record.getImekaErrorNote())),
+                        buildDisplayField("DuraMap Error Note", nullSafe(record.getDuramapErrorNote())),
+                        buildDisplayField("Neuroreader Error Note", nullSafe(record.getNeuroreaderErrorNote()))
+                );
+
+                TextArea resolutionNotes = new TextArea("Resolution Notes");
+                resolutionNotes.setWidthFull();
+                resolutionNotes.setPlaceholder("Add resolution notes here later...");
+
+                errorReviewForm.add(resolutionNotes);
+
+                Details errorReviewDetails = new Details("Error Review", errorReviewForm);
+                errorReviewDetails.setOpened(true);
+
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
+                        errorReviewDetails,
                         notesDetails
                 );
             }
