@@ -114,6 +114,15 @@ public class CaseRecordDialog extends Dialog {
         Checkbox invoiceSent = new Checkbox("Invoice Sent");
         invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
 
+        if (mode == Mode.PROCESSED || mode == Mode.COMPLETED || mode == Mode.ERRORS) {
+                lastName.setReadOnly(true);
+                firstName.setReadOnly(true);
+                patientId.setReadOnly(true);
+                dateOfBirth.setReadOnly(true);
+                sex.setReadOnly(true);
+                dateScanned.setReadOnly(true);
+        }
+
         FormLayout patientForm = new FormLayout();
         patientForm.setWidthFull();
         patientForm.setResponsiveSteps(
