@@ -54,7 +54,8 @@ public class ErrorsView extends VerticalLayout {
                     event.getItem(),
                     caseRecordService,
                     CaseRecordDialog.Mode.ERRORS,
-                    this::refreshErrorsGrid
+                    this::refreshErrorsGrid,
+                    null
                 ).open()
         );
 

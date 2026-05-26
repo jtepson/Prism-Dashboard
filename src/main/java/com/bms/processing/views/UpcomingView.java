@@ -66,10 +66,11 @@ public class UpcomingView extends VerticalLayout {
 
         grid.addItemClickListener(event ->
             new CaseRecordDialog(
-                event.getItem(),
-                caseRecordService,
-                CaseRecordDialog.Mode.UPCOMING,
-                this::refreshUpcomingGrid
+                    event.getItem(),
+                    caseRecordService,
+                    CaseRecordDialog.Mode.UPCOMING,
+                    this::refreshUpcomingGrid,
+                    siteService
             ).open()
         );
 

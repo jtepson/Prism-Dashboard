@@ -4,6 +4,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -36,6 +37,7 @@ public class CaseRecordDialog extends Dialog {
     }
     
     private final CaseRecordService caseRecordService;
+    private final SiteService siteService;
     private final CaseRecordEntity record;
     private final Mode mode;
     private final Runnable afterSave;
@@ -44,10 +46,12 @@ public class CaseRecordDialog extends Dialog {
             CaseRecordEntity record,
             CaseRecordService caseRecordService,
             Mode mode,
-            Runnable afterSave
+            Runnable afterSave,
+            SiteService siteService
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
+        this.siteService = siteService;
         this.mode = mode;
         this.afterSave = afterSave;
 

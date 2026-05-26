@@ -7,6 +7,7 @@ import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.service.SiteService;
 import com.bms.processing.components.CaseRecordDialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -45,9 +46,15 @@ public class ProcessingView extends VerticalLayout {
     private final CaseRecordService caseRecordService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
 	private final TextField searchField = new TextField();
+	private final SiteService siteService;
 
-    public ProcessingView(CaseRecordService caseRecordService) {
-        this.caseRecordService = caseRecordService;        setSizeFull();
+    public ProcessingView(
+			CaseRecordService caseRecordService,
+			SiteService siteService
+	) {
+        this.caseRecordService = caseRecordService;
+		this.siteService = siteService;
+		setSizeFull();
         setPadding(true);
         setSpacing(true);
 
@@ -67,7 +74,8 @@ public class ProcessingView extends VerticalLayout {
                 event.getItem(),
                 caseRecordService,
                 CaseRecordDialog.Mode.PROCESSING,
-                this::refreshProcessingGrid
+                this::refreshProcessingGrid,
+				siteService
             ).open()
 		);
 

@@ -53,7 +53,8 @@ public class CompletedView extends VerticalLayout {
                     event.getItem(),
                     caseRecordService,
                     CaseRecordDialog.Mode.COMPLETED,
-                    this::refreshCompletedGrid
+                    this::refreshCompletedGrid,
+                    null
                 ).open()
         );
 

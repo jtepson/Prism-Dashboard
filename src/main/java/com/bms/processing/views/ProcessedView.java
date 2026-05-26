@@ -53,7 +53,8 @@ public class ProcessedView extends VerticalLayout {
                 event.getItem(),
                 caseRecordService,
                 CaseRecordDialog.Mode.PROCESSED,
-                this::refreshProcessedGrid
+                this::refreshProcessedGrid,
+                null
             ).open()
     );
 
