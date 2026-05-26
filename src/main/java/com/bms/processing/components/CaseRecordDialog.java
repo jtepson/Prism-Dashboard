@@ -371,6 +371,12 @@ public class CaseRecordDialog extends Dialog {
                         buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate()))
                 );
 
+                TextArea finalWorkflowNotes = new TextArea("Final Workflow Notes");
+                finalWorkflowNotes.setWidthFull();
+                finalWorkflowNotes.setValue(nullSafe(record.getNotes()));
+
+                bmsReviewForm.add(finalWorkflowNotes);
+
                 Details bmsReviewDetails = new Details("BMS Review", bmsReviewForm);
                 bmsReviewDetails.setOpened(true);
 
