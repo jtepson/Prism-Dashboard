@@ -5,6 +5,7 @@ import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.service.SiteService;
+import com.bms.processing.entity.SiteEntity;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -71,8 +72,25 @@ public class CaseRecordDialog extends Dialog {
         TextField patientId = new TextField("Patient ID");
         patientId.setValue(nullSafe(record.getPatientId()));
 
+        Component siteField;
+
+        if (mode == Mode.UPCOMING || mode == Mode.PROCESSING) {
+
+        ComboBox<SiteEntity> siteName = new ComboBox<>("Site");
+        siteName.setItems(siteService.getAllSites());
+        siteName.setItemLabelGenerator(SiteEntity::getFacilityName);
+        siteName.setWidthFull();
+        siteService.getAllSites().stream()
+                .filter(site -> site.getFacilityName().equals(record.getSiteName()))
+                .findFirst()
+                .ifPresent(siteName::setValue);
+        siteField = siteName;
+        } else {
         TextField siteName = new TextField("Site");
         siteName.setValue(nullSafe(record.getSiteName()));
+        siteName.setReadOnly(true);
+        siteField = siteName;
+        }
 
         DatePicker dateOfBirth = new DatePicker("Date of Birth");
         dateOfBirth.setValue(record.getDateOfBirth());
@@ -101,7 +119,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("700px", 2)
         );
-        patientForm.add(lastName, firstName, patientId, siteName, dateOfBirth, dateScanned, sex);
+        patientForm.add(lastName, firstName, patientId, siteField, dateOfBirth, dateScanned, sex);
 
         Details patientDetails = new Details("Patient Information", patientForm);
         patientDetails.setOpened(true);
@@ -377,7 +395,7 @@ public class CaseRecordDialog extends Dialog {
                         lastName.getValue(),
                         firstName.getValue(),
                         patientId.getValue(),
-                        siteName.getValue()
+                        record.getSiteName()
                 );
 
                 if (mode == Mode.PROCESSING) {
