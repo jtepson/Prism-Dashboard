@@ -52,14 +52,13 @@ public class PatientQuickView extends VerticalLayout {
                         ? "Yes"
                         : "No"
         ));
+        //Notes section for drawer
         H3 notesHeader = new H3("Notes");
-
         Span notes = new Span(
                 record.getNotes() == null
                         ? ""
                         : record.getNotes()
         );
-
         notes.getStyle()
                 .set("white-space", "pre-wrap");
 

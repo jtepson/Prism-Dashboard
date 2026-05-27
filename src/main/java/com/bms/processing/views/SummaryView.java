@@ -102,19 +102,26 @@ public class SummaryView extends VerticalLayout {
 
         quickViewPanel.setWidth("380px");
         quickViewPanel.getStyle()
+                .set("position", "fixed")
+                .set("top", "0")
+                .set("right", "0")
+                .set("height", "100vh")
+                .set("width", "390px")
+                .set("z-index", "1000")
                 .set("background", "#ffffff")
                 .set("border-left", "1px solid #dbe3ee")
-                .set("box-shadow", "-4px 0 12px rgba(15, 23, 42, 0.08)")
+                .set("box-shadow", "-8px 0 24px rgba(15, 23, 42, 0.18)")
                 .set("padding", "1rem")
-                .set("display", "none");
+                .set("display", "none")
+                .set("overflow-y", "auto");
 
-        HorizontalLayout dashboardShell = new HorizontalLayout(buildDashboardGrid(), quickViewPanel);
-        dashboardShell.setWidthFull();
-        dashboardShell.setSpacing(false);
-        dashboardShell.setPadding(false);
-
-        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, dashboardShell);
-        expand(dashboardBody);
+        add(
+                buildDashboardHeader(title, subtitle, toolbarCard),
+                buildMetricSection(),
+                searchField,
+                buildDashboardGrid(),
+                quickViewPanel
+        );
 
         normalizeSectionOrderSelections();
         rebuildDashboard();
