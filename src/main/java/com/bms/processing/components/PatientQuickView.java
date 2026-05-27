@@ -128,16 +128,36 @@ public class PatientQuickView extends VerticalLayout {
     
         
         //Notes section for drawer
-        H3 notesHeader = new H3("Notes");
+       H3 notesHeader = new H3("Notes");
+
+        notesHeader.getStyle()
+                .set("margin", "0")
+                .set("font-size", "1rem")
+                .set("font-weight", "700");
+
         Span notes = new Span(
-                record.getNotes() == null
-                        ? ""
+                record.getNotes() == null || record.getNotes().isBlank()
+                        ? "No notes."
                         : record.getNotes()
         );
+
         notes.getStyle()
-                .set("white-space", "pre-wrap");
+                .set("white-space", "pre-wrap")
+                .set("color", "#334155")
+                .set("font-size", "0.9rem");
 
         add(notesHeader, notes);
+
+        add(sectionDivider());
+
+        H3 actionsHeader = new H3("Actions");
+
+        actionsHeader.getStyle()
+                .set("margin", "0")
+                .set("font-size", "1rem")
+                .set("font-weight", "700");
+
+        add(actionsHeader);
 
         Button goToQueue = new Button("Go To Queue");
         goToQueue.addClickListener(event -> {
@@ -162,7 +182,12 @@ public class PatientQuickView extends VerticalLayout {
         });
         openPatientPage.getElement().setProperty("title", "Future patient detail page");
 
-        add(new H3("Actions"), goToQueue, openPatientPage);
+        HorizontalLayout actionButtons =
+                new HorizontalLayout(goToQueue, openPatientPage);
+
+        actionButtons.setWidthFull();
+
+        add(actionButtons);
     }
 
     private Div field(String label, String value) {
