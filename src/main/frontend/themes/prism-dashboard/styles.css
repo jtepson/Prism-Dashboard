@@ -258,15 +258,15 @@ vaadin-dialog-overlay::part(footer) {
     align-items: center;
 }
 
-.interactive-grid::part(row) {
+vaadin-grid.interactive-grid::part(body-cell) {
     transition: background-color 0.15s ease-in-out;
-}
-
-.interactive-grid::part(row):hover {
-    background-color: rgba(37, 99, 235, 0.06);
     cursor: pointer;
 }
 
-.interactive-grid::part(selected-row) {
-    background-color: rgba(37, 99, 235, 0.10);
+vaadin-grid.interactive-grid::part(body-cell):hover {
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
+vaadin-grid.interactive-grid::part(summary-selected-row-cell) {
+    background-color: rgba(37, 99, 235, 0.14);
 }

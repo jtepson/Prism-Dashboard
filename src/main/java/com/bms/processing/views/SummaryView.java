@@ -771,10 +771,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(records);
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 new CaseRecordDialog(
                         event.getItem(),
@@ -1227,6 +1223,14 @@ public class SummaryView extends VerticalLayout {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
 
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row"
+                        : null
+        );
+
         grid.addClassName("interactive-grid");
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
@@ -1243,10 +1247,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getErrorRecords());
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1258,6 +1258,14 @@ public class SummaryView extends VerticalLayout {
     private Component buildProcessingQueueWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row"
+                        : null
+        );
 
         grid.addClassName("interactive-grid");
 
@@ -1280,10 +1288,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getProcessingRecords());
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1295,6 +1299,14 @@ public class SummaryView extends VerticalLayout {
     private Component buildUpcomingWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row"
+                        : null
+        );
 
         grid.addClassName("interactive-grid");
 
@@ -1316,10 +1328,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getUpcomingRecords());
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1331,6 +1339,14 @@ public class SummaryView extends VerticalLayout {
     private Component buildCompletedWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row"
+                        : null
+        );
 
         grid.addClassName("interactive-grid");
 
@@ -1352,10 +1368,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getCompletedLast30Records());
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1367,6 +1379,14 @@ public class SummaryView extends VerticalLayout {
     private Component buildErrorsWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row"
+                        : null
+        );
 
         grid.addClassName("interactive-grid");
 
@@ -1404,10 +1424,6 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getErrorRecords());
 
-        if (selectedRecord != null) {
-                grid.select(selectedRecord);
-        }
-
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1433,6 +1449,8 @@ public class SummaryView extends VerticalLayout {
     private void showQuickView(CaseRecordEntity record) {
 
         selectedRecord = record;
+
+        getUI().ifPresent(ui -> ui.access(this::rebuildDashboard));
         
         quickViewPanel.removeAll();
 
