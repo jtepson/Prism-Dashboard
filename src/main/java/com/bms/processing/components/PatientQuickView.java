@@ -58,10 +58,52 @@ public class PatientQuickView extends VerticalLayout {
         avatar.setWidth("72px");
         avatar.setHeight("72px");
 
+        //Dynamic status-dependant status badges
         avatar.getStyle()
-                .set("background", "#ede9fe")
-                .set("color", "#5b21b6")
                 .set("font-weight", "700");
+
+        String avatarStatus =
+                record.getPatientStatus() != null
+                        ? record.getPatientStatus().name().toLowerCase()
+                        : "";
+
+        if (avatarStatus.contains("processing")) {
+
+            avatar.getStyle()
+                    .set("background", "#dbeafe")
+                    .set("color", "#1d4ed8");
+
+        } else if (avatarStatus.contains("error")) {
+
+            avatar.getStyle()
+                    .set("background", "#fee2e2")
+                    .set("color", "#b91c1c");
+
+        } else if (avatarStatus.contains("completed")) {
+
+            avatar.getStyle()
+                    .set("background", "#dcfce7")
+                    .set("color", "#166534");
+
+        } else if (avatarStatus.contains("upcoming")
+                || avatarStatus.contains("verifying")) {
+
+            avatar.getStyle()
+                    .set("background", "#ede9fe")
+                    .set("color", "#6d28d9");
+
+        } else if (avatarStatus.contains("acquired")) {
+
+            avatar.getStyle()
+                    .set("background", "#cffafe")
+                    .set("color", "#155e75");
+
+        } else {
+
+            avatar.getStyle()
+                    .set("background", "#e2e8f0")
+                    .set("color", "#334155");
+        }
 
         H4 patientName = new H4(
                 record.getPatientLastName()

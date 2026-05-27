@@ -134,7 +134,9 @@ public class SummaryView extends VerticalLayout {
                 .set("height", "100vh")
                 .set("z-index", "999")
                 .set("background", "rgba(15, 23, 42, 0.18)")
-                .set("display", "none");
+                .set("display", "none")
+                .set("opacity", "0")
+                .set("transition", "opacity 0.2s ease-in-out");
 
         quickViewBackdrop.addClickListener(event -> hideQuickView());
 
@@ -1414,6 +1416,7 @@ public class SummaryView extends VerticalLayout {
                         dialog.addDetachListener(event -> {
                         if ("block".equals(quickViewPanel.getStyle().get("display"))) {
                                 quickViewBackdrop.getStyle().set("display", "block");
+                                quickViewBackdrop.getStyle().set("opacity", "1");
                         }
                         });
 
@@ -1432,6 +1435,7 @@ public class SummaryView extends VerticalLayout {
     private void hideQuickView() {
         //slide in transiton
         quickViewPanel.getStyle().set("transform", "translateX(100%)");
+        quickViewBackdrop.getStyle().set("opacity", "0");
         quickViewBackdrop.getStyle().set("display", "none");
     }
 
