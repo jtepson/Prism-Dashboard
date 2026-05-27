@@ -46,10 +46,27 @@ public class PatientQuickView extends VerticalLayout {
         add(field("Site", record.getSiteName()));
         add(field("DOB", String.valueOf(record.getDateOfBirth())));
         add(field("Sex", record.getSex()));
-        add(field("Status",
+        
+        
+        Span statusBadge = new Span(
                 record.getPatientStatus() != null
-                        ? record.getPatientStatus().name()
-                        : ""));
+                        ? record.getPatientStatus().name().replace("_", " ")
+                        : "Unknown"
+        );
+
+        //Displaying pt status with a badge instead of text
+        statusBadge.getStyle()
+                .set("display", "inline-block")
+                .set("padding", "0.3rem 0.7rem")
+                .set("border-radius", "999px")
+                .set("font-size", "0.8rem")
+                .set("font-weight", "700")
+                .set("background", "#e0f2fe")
+                .set("color", "#075985");
+
+        add(field("Status", ""));
+        add(statusBadge);
+
         add(field(
         "Date Scanned",
         record.getDateScanned() != null
