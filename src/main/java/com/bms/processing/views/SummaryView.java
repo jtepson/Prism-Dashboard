@@ -1367,7 +1367,10 @@ public class SummaryView extends VerticalLayout {
         quickViewPanel.removeAll();
 
         quickViewPanel.add(
-                new PatientQuickView(record)
+                new PatientQuickView(
+                        record,
+                        () -> quickViewPanel.getStyle().set("display", "none")
+                )
         );
 
         quickViewPanel.getStyle().set("display", "block");

@@ -1,5 +1,7 @@
 package com.bms.processing.components;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -8,19 +10,36 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class PatientQuickView extends VerticalLayout {
 
-    public PatientQuickView(CaseRecordEntity record) {
+    public PatientQuickView(
+            CaseRecordEntity record,
+            Runnable onClose
+    ) {
+
+        Button closeButton = new Button("✕", event -> {
+            if (onClose != null) {
+                onClose.run();
+            }
+        });
+
+        closeButton.getStyle()
+                .set("margin-left", "auto");
 
         setWidth("350px");
         setPadding(true);
         setSpacing(true);
 
-        add(
+        HorizontalLayout header = new HorizontalLayout(
                 new H3(
                         record.getPatientLastName()
                                 + ", "
                                 + record.getPatientFirstName()
-                )
+                ),
+                closeButton
         );
+
+        header.setWidthFull();
+
+        add(header);
 
         add(field("Patient ID", record.getPatientId()));
         add(field("Site", record.getSiteName()));
