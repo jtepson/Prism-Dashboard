@@ -1388,13 +1388,18 @@ public class SummaryView extends VerticalLayout {
                 new PatientQuickView(
                         record,
                         this::hideQuickView,
-                        () -> new CaseRecordDialog(
+                        () -> {
+
+                        quickViewBackdrop.getStyle().set("display", "none");
+
+                        new CaseRecordDialog(
                                 record,
                                 caseRecordService,
                                 getDialogModeForRecord(record),
                                 this::rebuildDashboard,
                                 null
-                        ).open()
+                        ).open();
+                        }
                 )
         );
 
@@ -1411,7 +1416,7 @@ public class SummaryView extends VerticalLayout {
         quickViewBackdrop.getStyle().set("display", "none");
     }
 
-    //Helps the full patient dialog when selected from the drawer
+    //Helps the full patient dialog when selected from the
     private CaseRecordDialog.Mode getDialogModeForRecord(CaseRecordEntity record) {
         if (record.getPatientStatus() == null) {
                 return CaseRecordDialog.Mode.SUMMARY;
