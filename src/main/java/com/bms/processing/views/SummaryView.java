@@ -1063,6 +1063,11 @@ public class SummaryView extends VerticalLayout {
 
         grid.setAllRowsVisible(true);
         grid.setMinHeight("0");
+
+        grid.getStyle()
+                .set("--lumo-primary-color-10pct", "rgba(37, 99, 235, 0.08)");
+        grid.getElement().getStyle().set("cursor", "pointer");
+        grid.addClassName("interactive-grid");
     }
 
     private boolean hasText(String value) {
@@ -1214,6 +1219,8 @@ public class SummaryView extends VerticalLayout {
     private Component buildNeedsAttentionWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+        
+        grid.addClassName("interactive-grid");
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
@@ -1240,6 +1247,8 @@ public class SummaryView extends VerticalLayout {
     private Component buildProcessingQueueWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.addClassName("interactive-grid");
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
@@ -1272,6 +1281,8 @@ public class SummaryView extends VerticalLayout {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
 
+        grid.addClassName("interactive-grid");
+
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
                 .setAutoWidth(true);
@@ -1302,6 +1313,8 @@ public class SummaryView extends VerticalLayout {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
 
+        grid.addClassName("interactive-grid");
+
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
                 .setAutoWidth(true);
@@ -1331,6 +1344,8 @@ public class SummaryView extends VerticalLayout {
     private Component buildErrorsWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
+
+        grid.addClassName("interactive-grid");
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
