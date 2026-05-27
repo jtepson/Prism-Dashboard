@@ -72,6 +72,8 @@ public class SummaryView extends VerticalLayout {
     private final Div quickViewPanel = new Div();
     private final Div quickViewBackdrop = new Div();
 
+    private final Div dashboardGridContainer = new Div();
+
     private CaseRecordEntity selectedRecord;
 
     public SummaryView(
@@ -142,11 +144,15 @@ public class SummaryView extends VerticalLayout {
 
         quickViewBackdrop.addClickListener(event -> hideQuickView());
 
+        dashboardGridContainer.setWidthFull();
+        dashboardGridContainer.removeAll();
+        dashboardGridContainer.add(buildDashboardGrid());
+
         add(
                 buildDashboardHeader(title, subtitle, toolbarCard),
                 buildMetricSection(),
                 searchField,
-                buildDashboardGrid(),
+                dashboardGridContainer,
                 quickViewBackdrop,
                 quickViewPanel
         );
@@ -1227,7 +1233,7 @@ public class SummaryView extends VerticalLayout {
                 selectedRecord != null
                         && record.getId() != null
                         && record.getId().equals(selectedRecord.getId())
-                        ? "summary-selected-row"
+                        ? "summary-selected-row-cell"
                         : null
         );
 
@@ -1263,7 +1269,7 @@ public class SummaryView extends VerticalLayout {
                 selectedRecord != null
                         && record.getId() != null
                         && record.getId().equals(selectedRecord.getId())
-                        ? "summary-selected-row"
+                        ? "summary-selected-row-cell"
                         : null
         );
 
@@ -1304,7 +1310,7 @@ public class SummaryView extends VerticalLayout {
                 selectedRecord != null
                         && record.getId() != null
                         && record.getId().equals(selectedRecord.getId())
-                        ? "summary-selected-row"
+                        ? "summary-selected-row-cell"
                         : null
         );
 
@@ -1344,7 +1350,7 @@ public class SummaryView extends VerticalLayout {
                 selectedRecord != null
                         && record.getId() != null
                         && record.getId().equals(selectedRecord.getId())
-                        ? "summary-selected-row"
+                        ? "summary-selected-row-cell"
                         : null
         );
 
@@ -1384,7 +1390,7 @@ public class SummaryView extends VerticalLayout {
                 selectedRecord != null
                         && record.getId() != null
                         && record.getId().equals(selectedRecord.getId())
-                        ? "summary-selected-row"
+                        ? "summary-selected-row-cell"
                         : null
         );
 
@@ -1450,7 +1456,7 @@ public class SummaryView extends VerticalLayout {
 
         selectedRecord = record;
 
-        getUI().ifPresent(ui -> ui.access(this::rebuildDashboard));
+        refreshDashboardGrid();
         
         quickViewPanel.removeAll();
 
@@ -1502,6 +1508,8 @@ public class SummaryView extends VerticalLayout {
         quickViewBackdrop.getStyle().set("display", "none");
 
         selectedRecord = null;
+
+        refreshDashboardGrid();
     }
 
     //Helps the full patient dialog when selected from the
@@ -1517,5 +1525,11 @@ public class SummaryView extends VerticalLayout {
                 case COMPLETED -> CaseRecordDialog.Mode.COMPLETED;
                 case ERROR -> CaseRecordDialog.Mode.ERRORS;
         };
+    }
+
+    //persistent row hovering on grids
+    private void refreshDashboardGrid() {
+        dashboardGridContainer.removeAll();
+        dashboardGridContainer.add(buildDashboardGrid());
     }
 }
