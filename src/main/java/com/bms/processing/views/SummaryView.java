@@ -72,6 +72,8 @@ public class SummaryView extends VerticalLayout {
     private final Div quickViewPanel = new Div();
     private final Div quickViewBackdrop = new Div();
 
+    private CaseRecordEntity selectedRecord;
+
     public SummaryView(
         CaseRecordService caseRecordService,
         SiteService siteService
@@ -768,6 +770,11 @@ public class SummaryView extends VerticalLayout {
         }
 
         grid.setItems(records);
+
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
+
         grid.addItemClickListener(event ->
                 new CaseRecordDialog(
                         event.getItem(),
@@ -1219,7 +1226,7 @@ public class SummaryView extends VerticalLayout {
     private Component buildNeedsAttentionWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
-        
+
         grid.addClassName("interactive-grid");
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
@@ -1235,6 +1242,10 @@ public class SummaryView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setItems(getErrorRecords());
+
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
 
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
@@ -1269,6 +1280,10 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getProcessingRecords());
 
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
+
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1301,6 +1316,10 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getUpcomingRecords());
 
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
+
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1332,6 +1351,10 @@ public class SummaryView extends VerticalLayout {
                 .setAutoWidth(true);
 
         grid.setItems(getCompletedLast30Records());
+
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
 
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
@@ -1381,6 +1404,10 @@ public class SummaryView extends VerticalLayout {
 
         grid.setItems(getErrorRecords());
 
+        if (selectedRecord != null) {
+                grid.select(selectedRecord);
+        }
+
         grid.addItemClickListener(event ->
                 showQuickView(event.getItem())
         );
@@ -1405,6 +1432,8 @@ public class SummaryView extends VerticalLayout {
     //Drawer should show now
     private void showQuickView(CaseRecordEntity record) {
 
+        selectedRecord = record;
+        
         quickViewPanel.removeAll();
 
         quickViewPanel.add(
@@ -1453,6 +1482,8 @@ public class SummaryView extends VerticalLayout {
         quickViewPanel.getStyle().set("transform", "translateX(100%)");
         quickViewBackdrop.getStyle().set("opacity", "1");
         quickViewBackdrop.getStyle().set("display", "none");
+
+        selectedRecord = null;
     }
 
     //Helps the full patient dialog when selected from the
