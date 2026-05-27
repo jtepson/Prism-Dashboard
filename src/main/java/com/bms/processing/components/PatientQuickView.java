@@ -1,10 +1,12 @@
 package com.bms.processing.components;
 
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.UI;
@@ -30,18 +32,69 @@ public class PatientQuickView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        HorizontalLayout header = new HorizontalLayout(
-                new H3(
-                        record.getPatientLastName()
-                                + ", "
-                                + record.getPatientFirstName()
-                ),
-                closeButton
+        H3 title = new H3("Patient Details");
+
+        title.getStyle()
+                .set("margin", "0")
+                .set("font-size", "1.3rem")
+                .set("font-weight", "700");
+
+        HorizontalLayout topBar = new HorizontalLayout(title, closeButton);
+        topBar.setWidthFull();
+        topBar.setAlignItems(Alignment.CENTER);
+        topBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        String initials =
+                (record.getPatientFirstName() != null && !record.getPatientFirstName().isBlank()
+                        ? record.getPatientFirstName().substring(0, 1)
+                        : "")
+                +
+                (record.getPatientLastName() != null && !record.getPatientLastName().isBlank()
+                        ? record.getPatientLastName().substring(0, 1)
+                        : "");
+
+        Avatar avatar = new Avatar(initials);
+
+        avatar.setWidth("72px");
+        avatar.setHeight("72px");
+
+        avatar.getStyle()
+                .set("background", "#ede9fe")
+                .set("color", "#5b21b6")
+                .set("font-weight", "700");
+
+        H4 patientName = new H4(
+                record.getPatientLastName()
+                        + ", "
+                        + record.getPatientFirstName()
         );
 
-        header.setWidthFull();
+        patientName.getStyle()
+                .set("margin", "0")
+                .set("font-size", "1rem")
+                .set("font-weight", "700");
 
-        add(header);
+        Span patientId = new Span(
+                record.getPatientId() == null
+                        ? ""
+                        : record.getPatientId()
+        );
+
+        patientId.getStyle()
+                .set("color", "#64748b")
+                .set("font-size", "0.9rem");
+
+        VerticalLayout identityText = new VerticalLayout(patientName, patientId);
+        identityText.setPadding(false);
+        identityText.setSpacing(false);
+
+        HorizontalLayout identitySection =
+                new HorizontalLayout(avatar, identityText);
+
+        identitySection.setAlignItems(Alignment.CENTER);
+        identitySection.setSpacing(true);
+
+        add(topBar, identitySection);
 
         add(field("Patient ID", record.getPatientId()));
         add(field("Site", record.getSiteName()));
