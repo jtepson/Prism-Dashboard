@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.UI;
 
 public class PatientQuickView extends VerticalLayout {
 
@@ -84,6 +85,20 @@ public class PatientQuickView extends VerticalLayout {
         add(notesHeader, notes);
 
         Button goToQueue = new Button("Go To Queue");
+        goToQueue.addClickListener(event -> {
+            if (record.getPatientStatus() == null) {
+                return;
+            }
+
+            switch (record.getPatientStatus()) {
+                case UPCOMING, VERIFYING -> UI.getCurrent().navigate("upcoming");
+                case ACQUIRED, PROCESSING -> UI.getCurrent().navigate("processing");
+                case PROCESSED, PROCESSED_WITH_ERRORS, PROCESSED_WITH_THIRD_PARTY_ERRORS -> UI.getCurrent().navigate("processed");
+                case COMPLETED -> UI.getCurrent().navigate("completed");
+                case ERROR -> UI.getCurrent().navigate("errors");
+            }
+        });
+
         Button openPatientPage = new Button("Open Patient Page");
         openPatientPage.setEnabled(false);
         openPatientPage.getElement().setProperty("title", "Future patient detail page");
