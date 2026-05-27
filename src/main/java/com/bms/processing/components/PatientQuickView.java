@@ -120,8 +120,6 @@ public class PatientQuickView extends VerticalLayout {
                 .set("background", "#e0f2fe")
                 .set("color", "#075985");
 
-        
-        add(detailRow("Status", ""));
         add(statusBadge);
 
         add(sectionDivider());
@@ -188,16 +186,21 @@ public class PatientQuickView extends VerticalLayout {
         });
         openPatientPage.getElement().setProperty("title", "Future patient detail page");
 
-        HorizontalLayout actionButtons =
-                new HorizontalLayout(goToQueue, openPatientPage);
-        
+        VerticalLayout actionButtons =
+                new VerticalLayout(goToQueue, openPatientPage);
+
+        actionButtons.setPadding(false);
         actionButtons.setSpacing(true);
+        actionButtons.setWidthFull();
+
         goToQueue.setWidthFull();
         openPatientPage.setWidthFull();
 
-        actionButtons.setWidthFull();
-
         add(actionButtons);
+
+        actionButtons.setSpacing(true);
+        goToQueue.setWidthFull();
+        openPatientPage.setWidthFull();
     }
 
     private Div field(String label, String value) {
