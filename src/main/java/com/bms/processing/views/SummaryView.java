@@ -1137,7 +1137,7 @@ public class SummaryView extends VerticalLayout {
         VerticalLayout leftColumn = new VerticalLayout(
                 new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
                 new DashboardWidget("Recent Activity", new Span("Coming soon")),
-                new DashboardWidget("Completed (30 Days)", new Span("Coming soon"))
+                new DashboardWidget("Completed (30 Days)", buildCompletedWidget())
         );
 
         VerticalLayout rightColumn = new VerticalLayout(
@@ -1258,6 +1258,40 @@ public class SummaryView extends VerticalLayout {
                         event.getItem(),
                         caseRecordService,
                         CaseRecordDialog.Mode.UPCOMING,
+                        this::rebuildDashboard,
+                        null
+                ).open()
+        );
+
+        return grid;
+    }
+    private Component buildCompletedWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getPatientFirstName)
+                .setHeader("First")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addColumn(record -> formatDateTimeCompact(record.getCompletedDate()))
+                .setHeader("Completed")
+                .setAutoWidth(true);
+
+        grid.setItems(getCompletedLast30Records());
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.COMPLETED,
                         this::rebuildDashboard,
                         null
                 ).open()
