@@ -1197,13 +1197,7 @@ public class SummaryView extends VerticalLayout {
         grid.setItems(getErrorRecords());
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(
-                        event.getItem(),
-                        caseRecordService,
-                        CaseRecordDialog.Mode.ERRORS,
-                        this::rebuildDashboard,
-                        null
-                ).open()
+                showQuickView(event.getItem())
         );
 
         return grid;
@@ -1382,5 +1376,17 @@ public class SummaryView extends VerticalLayout {
         );
 
         return activity;
+    }
+
+    //Drawer should show now
+    private void showQuickView(CaseRecordEntity record) {
+
+        quickViewPanel.removeAll();
+
+        quickViewPanel.add(
+                new PatientQuickView(record)
+        );
+
+        quickViewPanel.getStyle().set("display", "block");
     }
 }
