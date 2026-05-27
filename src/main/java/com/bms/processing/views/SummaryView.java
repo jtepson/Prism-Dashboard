@@ -1387,7 +1387,14 @@ public class SummaryView extends VerticalLayout {
         quickViewPanel.add(
                 new PatientQuickView(
                         record,
-                        this::hideQuickView
+                        this::hideQuickView,
+                        () -> new CaseRecordDialog(
+                                record,
+                                caseRecordService,
+                                getDialogModeForRecord(record),
+                                this::rebuildDashboard,
+                                null
+                        ).open()
                 )
         );
 
@@ -1402,5 +1409,20 @@ public class SummaryView extends VerticalLayout {
         //slide in transiton
         quickViewPanel.getStyle().set("transform", "translateX(100%)");
         quickViewBackdrop.getStyle().set("display", "none");
+    }
+
+    //Helps the full patient dialog when selected from the drawer
+    private CaseRecordDialog.Mode getDialogModeForRecord(CaseRecordEntity record) {
+        if (record.getPatientStatus() == null) {
+                return CaseRecordDialog.Mode.SUMMARY;
+        }
+
+        return switch (record.getPatientStatus()) {
+                case UPCOMING, VERIFYING -> CaseRecordDialog.Mode.UPCOMING;
+                case ACQUIRED, PROCESSING -> CaseRecordDialog.Mode.PROCESSING;
+                case PROCESSED, PROCESSED_WITH_ERRORS, PROCESSED_WITH_THIRD_PARTY_ERRORS -> CaseRecordDialog.Mode.PROCESSED;
+                case COMPLETED -> CaseRecordDialog.Mode.COMPLETED;
+                case ERROR -> CaseRecordDialog.Mode.ERRORS;
+        };
     }
 }

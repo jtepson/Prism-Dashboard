@@ -12,8 +12,9 @@ import com.vaadin.flow.component.UI;
 public class PatientQuickView extends VerticalLayout {
 
     public PatientQuickView(
-            CaseRecordEntity record,
-            Runnable onClose
+        CaseRecordEntity record,
+        Runnable onClose,
+        Runnable onOpenFullRecord
     ) {
 
         Button closeButton = new Button("✕", event -> {
@@ -116,8 +117,12 @@ public class PatientQuickView extends VerticalLayout {
             }
         });
 
-        Button openPatientPage = new Button("Open Patient Page");
-        openPatientPage.setEnabled(false);
+        Button openPatientPage = new Button("Open Full Record");
+        openPatientPage.addClickListener(event -> {
+            if (onOpenFullRecord != null) {
+                onOpenFullRecord.run();
+            }
+        });
         openPatientPage.getElement().setProperty("title", "Future patient detail page");
 
         add(new H3("Actions"), goToQueue, openPatientPage);
