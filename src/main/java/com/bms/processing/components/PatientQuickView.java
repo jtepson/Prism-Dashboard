@@ -96,11 +96,13 @@ public class PatientQuickView extends VerticalLayout {
 
         add(topBar, identitySection);
 
-        add(field("Patient ID", record.getPatientId()));
-        add(field("Site", record.getSiteName()));
-        add(field("DOB", String.valueOf(record.getDateOfBirth())));
-        add(field("Sex", record.getSex()));
-        
+        add(sectionDivider());
+
+        add(detailRow("Site", record.getSiteName()));
+        add(detailRow("Date Scanned", record.getDateScanned() != null ? record.getDateScanned().toString() : ""));
+        add(detailRow("Acquired Date", record.getImagesReceivedDate() != null ? record.getImagesReceivedDate().toString() : ""));
+        add(detailRow("Date of Birth", record.getDateOfBirth() != null ? record.getDateOfBirth().toString() : ""));
+        add(detailRow("Gender", record.getSex()));
         
         Span statusBadge = new Span(
                 record.getPatientStatus() != null
@@ -118,31 +120,13 @@ public class PatientQuickView extends VerticalLayout {
                 .set("background", "#e0f2fe")
                 .set("color", "#075985");
 
-        add(field("Status", ""));
+        
+        add(detailRow("Status", ""));
         add(statusBadge);
 
-        add(field(
-        "Date Scanned",
-        record.getDateScanned() != null
-                ? record.getDateScanned().toString()
-                : ""
-        ));
-        add(field(
-                "Acquired Date",
-                record.getImagesReceivedDate() != null
-                        ? record.getImagesReceivedDate().toString()
-                        : ""
-        ));
-        add(field(
-                "Funder",
-                record.getFunder()
-        ));
-        add(field(
-                "Invoice Sent",
-                Boolean.TRUE.equals(record.getInvoiceSent())
-                        ? "Yes"
-                        : "No"
-        ));
+        add(sectionDivider());
+    
+        
         //Notes section for drawer
         H3 notesHeader = new H3("Notes");
         Span notes = new Span(
@@ -193,5 +177,35 @@ public class PatientQuickView extends VerticalLayout {
         wrapper.add(title, content);
 
         return wrapper;
+    }
+
+    private Div sectionDivider() {
+    Div divider = new Div();
+    divider.getStyle()
+            .set("border-top", "1px solid #e2e8f0")
+            .set("width", "100%")
+            .set("margin", "1rem 0");
+    return divider;
+    }
+
+    private HorizontalLayout detailRow(String label, String value) {
+        Span labelSpan = new Span(label);
+        labelSpan.getStyle()
+                .set("color", "#64748b")
+                .set("font-size", "0.85rem")
+                .set("font-weight", "600");
+
+        Span valueSpan = new Span(value == null || value.isBlank() ? "-" : value);
+        valueSpan.getStyle()
+                .set("color", "#0f172a")
+                .set("font-size", "0.9rem")
+                .set("font-weight", "600");
+
+        HorizontalLayout row = new HorizontalLayout(labelSpan, valueSpan);
+        row.setWidthFull();
+        row.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        row.setAlignItems(Alignment.CENTER);
+
+        return row;
     }
 }
