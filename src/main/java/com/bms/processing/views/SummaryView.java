@@ -191,127 +191,54 @@ public class SummaryView extends VerticalLayout {
         .set("color", "#334155");
 
         optionsButton.addClickListener(event -> {
-                List<String> allSections = List.of(PROCESSED, PROCESSING, ERRORS, UPCOMING, COMPLETED_30);
 
-                Select<String> tempLayoutModeSelect = new Select<>();
-                tempLayoutModeSelect.setLabel("Layout");
-                tempLayoutModeSelect.setItems(LAYOUT_ROWS, LAYOUT_GRID);
-                tempLayoutModeSelect.setValue(layoutModeSelect.getValue());
-                tempLayoutModeSelect.setWidthFull();
+                Checkbox tempNeedsAttention = new Checkbox("Needs Attention", showNeedsAttention.getValue());
+                Checkbox tempProcessed = new Checkbox("Processed", showProcessedWidget.getValue());
+                Checkbox tempRecentActivity = new Checkbox("Recent Activity", showRecentActivity.getValue());
+                Checkbox tempProcessingQueue = new Checkbox("Processing Queue", showProcessingQueue.getValue());
+                Checkbox tempUpcoming = new Checkbox("Upcoming", showUpcomingWidget.getValue());
+                Checkbox tempCompleted = new Checkbox("Completed (30 Days)", showCompletedWidget.getValue());
+                Checkbox tempErrors = new Checkbox("Errors", showErrorsWidget.getValue());
 
-                Select<String> tempOrder1Select = new Select<>();
-                tempOrder1Select.setLabel("Slot 1");
-                tempOrder1Select.setItems(allSections);
-                tempOrder1Select.setValue(order1Select.getValue());
-                tempOrder1Select.setWidthFull();
-
-                Select<String> tempOrder2Select = new Select<>();
-                tempOrder2Select.setLabel("Slot 2");
-                tempOrder2Select.setItems(allSections);
-                tempOrder2Select.setValue(order2Select.getValue());
-                tempOrder2Select.setWidthFull();
-
-                Select<String> tempOrder3Select = new Select<>();
-                tempOrder3Select.setLabel("Slot 3");
-                tempOrder3Select.setItems(allSections);
-                tempOrder3Select.setValue(order3Select.getValue());
-                tempOrder3Select.setWidthFull();
-
-                Select<String> tempOrder4Select = new Select<>();
-                tempOrder4Select.setLabel("Slot 4");
-                tempOrder4Select.setItems(allSections);
-                tempOrder4Select.setValue(order4Select.getValue());
-                tempOrder4Select.setWidthFull();
-
-                Select<String> tempOrder5Select = new Select<>();
-                tempOrder5Select.setLabel("Slot 5");
-                tempOrder5Select.setItems(allSections);
-                tempOrder5Select.setValue(order5Select.getValue());
-                tempOrder5Select.setWidthFull();
-
-                Checkbox tempShowProcessed = new Checkbox("Processed", showProcessed.getValue());
-                Checkbox tempShowProcessing = new Checkbox("Processing", showProcessing.getValue());
-                Checkbox tempShowErrors = new Checkbox("Errors", showErrors.getValue());
-                Checkbox tempShowUpcoming = new Checkbox("Upcoming", showUpcoming.getValue());
-                Checkbox tempShowCompleted = new Checkbox("Completed, Last 30 Days", showCompleted.getValue());
-
-                Span orderLabel = new Span("Section Order");
-                orderLabel.getStyle()
-                        .set("font-weight", "600")
-                        .set("font-size", "0.9rem");
-
-                VerticalLayout orderColumn = new VerticalLayout(
-                        orderLabel,
-                        tempOrder1Select,
-                        tempOrder2Select,
-                        tempOrder3Select,
-                        tempOrder4Select,
-                        tempOrder5Select
+                VerticalLayout widgetColumn = new VerticalLayout(
+                        new Span("Visible Widgets"),
+                        tempNeedsAttention,
+                        tempProcessed,
+                        tempRecentActivity,
+                        tempProcessingQueue,
+                        tempUpcoming,
+                        tempCompleted,
+                        tempErrors
                 );
-                orderColumn.setPadding(false);
-                orderColumn.setSpacing(false);
 
-                Span toggleLabel = new Span("Show Sections");
-                toggleLabel.getStyle()
-                        .set("font-weight", "600")
-                        .set("font-size", "0.9rem");
-
-                VerticalLayout toggleColumn = new VerticalLayout(
-                        toggleLabel,
-                        tempShowProcessed,
-                        tempShowProcessing,
-                        tempShowErrors,
-                        tempShowUpcoming,
-                        tempShowCompleted
-                );
-                toggleColumn.setPadding(false);
-                toggleColumn.setSpacing(false);
+                widgetColumn.setPadding(false);
+                widgetColumn.setSpacing(false);
 
                 Dialog optionsDialog = new Dialog();
                 optionsDialog.setHeaderTitle("Dashboard Options");
-                optionsDialog.setModal(false);
-                optionsDialog.setResizable(false);
-                optionsDialog.setDraggable(false);
                 optionsDialog.setCloseOnOutsideClick(true);
                 optionsDialog.setCloseOnEsc(true);
                 optionsDialog.setWidth("420px");
 
-                Button cancelButton = new Button("Cancel");
-                cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-                cancelButton.addClickListener(e -> optionsDialog.close());
+                Button cancelButton = new Button("Cancel", e -> optionsDialog.close());
 
                 Button saveButton = new Button("Save");
                 saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
                 saveButton.addClickListener(e -> {
-                layoutModeSelect.setValue(tempLayoutModeSelect.getValue());
+                        showNeedsAttention.setValue(tempNeedsAttention.getValue());
+                        showProcessedWidget.setValue(tempProcessed.getValue());
+                        showRecentActivity.setValue(tempRecentActivity.getValue());
+                        showProcessingQueue.setValue(tempProcessingQueue.getValue());
+                        showUpcomingWidget.setValue(tempUpcoming.getValue());
+                        showCompletedWidget.setValue(tempCompleted.getValue());
+                        showErrorsWidget.setValue(tempErrors.getValue());
 
-                order1Select.setValue(tempOrder1Select.getValue());
-                order2Select.setValue(tempOrder2Select.getValue());
-                order3Select.setValue(tempOrder3Select.getValue());
-                order4Select.setValue(tempOrder4Select.getValue());
-                order5Select.setValue(tempOrder5Select.getValue());
-
-                showProcessed.setValue(tempShowProcessed.getValue());
-                showProcessing.setValue(tempShowProcessing.getValue());
-                showErrors.setValue(tempShowErrors.getValue());
-                showUpcoming.setValue(tempShowUpcoming.getValue());
-                showCompleted.setValue(tempShowCompleted.getValue());
-
-                normalizeSectionOrderSelections();
-                rebuildDashboard();
-                optionsDialog.close();
+                        refreshDashboardGrid();
+                        optionsDialog.close();
                 });
 
-                VerticalLayout content = new VerticalLayout(
-                        tempLayoutModeSelect,
-                        orderColumn,
-                        toggleColumn
-                );
-                content.setPadding(false);
-                content.setSpacing(true);
-                content.setWidthFull();
-
-                optionsDialog.add(content);
+                optionsDialog.add(widgetColumn);
                 optionsDialog.getFooter().add(cancelButton, saveButton);
                 optionsDialog.open();
         });
