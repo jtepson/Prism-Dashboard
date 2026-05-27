@@ -85,6 +85,15 @@ public class SummaryView extends VerticalLayout {
     private final Checkbox showCompletedWidget = new Checkbox("Completed (30 Days)", true);
     private final Checkbox showErrorsWidget = new Checkbox("Errors", true);
 
+    //Presets for configurable widget placement
+    private final Select<String> needsAttentionColumn = new Select<>();
+    private final Select<String> processedColumn = new Select<>();
+    private final Select<String> recentActivityColumn = new Select<>();
+    private final Select<String> processingQueueColumn = new Select<>();
+    private final Select<String> upcomingColumn = new Select<>();
+    private final Select<String> completedColumn = new Select<>();
+    private final Select<String> errorsColumn = new Select<>();
+
     public SummaryView(
         CaseRecordService caseRecordService,
         SiteService siteService
@@ -157,6 +166,25 @@ public class SummaryView extends VerticalLayout {
         dashboardGridContainer.removeAll();
         dashboardGridContainer.add(buildDashboardGrid());
 
+        List<String> columns = List.of("Left", "Right");
+
+        needsAttentionColumn.setItems(columns);
+        processedColumn.setItems(columns);
+        recentActivityColumn.setItems(columns);
+        processingQueueColumn.setItems(columns);
+        upcomingColumn.setItems(columns);
+        completedColumn.setItems(columns);
+        errorsColumn.setItems(columns);
+
+        needsAttentionColumn.setValue("Left");
+        processedColumn.setValue("Left");
+        recentActivityColumn.setValue("Left");
+        completedColumn.setValue("Left");
+
+        processingQueueColumn.setValue("Right");
+        upcomingColumn.setValue("Right");
+        errorsColumn.setValue("Right");
+
         add(
                 buildDashboardHeader(title, subtitle, toolbarCard),
                 buildMetricSection(),
@@ -190,6 +218,7 @@ public class SummaryView extends VerticalLayout {
         .set("font-weight", "600")
         .set("color", "#334155");
 
+        //Options for the dashboard grid, updated 0527
         optionsButton.addClickListener(event -> {
 
                 Checkbox tempNeedsAttention = new Checkbox("Needs Attention", showNeedsAttention.getValue());
@@ -1139,68 +1168,82 @@ public class SummaryView extends VerticalLayout {
         leftColumn.setPadding(false);
         rightColumn.setPadding(false);
 
-        if (showNeedsAttention.getValue()) {
-                leftColumn.add(
-                        new DashboardWidget(
-                                "Needs Attention",
-                                buildNeedsAttentionWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showNeedsAttention,
+                needsAttentionColumn,
+                new DashboardWidget(
+                        "Needs Attention",
+                        buildNeedsAttentionWidget()
+                )
+        );
 
-        if (showProcessedWidget.getValue()) {
-                leftColumn.add(
-                        new DashboardWidget(
-                                "Processed",
-                                buildProcessedWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showProcessedWidget,
+                processedColumn,
+                new DashboardWidget(
+                        "Processed",
+                        buildProcessedWidget()
+                )
+        );
 
-        if (showRecentActivity.getValue()) {
-                leftColumn.add(
-                        new DashboardWidget(
-                                "Recent Activity",
-                                buildRecentActivityWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showRecentActivity,
+                recentActivityColumn,
+                new DashboardWidget(
+                        "Recent Activity",
+                        buildRecentActivityWidget()
+                )
+        );
 
-        if (showCompletedWidget.getValue()) {
-                leftColumn.add(
-                        new DashboardWidget(
-                                "Completed (30 Days)",
-                                buildCompletedWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showProcessingQueue,
+                processingQueueColumn,
+                new DashboardWidget(
+                        "Processing Queue",
+                        buildProcessingQueueWidget()
+                )
+        );
 
-        if (showProcessingQueue.getValue()) {
-                rightColumn.add(
-                        new DashboardWidget(
-                                "Processing Queue",
-                                buildProcessingQueueWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showUpcomingWidget,
+                upcomingColumn,
+                new DashboardWidget(
+                        "Upcoming",
+                        buildUpcomingWidget()
+                )
+        );
 
-        if (showUpcomingWidget.getValue()) {
-                rightColumn.add(
-                        new DashboardWidget(
-                                "Upcoming",
-                                buildUpcomingWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showCompletedWidget,
+                completedColumn,
+                new DashboardWidget(
+                        "Completed (30 Days)",
+                        buildCompletedWidget()
+                )
+        );
 
-        if (showErrorsWidget.getValue()) {
-                rightColumn.add(
-                        new DashboardWidget(
-                                "Errors",
-                                buildErrorsWidget()
-                        )
-                );
-        }
+        addWidgetToColumn(
+                leftColumn,
+                rightColumn,
+                showErrorsWidget,
+                errorsColumn,
+                new DashboardWidget(
+                        "Errors",
+                        buildErrorsWidget()
+                )
+        );
 
         HorizontalLayout dashboardGrid =
                 new HorizontalLayout(leftColumn, rightColumn);
@@ -1559,6 +1602,26 @@ public class SummaryView extends VerticalLayout {
     private void refreshDashboardGrid() {
         dashboardGridContainer.removeAll();
         dashboardGridContainer.add(buildDashboardGrid());
+    }
+
+    //Will allow configrable widget placement regardless of side now
+    private void addWidgetToColumn(
+        VerticalLayout leftColumn,
+        VerticalLayout rightColumn,
+        Checkbox visibilityCheckbox,
+        Select<String> columnSelect,
+        Component widget
+    ) {
+
+        if (!visibilityCheckbox.getValue()) {
+                return;
+        }
+
+        if ("Right".equals(columnSelect.getValue())) {
+                rightColumn.add(widget);
+        } else {
+                leftColumn.add(widget);
+        }
     }
 }
 
