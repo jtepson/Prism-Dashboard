@@ -1136,7 +1136,7 @@ public class SummaryView extends VerticalLayout {
 
         VerticalLayout leftColumn = new VerticalLayout(
                 new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
-                new DashboardWidget("Recent Activity", new Span("Coming soon")),
+                new DashboardWidget("Recent Activity", buildRecentActivityWidget()),
                 new DashboardWidget("Completed (30 Days)", buildCompletedWidget())
         );
 
@@ -1352,5 +1352,19 @@ public class SummaryView extends VerticalLayout {
         );
 
         return grid;
+    }
+
+    //Placeholder for the recent activity, will update once audit logging is built in. Thinking it will show status changes, returns to statuses, etc.
+    private Component buildRecentActivityWidget() {
+        VerticalLayout activity = new VerticalLayout();
+        activity.setPadding(false);
+        activity.setSpacing(true);
+
+        activity.add(
+                new Span("Audit logging not wired yet."),
+                new Span("Future items: received, processing started, finalized, errors, site changes.")
+        );
+
+        return activity;
     }
 }
