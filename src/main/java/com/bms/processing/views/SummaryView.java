@@ -1142,7 +1142,7 @@ public class SummaryView extends VerticalLayout {
 
         VerticalLayout rightColumn = new VerticalLayout(
                 new DashboardWidget("Processing Queue", buildProcessingQueueWidget()),
-                new DashboardWidget("Upcoming", new Span("Coming soon")),
+                new DashboardWidget("Upcoming", buildUpcomingWidget()),
                 new DashboardWidget("Errors", new Span("Coming soon"))
         );
 
@@ -1222,6 +1222,42 @@ public class SummaryView extends VerticalLayout {
                         event.getItem(),
                         caseRecordService,
                         CaseRecordDialog.Mode.PROCESSING,
+                        this::rebuildDashboard,
+                        null
+                ).open()
+        );
+
+        return grid;
+    }
+
+    //Here is the upcoming grid obj
+    private Component buildUpcomingWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getPatientFirstName)
+                .setHeader("First")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addColumn(record -> formatDate(record.getDateScanned()))
+                .setHeader("Scanned")
+                .setAutoWidth(true);
+
+        grid.setItems(getUpcomingRecords());
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.UPCOMING,
                         this::rebuildDashboard,
                         null
                 ).open()
