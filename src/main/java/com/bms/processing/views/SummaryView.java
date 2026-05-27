@@ -1199,6 +1199,7 @@ public class SummaryView extends VerticalLayout {
 
         VerticalLayout leftColumn = new VerticalLayout(
                 new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
+                new DashboardWidget("Processed", buildProcessedWidget()),
                 new DashboardWidget("Recent Activity", buildRecentActivityWidget()),
                 new DashboardWidget("Completed (30 Days)", buildCompletedWidget())
         );
@@ -1437,6 +1438,44 @@ public class SummaryView extends VerticalLayout {
         return grid;
     }
 
+    //Added processed grid item 0527
+    private Component buildProcessedWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.setPartNameGenerator(record ->
+                selectedRecord != null
+                        && record.getId() != null
+                        && record.getId().equals(selectedRecord.getId())
+                        ? "summary-selected-row-cell"
+                        : null
+        );
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getPatientFirstName)
+                .setHeader("First")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addColumn(record -> formatDateTimeCompact(record.getProcessedDate()))
+                .setHeader("Processed")
+                .setAutoWidth(true);
+
+        grid.setItems(getProcessedRecords());
+
+        grid.addItemClickListener(event ->
+                showQuickView(event.getItem())
+        );
+
+        return grid;
+    }
+
     //Placeholder for the recent activity, will update once audit logging is built in. Thinking it will show status changes, returns to statuses, etc.
     private Component buildRecentActivityWidget() {
         VerticalLayout activity = new VerticalLayout();
@@ -1533,3 +1572,4 @@ public class SummaryView extends VerticalLayout {
         dashboardGridContainer.add(buildDashboardGrid());
     }
 }
+
