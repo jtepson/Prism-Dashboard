@@ -68,6 +68,7 @@ public class SummaryView extends VerticalLayout {
     private static final String LAYOUT_GRID = "Grid View";
 
     private final Div quickViewPanel = new Div();
+    private final Div quickViewBackdrop = new Div();
 
     public SummaryView(CaseRecordService caseRecordService) {
         this.caseRecordService = caseRecordService;
@@ -100,6 +101,7 @@ public class SummaryView extends VerticalLayout {
         dashboardBody.setSpacing(true);
         dashboardBody.setWidthFull();
 
+        //drawer styling
         quickViewPanel.setWidth("380px");
         quickViewPanel.getStyle()
                 .set("position", "fixed")
@@ -115,11 +117,25 @@ public class SummaryView extends VerticalLayout {
                 .set("display", "none")
                 .set("overflow-y", "auto");
 
+        //background behind drawer
+        quickViewBackdrop.getStyle()
+                .set("position", "fixed")
+                .set("top", "0")
+                .set("left", "0")
+                .set("width", "100vw")
+                .set("height", "100vh")
+                .set("z-index", "999")
+                .set("background", "rgba(15, 23, 42, 0.18)")
+                .set("display", "none");
+
+        quickViewBackdrop.addClickListener(event -> hideQuickView());
+
         add(
                 buildDashboardHeader(title, subtitle, toolbarCard),
                 buildMetricSection(),
                 searchField,
                 buildDashboardGrid(),
+                quickViewBackdrop,
                 quickViewPanel
         );
 
@@ -1369,10 +1385,18 @@ public class SummaryView extends VerticalLayout {
         quickViewPanel.add(
                 new PatientQuickView(
                         record,
-                        () -> quickViewPanel.getStyle().set("display", "none")
+                        this::hideQuickView
                 )
         );
 
         quickViewPanel.getStyle().set("display", "block");
+
+        quickViewBackdrop.getStyle().set("display", "block");
+    }
+
+    //should allow clicking outside of dialog to close drawer now
+    private void hideQuickView() {
+        quickViewPanel.getStyle().set("display", "none");
+        quickViewBackdrop.getStyle().set("display", "none");
     }
 }
