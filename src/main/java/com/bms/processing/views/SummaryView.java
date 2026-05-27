@@ -115,7 +115,9 @@ public class SummaryView extends VerticalLayout {
                 .set("box-shadow", "-8px 0 24px rgba(15, 23, 42, 0.18)")
                 .set("padding", "1rem")
                 .set("display", "none")
-                .set("overflow-y", "auto");
+                .set("overflow-y", "auto")
+                .set("transform", "translateX(100%)")
+                .set("transition", "transform 0.2s ease-in-out");
 
         //background behind drawer
         quickViewBackdrop.getStyle()
@@ -1390,13 +1392,15 @@ public class SummaryView extends VerticalLayout {
         );
 
         quickViewPanel.getStyle().set("display", "block");
-
+        //drawer should start off screen
+        quickViewPanel.getStyle().set("transform", "translateX(0)");
         quickViewBackdrop.getStyle().set("display", "block");
     }
 
     //should allow clicking outside of dialog to close drawer now
     private void hideQuickView() {
-        quickViewPanel.getStyle().set("display", "none");
+        //slide in transiton
+        quickViewPanel.getStyle().set("transform", "translateX(100%)");
         quickViewBackdrop.getStyle().set("display", "none");
     }
 }
