@@ -1228,13 +1228,7 @@ public class SummaryView extends VerticalLayout {
         grid.setItems(getProcessingRecords());
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(
-                        event.getItem(),
-                        caseRecordService,
-                        CaseRecordDialog.Mode.PROCESSING,
-                        this::rebuildDashboard,
-                        null
-                ).open()
+                showQuickView(event.getItem())
         );
 
         return grid;
@@ -1264,13 +1258,7 @@ public class SummaryView extends VerticalLayout {
         grid.setItems(getUpcomingRecords());
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(
-                        event.getItem(),
-                        caseRecordService,
-                        CaseRecordDialog.Mode.UPCOMING,
-                        this::rebuildDashboard,
-                        null
-                ).open()
+                showQuickView(event.getItem())
         );
 
         return grid;
@@ -1300,13 +1288,7 @@ public class SummaryView extends VerticalLayout {
         grid.setItems(getCompletedLast30Records());
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(
-                        event.getItem(),
-                        caseRecordService,
-                        CaseRecordDialog.Mode.COMPLETED,
-                        this::rebuildDashboard,
-                        null
-                ).open()
+                showQuickView(event.getItem())
         );
 
         return grid;
@@ -1352,13 +1334,7 @@ public class SummaryView extends VerticalLayout {
         grid.setItems(getErrorRecords());
 
         grid.addItemClickListener(event ->
-                new CaseRecordDialog(
-                        event.getItem(),
-                        caseRecordService,
-                        CaseRecordDialog.Mode.ERRORS,
-                        this::rebuildDashboard,
-                        null
-                ).open()
+                showQuickView(event.getItem())
         );
 
         return grid;
