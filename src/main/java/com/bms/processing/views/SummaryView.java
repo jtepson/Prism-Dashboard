@@ -1131,16 +1131,17 @@ public class SummaryView extends VerticalLayout {
         return header;
     }
 
+    //Here is the initial layout grid builder for the dash
     private Component buildDashboardGrid() {
 
         VerticalLayout leftColumn = new VerticalLayout(
-                new DashboardWidget("Needs Attention", new Span("Coming soon")),
+                new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
                 new DashboardWidget("Recent Activity", new Span("Coming soon")),
                 new DashboardWidget("Completed (30 Days)", new Span("Coming soon"))
         );
 
         VerticalLayout rightColumn = new VerticalLayout(
-                new DashboardWidget("Processing Queue", new Span("Coming soon")),
+                new DashboardWidget("Processing Queue", buildProcessingQueueWidget()),
                 new DashboardWidget("Upcoming", new Span("Coming soon")),
                 new DashboardWidget("Errors", new Span("Coming soon"))
         );
@@ -1158,5 +1159,74 @@ public class SummaryView extends VerticalLayout {
         rightColumn.setWidth("50%");
 
         return dashboardGrid;
+    }
+
+    //Needs attention section for dash grid
+    private Component buildNeedsAttentionWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addComponentColumn(record -> buildStatusChip(formatEnum(record.getPatientStatus())))
+                .setHeader("Status")
+                .setAutoWidth(true);
+
+        grid.setItems(getErrorRecords());
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.ERRORS,
+                        this::rebuildDashboard,
+                        null
+                ).open()
+        );
+
+        return grid;
+    }
+
+    //Processing grid section for dash
+    private Component buildProcessingQueueWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getPatientFirstName)
+                .setHeader("First")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addComponentColumn(record ->
+                buildStatusChip(formatEnum(record.getPatientStatus())))
+                .setHeader("Status")
+                .setAutoWidth(true);
+
+        grid.setItems(getProcessingRecords());
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.PROCESSING,
+                        this::rebuildDashboard,
+                        null
+                ).open()
+        );
+
+        return grid;
     }
 }
