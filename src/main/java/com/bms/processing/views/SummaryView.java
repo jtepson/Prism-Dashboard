@@ -1143,7 +1143,7 @@ public class SummaryView extends VerticalLayout {
         VerticalLayout rightColumn = new VerticalLayout(
                 new DashboardWidget("Processing Queue", buildProcessingQueueWidget()),
                 new DashboardWidget("Upcoming", buildUpcomingWidget()),
-                new DashboardWidget("Errors", new Span("Coming soon"))
+                new DashboardWidget("Errors", buildErrorsWidget())
         );
 
         leftColumn.setPadding(false);
@@ -1265,6 +1265,8 @@ public class SummaryView extends VerticalLayout {
 
         return grid;
     }
+
+    //Completed in the last 30 days obj for the dash grid
     private Component buildCompletedWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
         applyStandardGridStyle(grid, true);
@@ -1292,6 +1294,58 @@ public class SummaryView extends VerticalLayout {
                         event.getItem(),
                         caseRecordService,
                         CaseRecordDialog.Mode.COMPLETED,
+                        this::rebuildDashboard,
+                        null
+                ).open()
+        );
+
+        return grid;
+    }
+
+    //Errors section for dash
+    private Component buildErrorsWidget() {
+        Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+        applyStandardGridStyle(grid, true);
+
+        grid.addColumn(CaseRecordEntity::getPatientLastName)
+                .setHeader("Last")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getPatientFirstName)
+                .setHeader("First")
+                .setAutoWidth(true);
+
+        grid.addColumn(CaseRecordEntity::getSiteName)
+                .setHeader("Site")
+                .setAutoWidth(true);
+
+        grid.addComponentColumn(record ->
+                buildStatusChip(formatEnum(record.getPatientStatus())))
+                .setHeader("Status")
+                .setAutoWidth(true);
+
+        grid.addColumn(record -> {
+                        if (record.getImekaErrorNote() != null && !record.getImekaErrorNote().isBlank()) {
+                        return "IMEKA";
+                        }
+                        if (record.getDuramapErrorNote() != null && !record.getDuramapErrorNote().isBlank()) {
+                        return "DuraMap";
+                        }
+                        if (record.getNeuroreaderErrorNote() != null && !record.getNeuroreaderErrorNote().isBlank()) {
+                        return "Neuroreader";
+                        }
+                        return "General";
+                })
+                .setHeader("Source")
+                .setAutoWidth(true);
+
+        grid.setItems(getErrorRecords());
+
+        grid.addItemClickListener(event ->
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.ERRORS,
                         this::rebuildDashboard,
                         null
                 ).open()
