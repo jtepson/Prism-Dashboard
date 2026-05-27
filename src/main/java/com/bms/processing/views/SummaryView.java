@@ -7,6 +7,7 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.DashboardMetricCard;
 import com.bms.processing.components.DashboardWidget;
+import com.bms.processing.components.PatientQuickView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -66,6 +67,8 @@ public class SummaryView extends VerticalLayout {
     private static final String LAYOUT_ROWS = "Rows View";
     private static final String LAYOUT_GRID = "Grid View";
 
+    private final Div quickViewPanel = new Div();
+
     public SummaryView(CaseRecordService caseRecordService) {
         this.caseRecordService = caseRecordService;
 
@@ -96,6 +99,14 @@ public class SummaryView extends VerticalLayout {
         dashboardBody.setPadding(false);
         dashboardBody.setSpacing(true);
         dashboardBody.setWidthFull();
+
+        quickViewPanel.setWidth("380px");
+        quickViewPanel.getStyle()
+                .set("background", "#ffffff")
+                .set("border-left", "1px solid #dbe3ee")
+                .set("box-shadow", "-4px 0 12px rgba(15, 23, 42, 0.08)")
+                .set("padding", "1rem")
+                .set("display", "none");
 
         add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, buildDashboardGrid());
         expand(dashboardBody);
