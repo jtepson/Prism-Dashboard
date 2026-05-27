@@ -108,7 +108,12 @@ public class SummaryView extends VerticalLayout {
                 .set("padding", "1rem")
                 .set("display", "none");
 
-        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, buildDashboardGrid());
+        HorizontalLayout dashboardShell = new HorizontalLayout(buildDashboardGrid(), quickViewPanel);
+        dashboardShell.setWidthFull();
+        dashboardShell.setSpacing(false);
+        dashboardShell.setPadding(false);
+
+        add(buildDashboardHeader(title, subtitle, toolbarCard), buildMetricSection(), searchField, dashboardShell);
         expand(dashboardBody);
 
         normalizeSectionOrderSelections();
