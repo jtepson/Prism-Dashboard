@@ -30,6 +30,40 @@ public class PatientQuickView extends VerticalLayout {
                 record.getPatientStatus() != null
                         ? record.getPatientStatus().name()
                         : ""));
+        add(field(
+        "Date Scanned",
+        record.getDateScanned() != null
+                ? record.getDateScanned().toString()
+                : ""
+        ));
+        add(field(
+                "Acquired Date",
+                record.getImagesReceivedDate() != null
+                        ? record.getImagesReceivedDate().toString()
+                        : ""
+        ));
+        add(field(
+                "Funder",
+                record.getFunder()
+        ));
+        add(field(
+                "Invoice Sent",
+                Boolean.TRUE.equals(record.getInvoiceSent())
+                        ? "Yes"
+                        : "No"
+        ));
+        H3 notesHeader = new H3("Notes");
+
+        Span notes = new Span(
+                record.getNotes() == null
+                        ? ""
+                        : record.getNotes()
+        );
+
+        notes.getStyle()
+                .set("white-space", "pre-wrap");
+
+        add(notesHeader, notes);
     }
 
     private Div field(String label, String value) {
