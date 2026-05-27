@@ -82,6 +82,13 @@ public class PatientQuickView extends VerticalLayout {
                 .set("white-space", "pre-wrap");
 
         add(notesHeader, notes);
+
+        Button goToQueue = new Button("Go To Queue");
+        Button openPatientPage = new Button("Open Patient Page");
+        openPatientPage.setEnabled(false);
+        openPatientPage.getElement().setProperty("title", "Future patient detail page");
+
+        add(new H3("Actions"), goToQueue, openPatientPage);
     }
 
     private Div field(String label, String value) {
