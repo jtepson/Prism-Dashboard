@@ -257,3 +257,16 @@ vaadin-dialog-overlay::part(footer) {
     display: flex;
     align-items: center;
 }
+
+.interactive-grid::part(row) {
+    transition: background-color 0.15s ease-in-out;
+}
+
+.interactive-grid::part(row):hover {
+    background-color: rgba(37, 99, 235, 0.06);
+    cursor: pointer;
+}
+
+.interactive-grid::part(selected-row) {
+    background-color: rgba(37, 99, 235, 0.10);
+}
