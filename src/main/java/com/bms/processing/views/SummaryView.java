@@ -8,6 +8,7 @@ import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.DashboardMetricCard;
 import com.bms.processing.components.DashboardWidget;
 import com.bms.processing.components.PatientQuickView;
+import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -41,6 +42,7 @@ import javax.swing.GroupLayout.Alignment;
 public class SummaryView extends VerticalLayout {
 
     private final CaseRecordService caseRecordService;
+    private final SiteService siteService;
 
     private final VerticalLayout dashboardBody = new VerticalLayout();
     private final Select<String> layoutModeSelect = new Select<>();
@@ -70,8 +72,12 @@ public class SummaryView extends VerticalLayout {
     private final Div quickViewPanel = new Div();
     private final Div quickViewBackdrop = new Div();
 
-    public SummaryView(CaseRecordService caseRecordService) {
+    public SummaryView(
+        CaseRecordService caseRecordService,
+        SiteService siteService
+    ) {
         this.caseRecordService = caseRecordService;
+        this.siteService = siteService;
 
         setSizeFull();
         setPadding(true);
@@ -1392,13 +1398,26 @@ public class SummaryView extends VerticalLayout {
 
                         quickViewBackdrop.getStyle().set("display", "none");
 
-                        new CaseRecordDialog(
+                        CaseRecordDialog.Mode dialogMode = getDialogModeForRecord(record);
+
+                        CaseRecordDialog dialog = new CaseRecordDialog(
                                 record,
                                 caseRecordService,
-                                getDialogModeForRecord(record),
+                                dialogMode,
                                 this::rebuildDashboard,
-                                null
-                        ).open();
+                                (dialogMode == CaseRecordDialog.Mode.UPCOMING
+                                        || dialogMode == CaseRecordDialog.Mode.PROCESSING)
+                                        ? siteService
+                                        : null
+                        );
+
+                        dialog.addDetachListener(event -> {
+                        if ("block".equals(quickViewPanel.getStyle().get("display"))) {
+                                quickViewBackdrop.getStyle().set("display", "block");
+                        }
+                        });
+
+                        dialog.open();
                         }
                 )
         );
