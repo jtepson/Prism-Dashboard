@@ -110,15 +110,56 @@ public class PatientQuickView extends VerticalLayout {
                         : "Unknown"
         );
 
-        //Displaying pt status with a badge instead of text
+        //Displaying pt status with a badge instead of text, 0527 adding dynamic badges
         statusBadge.getStyle()
                 .set("display", "inline-block")
                 .set("padding", "0.3rem 0.7rem")
                 .set("border-radius", "999px")
                 .set("font-size", "0.8rem")
-                .set("font-weight", "700")
-                .set("background", "#e0f2fe")
-                .set("color", "#075985");
+                .set("font-weight", "700");
+
+        String status =
+                record.getPatientStatus() != null
+                        ? record.getPatientStatus().name().toLowerCase()
+                        : "";
+
+        if (status.contains("processing")) {
+
+            statusBadge.getStyle()
+                    .set("background", "#dbeafe")
+                    .set("color", "#1d4ed8");
+
+        } else if (status.contains("error")) {
+
+            statusBadge.getStyle()
+                    .set("background", "#fee2e2")
+                    .set("color", "#b91c1c");
+
+        } else if (status.contains("completed")) {
+
+            statusBadge.getStyle()
+                    .set("background", "#dcfce7")
+                    .set("color", "#166534");
+
+        } else if (status.contains("upcoming")
+                || status.contains("verifying")) {
+
+            statusBadge.getStyle()
+                    .set("background", "#ede9fe")
+                    .set("color", "#6d28d9");
+
+        } else if (status.contains("acquired")) {
+
+            statusBadge.getStyle()
+                    .set("background", "#cffafe")
+                    .set("color", "#155e75");
+
+        } else {
+
+            statusBadge.getStyle()
+                    .set("background", "#e2e8f0")
+                    .set("color", "#334155");
+        }
 
         add(statusBadge);
 
