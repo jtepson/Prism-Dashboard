@@ -76,6 +76,15 @@ public class SummaryView extends VerticalLayout {
 
     private CaseRecordEntity selectedRecord;
 
+    //Updated options menu selections for dash grid 0527
+    private final Checkbox showNeedsAttention = new Checkbox("Needs Attention", true);
+    private final Checkbox showProcessedWidget = new Checkbox("Processed", true);
+    private final Checkbox showRecentActivity = new Checkbox("Recent Activity", true);
+    private final Checkbox showProcessingQueue = new Checkbox("Processing Queue", true);
+    private final Checkbox showUpcomingWidget = new Checkbox("Upcoming", true);
+    private final Checkbox showCompletedWidget = new Checkbox("Completed (30 Days)", true);
+    private final Checkbox showErrorsWidget = new Checkbox("Errors", true);
+
     public SummaryView(
         CaseRecordService caseRecordService,
         SiteService siteService
@@ -1194,24 +1203,77 @@ public class SummaryView extends VerticalLayout {
         return header;
     }
 
-    //Here is the initial layout grid builder for the dash
+    //Here is the initial layout grid builder for the dash, updated for option functionality 0527
     private Component buildDashboardGrid() {
 
-        VerticalLayout leftColumn = new VerticalLayout(
-                new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
-                new DashboardWidget("Processed", buildProcessedWidget()),
-                new DashboardWidget("Recent Activity", buildRecentActivityWidget()),
-                new DashboardWidget("Completed (30 Days)", buildCompletedWidget())
-        );
-
-        VerticalLayout rightColumn = new VerticalLayout(
-                new DashboardWidget("Processing Queue", buildProcessingQueueWidget()),
-                new DashboardWidget("Upcoming", buildUpcomingWidget()),
-                new DashboardWidget("Errors", buildErrorsWidget())
-        );
+        VerticalLayout leftColumn = new VerticalLayout();
+        VerticalLayout rightColumn = new VerticalLayout();
 
         leftColumn.setPadding(false);
         rightColumn.setPadding(false);
+
+        if (showNeedsAttention.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Needs Attention",
+                                buildNeedsAttentionWidget()
+                        )
+                );
+        }
+
+        if (showProcessedWidget.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Processed",
+                                buildProcessedWidget()
+                        )
+                );
+        }
+
+        if (showRecentActivity.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Recent Activity",
+                                buildRecentActivityWidget()
+                        )
+                );
+        }
+
+        if (showCompletedWidget.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Completed (30 Days)",
+                                buildCompletedWidget()
+                        )
+                );
+        }
+
+        if (showProcessingQueue.getValue()) {
+                rightColumn.add(
+                        new DashboardWidget(
+                                "Processing Queue",
+                                buildProcessingQueueWidget()
+                        )
+                );
+        }
+
+        if (showUpcomingWidget.getValue()) {
+                rightColumn.add(
+                        new DashboardWidget(
+                                "Upcoming",
+                                buildUpcomingWidget()
+                        )
+                );
+        }
+
+        if (showErrorsWidget.getValue()) {
+                rightColumn.add(
+                        new DashboardWidget(
+                                "Errors",
+                                buildErrorsWidget()
+                        )
+                );
+        }
 
         HorizontalLayout dashboardGrid =
                 new HorizontalLayout(leftColumn, rightColumn);
