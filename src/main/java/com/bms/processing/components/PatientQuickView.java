@@ -160,6 +160,9 @@ public class PatientQuickView extends VerticalLayout {
         add(actionsHeader);
 
         Button goToQueue = new Button("Go To Queue");
+        goToQueue.getStyle()
+            .set("border-radius", "10px")
+            .set("font-weight", "600");
         goToQueue.addClickListener(event -> {
             if (record.getPatientStatus() == null) {
                 return;
@@ -175,6 +178,9 @@ public class PatientQuickView extends VerticalLayout {
         });
 
         Button openPatientPage = new Button("Open Full Record");
+        openPatientPage.getStyle()
+            .set("border-radius", "10px")
+            .set("font-weight", "600");
         openPatientPage.addClickListener(event -> {
             if (onOpenFullRecord != null) {
                 onOpenFullRecord.run();
@@ -184,6 +190,10 @@ public class PatientQuickView extends VerticalLayout {
 
         HorizontalLayout actionButtons =
                 new HorizontalLayout(goToQueue, openPatientPage);
+        
+        actionButtons.setSpacing(true);
+        goToQueue.setWidthFull();
+        openPatientPage.setWidthFull();
 
         actionButtons.setWidthFull();
 
