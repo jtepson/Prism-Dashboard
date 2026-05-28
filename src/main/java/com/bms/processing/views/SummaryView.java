@@ -80,7 +80,7 @@ public class SummaryView extends VerticalLayout {
     private final Checkbox showNeedsAttention = new Checkbox("Needs Attention", true);
     private final Checkbox showProcessedWidget = new Checkbox("Processed", true);
     private final Checkbox showRecentActivity = new Checkbox("Recent Activity", true);
-    private final Checkbox showProcessingQueue = new Checkbox("Processing Queue", true);
+    private final Checkbox showProcessingQueue = new Checkbox("Processing", true);
     private final Checkbox showUpcomingWidget = new Checkbox("Upcoming", true);
     private final Checkbox showCompletedWidget = new Checkbox("Completed (30 Days)", true);
     private final Checkbox showErrorsWidget = new Checkbox("Errors", true);
@@ -1119,25 +1119,29 @@ public class SummaryView extends VerticalLayout {
                         "Upcoming",
                         getUpcomingRecords().size(),
                         "Awaiting intake",
-                        "#7c3aed"
+                        "#7c3aed",
+                        VaadinIcon.CALENDAR
                 ),
                 new DashboardMetricCard(
                         "Processing",
                         getProcessingRecords().size(),
                         "In progress",
-                        "#2563eb"
+                        "#2563eb",
+                        VaadinIcon.REFRESH
                 ),
                 new DashboardMetricCard(
                         "Errors",
                         getErrorRecords().size(),
                         "Needs attention",
-                        "#dc2626"
+                        "#dc2626",
+                        VaadinIcon.WARNING
                 ),
                 new DashboardMetricCard(
                         "Completed",
                         getCompletedLast30Records().size(),
                         "Last 30 days",
-                        "#16a34a"
+                        "#16a34a",
+                        VaadinIcon.CHECK_CIRCLE
                 )
         );
         metrics.getStyle()

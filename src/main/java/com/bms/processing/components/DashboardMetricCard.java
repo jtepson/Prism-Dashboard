@@ -3,6 +3,11 @@ package com.bms.processing.components;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class DashboardMetricCard extends Div {
 
@@ -10,7 +15,8 @@ public class DashboardMetricCard extends Div {
             String label,
             long count,
             String subtitle,
-            String color
+            String color,
+            VaadinIcon icon
     ) {
         addClassName("dashboard-metric-card");
 
@@ -22,6 +28,21 @@ public class DashboardMetricCard extends Div {
                 .set("box-shadow", "0 4px 12px rgba(15, 23, 42, 0.06)")
                 .set("border-bottom", "3px solid " + color)
                 .set("min-width", "180px");
+
+        Icon iconComponent = icon.create();
+        iconComponent.setSize("28px");
+        iconComponent.getStyle()
+                .set("color", color);
+
+        Div iconBox = new Div(iconComponent);
+        iconBox.getStyle()
+                .set("width", "54px")
+                .set("height", "54px")
+                .set("border-radius", "14px")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("background", color + "18");
 
         Span countText = new Span(String.valueOf(count));
         countText.getStyle()
@@ -40,9 +61,13 @@ public class DashboardMetricCard extends Div {
                 .set("font-size", "0.78rem")
                 .set("color", "#64748b");
 
-        VerticalLayout layout = new VerticalLayout(countText, labelText, subtitleText);
-        layout.setPadding(false);
-        layout.setSpacing(false);
+        VerticalLayout textLayout = new VerticalLayout(countText, labelText, subtitleText);
+        textLayout.setPadding(false);
+        textLayout.setSpacing(false);
+
+        HorizontalLayout layout = new HorizontalLayout(iconBox, textLayout);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        layout.setSpacing(true);
 
         add(layout);
     }
