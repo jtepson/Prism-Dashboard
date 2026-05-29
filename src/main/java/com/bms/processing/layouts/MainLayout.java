@@ -7,6 +7,9 @@ import com.bms.processing.views.ProcessingView;
 import com.bms.processing.views.SummaryView;
 import com.bms.processing.views.UpcomingView;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
@@ -103,15 +106,33 @@ public class MainLayout extends AppLayout {
                 String displayName = "Unknown User";
                 String email = "";
                 String initials = "??";
+                String userRoleDisplay = "USER";
 
                 if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
-                displayName = oidcUser.getFullName() != null
-                        ? oidcUser.getFullName()
-                        : oidcUser.getPreferredUsername();
+                        displayName = oidcUser.getFullName() != null
+                                ? oidcUser.getFullName()
+                                : oidcUser.getPreferredUsername();
 
-                email = oidcUser.getEmail() != null
-                        ? oidcUser.getEmail()
-                        : "";
+                        email = oidcUser.getEmail() != null
+                                ? oidcUser.getEmail()
+                                : "";
+
+                //debug chain just so i can see if it is pulling role - please delete once verified PLEASE
+                Object realmAccess = oidcUser.getClaims().get("realm_access");
+
+                if (realmAccess instanceof java.util.Map<?, ?> accessMap) {
+                        Object rolesObject = accessMap.get("roles");
+
+                        if (rolesObject instanceof java.util.List<?> roles) {
+                                if (roles.contains("ADMIN")) {
+                                        userRoleDisplay = "ADMIN";
+                                } else if (roles.contains("PRISM_USER")) {
+                                        userRoleDisplay = "PRISM USER";
+                                } else if (roles.contains("BMS_USER")) {
+                                        userRoleDisplay = "BMS USER";
+                                }
+                        }
+                }
 
                 String[] nameParts = displayName.trim().split("\\s+");
 
@@ -148,7 +169,7 @@ public class MainLayout extends AppLayout {
                     .set("font-weight", "700")
                     .set("font-size", "0.9rem");
 
-            Span userRole = new Span("PRISM USER");
+            Span userRole = new Span(userRoleDisplay);
             userRole.getStyle()
                     .set("color", "#64748b")
                     .set("font-size", "0.78rem");
@@ -161,8 +182,20 @@ public class MainLayout extends AppLayout {
             userRow.setAlignItems(Alignment.CENTER);
             userRow.setSpacing(true);
 
+            Button logoutButton = new Button("Logout");
+                logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                logoutButton.getStyle()
+                        .set("font-size", "0.8rem")
+                        .set("font-weight", "600")
+                        .set("color", "#dc2626")
+                        .set("padding", "0");
+
+                logoutButton.addClickListener(event ->
+                        UI.getCurrent().getPage().setLocation("/logout")
+            );
+
             userCard.removeAll();
-            userCard.add(userRow);
+            userCard.add(userRow, logoutButton);
             userCard.getStyle()
                     .set("margin", "1rem")
                     .set("padding", "0.75rem")
