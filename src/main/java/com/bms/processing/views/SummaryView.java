@@ -224,7 +224,7 @@ public class SummaryView extends VerticalLayout {
                 Checkbox tempNeedsAttention = new Checkbox("Needs Attention", showNeedsAttention.getValue());
                 Checkbox tempProcessed = new Checkbox("Processed", showProcessedWidget.getValue());
                 Checkbox tempRecentActivity = new Checkbox("Recent Activity", showRecentActivity.getValue());
-                Checkbox tempProcessingQueue = new Checkbox("Processing Queue", showProcessingQueue.getValue());
+                Checkbox tempProcessingQueue = new Checkbox("Processing", showProcessingQueue.getValue());
                 Checkbox tempUpcoming = new Checkbox("Upcoming", showUpcomingWidget.getValue());
                 Checkbox tempCompleted = new Checkbox("Completed (30 Days)", showCompletedWidget.getValue());
                 Checkbox tempErrors = new Checkbox("Errors", showErrorsWidget.getValue());
@@ -1176,18 +1176,7 @@ public class SummaryView extends VerticalLayout {
 
         leftColumn.setPadding(false);
         rightColumn.setPadding(false);
-
-        addWidgetToColumn(
-                leftColumn,
-                rightColumn,
-                showNeedsAttention,
-                needsAttentionColumn,
-                new DashboardWidget(
-                        "Needs Attention",
-                        buildNeedsAttentionWidget()
-                )
-        );
-
+        
         addWidgetToColumn(
                 leftColumn,
                 rightColumn,
@@ -1196,28 +1185,6 @@ public class SummaryView extends VerticalLayout {
                 new DashboardWidget(
                         "Processed",
                         buildProcessedWidget()
-                )
-        );
-
-        addWidgetToColumn(
-                leftColumn,
-                rightColumn,
-                showRecentActivity,
-                recentActivityColumn,
-                new DashboardWidget(
-                        "Recent Activity",
-                        buildRecentActivityWidget()
-                )
-        );
-
-        addWidgetToColumn(
-                leftColumn,
-                rightColumn,
-                showProcessingQueue,
-                processingQueueColumn,
-                new DashboardWidget(
-                        "Processing Queue",
-                        buildProcessingQueueWidget()
                 )
         );
 
