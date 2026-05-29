@@ -23,7 +23,8 @@ public class MainLayout extends AppLayout {
     public MainLayout() {
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
-        addHeaderContent();
+        //commenting below out since it is kind of redudant, can do something with it later
+        //addHeaderContent();
     }
 
     private void addHeaderContent() {
