@@ -1519,9 +1519,10 @@ public class SummaryView extends VerticalLayout {
         activity.setWidthFull();
 
         activity.add(
-                buildActivityItem("Now", "Dashboard activity feed placeholder"),
-                buildActivityItem("Future", "Patient received, moved to Processing, finalized, errored, or completed"),
-                buildActivityItem("Future", "Site changes, note updates, and third-party status changes")
+                buildActivityItem("Now", "Activity logging will appear here once audit events are wired."),
+                buildActivityItem("Planned", "Patient moved to Processing"),
+                buildActivityItem("Planned", "Third-party status changed"),
+                buildActivityItem("Planned", "Case finalized or returned to queue")
         );
 
         return activity;
@@ -1635,6 +1636,9 @@ public class SummaryView extends VerticalLayout {
         row.setWidthFull();
         row.setAlignItems(Alignment.CENTER);
         row.setSpacing(true);
+        row.getStyle()
+                .set("padding", "0.45rem 0")
+                .set("border-bottom", "1px solid #eef2f7");
 
         Span dot = new Span();
         dot.getStyle()
