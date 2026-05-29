@@ -28,6 +28,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,6 +39,7 @@ import java.util.List;
 import javax.swing.GroupLayout.Alignment;
 
 @PageTitle("Summary")
+@PermitAll
 @Route(value = "", layout = MainLayout.class)
 public class SummaryView extends VerticalLayout {
 

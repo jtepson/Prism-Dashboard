@@ -24,8 +24,10 @@ import com.vaadin.flow.router.Route;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.combobox.ComboBox;
+import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Upcoming")
+@PermitAll
 @Route(value = "upcoming", layout = MainLayout.class)
 public class UpcomingView extends VerticalLayout {
 

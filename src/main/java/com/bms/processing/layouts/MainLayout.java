@@ -21,7 +21,14 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import jakarta.annotation.security.PermitAll;
 
+//user imports for keycloak
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+
+@PermitAll
 public class MainLayout extends AppLayout {
 
     public MainLayout() {
@@ -82,10 +89,32 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller(nav);
         scroller.setSizeFull();
 
+        //all things keycloak user card
+        Authentication authentication =
+                        SecurityContextHolder.getContext().getAuthentication();
+
+                String displayName = "Unknown User";
+                String email = "";
+                String initials = "??";
+
+                if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
+                displayName = oidcUser.getFullName() != null
+                        ? oidcUser.getFullName()
+                        : oidcUser.getPreferredUsername();
+
+                email = oidcUser.getEmail() != null
+                        ? oidcUser.getEmail()
+                        : "";
+
+                initials = displayName != null && !displayName.isBlank()
+                        ? displayName.substring(0, Math.min(2, displayName.length())).toUpperCase()
+                        : "??";
+        }
+
         //User placeholder
         Div userCard = new Div();
             Div avatar = new Div();
-            avatar.setText("TC");
+            avatar.setText(initials);
             avatar.getStyle()
                     .set("width", "36px")
                     .set("height", "36px")
@@ -98,12 +127,12 @@ public class MainLayout extends AppLayout {
                     .set("font-weight", "800")
                     .set("flex-shrink", "0");
 
-            Span userName = new Span("Tevarious Cooper");
+            Span userName = new Span(displayName);
             userName.getStyle()
                     .set("font-weight", "700")
                     .set("font-size", "0.9rem");
 
-            Span userRole = new Span("Prism Engineer");
+            Span userRole = new Span("PRISM USER");
             userRole.getStyle()
                     .set("color", "#64748b")
                     .set("font-size", "0.78rem");

@@ -16,10 +16,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
 import java.time.LocalDateTime;
 
 @PageTitle("Completed")
+@PermitAll
 @Route(value = "completed", layout = MainLayout.class)
 public class CompletedView extends VerticalLayout {
 

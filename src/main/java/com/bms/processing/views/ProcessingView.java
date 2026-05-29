@@ -30,6 +30,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import java.util.function.Consumer;
+import jakarta.annotation.security.PermitAll;
 
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -40,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @PageTitle("Processing")
+@PermitAll
 @Route(value = "processing", layout = MainLayout.class)
 public class ProcessingView extends VerticalLayout {
 
