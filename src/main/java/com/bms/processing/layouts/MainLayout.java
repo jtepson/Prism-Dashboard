@@ -10,13 +10,16 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 public class MainLayout extends AppLayout {
@@ -45,11 +48,27 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-        H2 appName = new H2("Prism Clinical Imaging");
-        appName.addClassNames(
-                LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.MEDIUM
-        );
+        //image should be found in ...prism-dashboard\src\main\resources\META-INF\resources\graphics\ as Logo.png
+        Image logo = new Image("graphics/Logo.png", "NO IMAGE FOUND");
+            logo.setWidth("64px");
+            logo.setHeight("64px");
+
+            H2 appName = new H2("Prism Clinical Imaging");
+            appName.getStyle()
+                    .set("margin", "0")
+                    .set("font-size", "1.15rem")
+                    .set("font-weight", "700");
+
+            HorizontalLayout branding = new HorizontalLayout(
+                    logo,
+                    appName
+            );
+
+            branding.setAlignItems(Alignment.CENTER);
+            branding.setSpacing(true);
+            branding.getStyle()
+                    .set("padding", "1rem")
+                    .set("border-bottom", "1px solid #e2e8f0");
 
         SideNav nav = new SideNav();
         nav.addItem(new SideNavItem("Summary", SummaryView.class, new Icon(VaadinIcon.DASHBOARD)));
@@ -64,7 +83,7 @@ public class MainLayout extends AppLayout {
         scroller.setSizeFull();
 
         Div userCard = new Div();
-            userCard.setText("User: Placeholder");
+            userCard.setText("Not Signed In");
             userCard.getStyle()
                     .set("margin", "1rem")
                     .set("padding", "0.75rem")
@@ -73,8 +92,11 @@ public class MainLayout extends AppLayout {
                     .set("background", "#f8fafc")
                     .set("font-size", "0.85rem")
                     .set("font-weight", "600");
+            userCard.getStyle()
+                    .set("cursor", "pointer");
 
-        VerticalLayout drawerLayout = new VerticalLayout(appName, scroller, userCard);
+        VerticalLayout drawerLayout =
+            new VerticalLayout(branding, scroller, userCard);
         drawerLayout.setPadding(false);
         drawerLayout.setSpacing(false);
         drawerLayout.setSizeFull();
