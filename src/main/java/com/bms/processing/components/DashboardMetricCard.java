@@ -27,7 +27,9 @@ public class DashboardMetricCard extends Div {
                 .set("padding", "1rem")
                 .set("box-shadow", "0 4px 12px rgba(15, 23, 42, 0.06)")
                 .set("border-bottom", "3px solid " + color)
-                .set("min-width", "180px");
+                .set("min-width", "180px")
+                .set("width", "240px")
+                .set("flex-shrink", "0");
 
         Icon iconComponent = icon.create();
         iconComponent.setSize("28px");

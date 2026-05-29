@@ -1111,8 +1111,13 @@ public class SummaryView extends VerticalLayout {
         metrics.setWidthFull();
         metrics.setPadding(false);
         metrics.setSpacing(true);
-        metrics.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        metrics.setJustifyContentMode(JustifyContentMode.START);
         
+        //improving placement for these metric cards at top of screen, the justifycontent above was between but changed to start. That and below grouping of four should keep them tight to each other.
+        metrics.setSpacing(true);
+        metrics.getStyle()
+        .set("gap", "1rem")
+        .set("flex-wrap", "wrap");
 
         metrics.add(
                 new DashboardMetricCard(
