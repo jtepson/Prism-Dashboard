@@ -7,6 +7,7 @@ import com.bms.processing.views.ProcessingView;
 import com.bms.processing.views.SummaryView;
 import com.bms.processing.views.UpcomingView;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Span;
@@ -57,11 +58,23 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Processed", ProcessedView.class, new Icon(VaadinIcon.CHECK_CIRCLE_O)));
         nav.addItem(new SideNavItem("Completed", CompletedView.class, new Icon(VaadinIcon.CHECK_CIRCLE)));
         nav.addItem(new SideNavItem("Errors", ErrorsView.class, new Icon(VaadinIcon.WARNING)));
+        nav.addItem(new SideNavItem("Settings", SummaryView.class, new Icon(VaadinIcon.COG_O)));
 
         Scroller scroller = new Scroller(nav);
         scroller.setSizeFull();
 
-        VerticalLayout drawerLayout = new VerticalLayout(appName, scroller);
+        Div userCard = new Div();
+            userCard.setText("User: Placeholder");
+            userCard.getStyle()
+                    .set("margin", "1rem")
+                    .set("padding", "0.75rem")
+                    .set("border", "1px solid #dbe3ee")
+                    .set("border-radius", "12px")
+                    .set("background", "#f8fafc")
+                    .set("font-size", "0.85rem")
+                    .set("font-weight", "600");
+
+        VerticalLayout drawerLayout = new VerticalLayout(appName, scroller, userCard);
         drawerLayout.setPadding(false);
         drawerLayout.setSpacing(false);
         drawerLayout.setSizeFull();
