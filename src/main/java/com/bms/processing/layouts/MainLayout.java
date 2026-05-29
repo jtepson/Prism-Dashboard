@@ -30,11 +30,17 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+//vaadin auth context for logging out
+import com.vaadin.flow.spring.security.AuthenticationContext;
+
 
 @PermitAll
 public class MainLayout extends AppLayout {
 
-    public MainLayout() {
+    private final AuthenticationContext authenticationContext;
+
+    public MainLayout(AuthenticationContext authenticationContext) {
+        this.authenticationContext = authenticationContext;
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         //commenting below out since it is kind of redudant, can do something with it later
@@ -191,8 +197,8 @@ public class MainLayout extends AppLayout {
                         .set("padding", "0");
 
                 logoutButton.addClickListener(event ->
-                        UI.getCurrent().getPage().setLocation("/logout")
-            );
+                        authenticationContext.logout()
+                );
 
             userCard.removeAll();
             userCard.add(userRow, logoutButton);
