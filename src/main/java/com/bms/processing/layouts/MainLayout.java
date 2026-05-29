@@ -92,6 +92,13 @@ public class MainLayout extends AppLayout {
         //all things keycloak user card
         Authentication authentication =
                         SecurityContextHolder.getContext().getAuthentication();
+                        //role check
+                        if (authentication != null) {
+                                authentication.getAuthorities()
+                                        .forEach(authority ->
+                                                System.out.println("ROLE FOUND: " + authority.getAuthority())
+                                        );
+                                }
 
                 String displayName = "Unknown User";
                 String email = "";
@@ -106,9 +113,18 @@ public class MainLayout extends AppLayout {
                         ? oidcUser.getEmail()
                         : "";
 
-                initials = displayName != null && !displayName.isBlank()
-                        ? displayName.substring(0, Math.min(2, displayName.length())).toUpperCase()
-                        : "??";
+                String[] nameParts = displayName.trim().split("\\s+");
+
+                //replacing the first name initials code with first and last initials
+                if (nameParts.length >= 2) {
+                        initials =
+                                nameParts[0].substring(0, 1).toUpperCase()
+                                + nameParts[nameParts.length - 1].substring(0, 1).toUpperCase();
+                } else if (!displayName.isBlank()) {
+                        initials = displayName.substring(0, 1).toUpperCase();
+                } else {
+                        initials = "??";
+                }
         }
 
         //User placeholder
