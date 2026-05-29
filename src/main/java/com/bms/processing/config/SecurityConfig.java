@@ -22,14 +22,6 @@ public class SecurityConfig {
                 vaadin -> vaadin.oauth2LoginPage("/oauth2/authorization/keycloak")
         );
 
-        http.logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .deleteCookies("JSESSIONID")
-        );
-
         return http.build();
     }
 }
