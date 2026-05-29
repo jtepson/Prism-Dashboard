@@ -82,8 +82,42 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller(nav);
         scroller.setSizeFull();
 
+        //User placeholder
         Div userCard = new Div();
-            userCard.setText("Not Signed In");
+            Div avatar = new Div();
+            avatar.setText("TC");
+            avatar.getStyle()
+                    .set("width", "36px")
+                    .set("height", "36px")
+                    .set("border-radius", "999px")
+                    .set("background", "#dbeafe")
+                    .set("color", "#1d4ed8")
+                    .set("display", "flex")
+                    .set("align-items", "center")
+                    .set("justify-content", "center")
+                    .set("font-weight", "800")
+                    .set("flex-shrink", "0");
+
+            Span userName = new Span("Tevarious Cooper");
+            userName.getStyle()
+                    .set("font-weight", "700")
+                    .set("font-size", "0.9rem");
+
+            Span userRole = new Span("Prism Engineer");
+            userRole.getStyle()
+                    .set("color", "#64748b")
+                    .set("font-size", "0.78rem");
+
+            VerticalLayout userText = new VerticalLayout(userName, userRole);
+            userText.setPadding(false);
+            userText.setSpacing(false);
+
+            HorizontalLayout userRow = new HorizontalLayout(avatar, userText);
+            userRow.setAlignItems(Alignment.CENTER);
+            userRow.setSpacing(true);
+
+            userCard.removeAll();
+            userCard.add(userRow);
             userCard.getStyle()
                     .set("margin", "1rem")
                     .set("padding", "0.75rem")
