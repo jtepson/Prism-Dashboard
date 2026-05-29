@@ -1165,7 +1165,7 @@ public class SummaryView extends VerticalLayout {
 
     //Here is the initial layout grid builder for the dash, updated for option functionality 0527
     private Component buildDashboardGrid() {
-
+        
         VerticalLayout leftColumn = new VerticalLayout();
         VerticalLayout rightColumn = new VerticalLayout();
 
@@ -1248,6 +1248,33 @@ public class SummaryView extends VerticalLayout {
                         buildErrorsWidget()
                 )
         );
+
+        if (showNeedsAttention.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Needs Attention",
+                                buildNeedsAttentionWidget()
+                        )
+                );
+        }
+
+                if (showProcessingQueue.getValue()) {
+                rightColumn.add(
+                        new DashboardWidget(
+                                "Processing Queue",
+                                buildProcessingQueueWidget()
+                        )
+                );
+        }
+
+                if (showRecentActivity.getValue()) {
+                leftColumn.add(
+                        new DashboardWidget(
+                                "Recent Activity",
+                                buildRecentActivityWidget()
+                        )
+                );
+        }
 
         HorizontalLayout dashboardGrid =
                 new HorizontalLayout(leftColumn, rightColumn);
