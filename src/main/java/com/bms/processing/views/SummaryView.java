@@ -1516,10 +1516,12 @@ public class SummaryView extends VerticalLayout {
         VerticalLayout activity = new VerticalLayout();
         activity.setPadding(false);
         activity.setSpacing(true);
+        activity.setWidthFull();
 
         activity.add(
-                new Span("Audit logging not wired yet."),
-                new Span("Future items: received, processing started, finalized, errors, site changes.")
+                buildActivityItem("Now", "Dashboard activity feed placeholder"),
+                buildActivityItem("Future", "Patient received, moved to Processing, finalized, errored, or completed"),
+                buildActivityItem("Future", "Site changes, note updates, and third-party status changes")
         );
 
         return activity;
@@ -1625,6 +1627,38 @@ public class SummaryView extends VerticalLayout {
         } else {
                 leftColumn.add(widget);
         }
+    }
+
+    //audit log helper, still a placeholder technically
+    private Component buildActivityItem(String time, String message) {
+        HorizontalLayout row = new HorizontalLayout();
+        row.setWidthFull();
+        row.setAlignItems(Alignment.CENTER);
+        row.setSpacing(true);
+
+        Span dot = new Span();
+        dot.getStyle()
+                .set("width", "10px")
+                .set("height", "10px")
+                .set("border-radius", "999px")
+                .set("background", "#2563eb")
+                .set("flex-shrink", "0");
+
+        Span timeText = new Span(time);
+        timeText.getStyle()
+                .set("font-size", "0.78rem")
+                .set("font-weight", "700")
+                .set("color", "#64748b")
+                .set("min-width", "60px");
+
+        Span messageText = new Span(message);
+        messageText.getStyle()
+                .set("font-size", "0.88rem")
+                .set("color", "#334155");
+
+        row.add(dot, timeText, messageText);
+
+        return row;
     }
 }
 
