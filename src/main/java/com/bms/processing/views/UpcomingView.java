@@ -10,6 +10,7 @@ import com.bms.processing.components.SiteDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.service.AuditEventService;
+import com.bms.processing.model.PatientStatus;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -130,11 +131,29 @@ public class UpcomingView extends VerticalLayout {
                 
             markReceivedButton.addClickListener(event -> {
                 try {
-                    caseRecordService.markImagesReceived(record);
-                    refreshUpcomingGrid();
-                    } catch (InvalidWorkflowTransitionException ex) {
+
+                        PatientStatus oldStatus = record.getPatientStatus();
+
+                        caseRecordService.markImagesReceived(record);
+
+                        auditEventService.logEvent(
+                                record.getId(),
+                                "IMAGES_RECEIVED",
+                                record.getPatientLastName() + ", "
+                                        + record.getPatientFirstName()
+                                        + " images received",
+                                oldStatus != null ? oldStatus.name() : null,
+                                record.getPatientStatus() != null
+                                        ? record.getPatientStatus().name()
+                                        : null,
+                                "SYSTEM"
+                        );
+
+                        refreshUpcomingGrid();
+
+                } catch (InvalidWorkflowTransitionException ex) {
                         showError(ex.getMessage());
-                    }
+                }
             });
                 
             return markReceivedButton;
