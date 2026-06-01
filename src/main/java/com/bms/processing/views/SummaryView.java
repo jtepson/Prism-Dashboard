@@ -40,6 +40,7 @@ import java.util.List;
 
 import javax.swing.GroupLayout.Alignment;
 
+
 @PageTitle("Summary")
 @PermitAll
 @Route(value = "", layout = MainLayout.class)
@@ -1530,9 +1531,13 @@ public class SummaryView extends VerticalLayout {
         var events = auditEventService.getRecentEvents();
 
         if (events.isEmpty()) {
-                activity.add(
-                        buildActivityItem("None", "No recent activity yet.")
-                );
+                Span empty = new Span("No recent activity yet.");
+                empty.getStyle()
+                        .set("color", "#64748b")
+                        .set("font-size", "0.88rem")
+                        .set("font-weight", "500");
+
+                activity.add(empty);
                 return activity;
         }
 
@@ -1541,8 +1546,9 @@ public class SummaryView extends VerticalLayout {
                 .forEach(event ->
                         activity.add(
                                 buildActivityItem(
-                                        formatDateTimeCompact(event.getCreatedAt()),
-                                        event.getMessage()
+                                        formatActivityTime(event.getCreatedAt()),
+                                        event.getMessage(),
+                                        event.getEventType()
                                 )
                         )
                 );
@@ -1652,22 +1658,21 @@ public class SummaryView extends VerticalLayout {
         }
     }
 
-    //audit log helper, still a placeholder technically
-    private Component buildActivityItem(String time, String message) {
+    //audit log helper, replaced placeholder on 6012026, formatting text from audit codes
+    private Component buildActivityItem(String time, String message, String eventType) {
         HorizontalLayout row = new HorizontalLayout();
         row.setWidthFull();
         row.setAlignItems(Alignment.CENTER);
         row.setSpacing(true);
+
         row.getStyle()
-                .set("padding", "0.45rem 0")
+                .set("padding", "0.55rem 0")
                 .set("border-bottom", "1px solid #eef2f7");
 
-        Span dot = new Span();
-        dot.getStyle()
-                .set("width", "10px")
-                .set("height", "10px")
-                .set("border-radius", "999px")
-                .set("background", "#2563eb")
+        Icon icon = getActivityIcon(eventType);
+        icon.setSize("20px");
+        icon.getStyle()
+                .set("color", getActivityColor(eventType))
                 .set("flex-shrink", "0");
 
         Span timeText = new Span(time);
@@ -1675,16 +1680,76 @@ public class SummaryView extends VerticalLayout {
                 .set("font-size", "0.78rem")
                 .set("font-weight", "700")
                 .set("color", "#64748b")
-                .set("min-width", "60px");
+                .set("min-width", "70px");
 
         Span messageText = new Span(message);
         messageText.getStyle()
                 .set("font-size", "0.88rem")
-                .set("color", "#334155");
+                .set("font-weight", isActivityEmphasized(eventType) ? "700" : "500")
+                .set("color", getActivityTextColor(eventType));
 
-        row.add(dot, timeText, messageText);
+        row.add(icon, timeText, messageText);
 
         return row;
+    }
+
+    private Icon getActivityIcon(String eventType) {
+        return switch (eventType) {
+                case "PATIENT_CREATED" -> VaadinIcon.USER_CARD.create();
+                case "IMAGES_RECEIVED" -> VaadinIcon.DOWNLOAD_ALT.create();
+                case "PROCESSING_STARTED" -> VaadinIcon.REFRESH.create();
+                case "RETURNED_TO_PROCESSING" -> VaadinIcon.REFRESH.create();
+                case "CASE_ERROR" -> VaadinIcon.WARNING.create();
+                case "CASE_FINALIZED" -> VaadinIcon.CHECK.create();
+                case "CASE_COMPLETED" -> VaadinIcon.CHECK_CIRCLE_O.create();
+                default -> VaadinIcon.INFO_CIRCLE_O.create();
+        };
+    }
+
+    private String getActivityColor(String eventType) {
+        return switch (eventType) {
+                case "CASE_ERROR" -> "#dc2626";
+                case "CASE_FINALIZED", "CASE_COMPLETED" -> "#16a34a";
+                case "PROCESSING_STARTED", "RETURNED_TO_PROCESSING" -> "#2563eb";
+                case "IMAGES_RECEIVED" -> "#0891b2";
+                case "PATIENT_CREATED" -> "#64748b";
+                default -> "#64748b";
+        };
+    }
+
+    private String getActivityTextColor(String eventType) {
+        return switch (eventType) {
+                case "CASE_ERROR" -> "#dc2626";
+                case "CASE_FINALIZED", "CASE_COMPLETED" -> "#16a34a";
+                default -> "#334155";
+        };
+    }
+
+    private boolean isActivityEmphasized(String eventType) {
+        return eventType != null
+                && (
+                eventType.equals("CASE_ERROR")
+                        || eventType.equals("CASE_FINALIZED")
+                        || eventType.equals("CASE_COMPLETED")
+        );
+    }
+
+    private String formatActivityTime(LocalDateTime value) {
+        if (value == null) {
+                return "";
+        }
+
+        int hour = value.getHour();
+        int minute = value.getMinute();
+
+        int displayHour = hour % 12;
+        if (displayHour == 0) {
+                displayHour = 12;
+        }
+
+        String amPm = hour >= 12 ? "PM" : "AM";
+
+        return String.format("%d:%02d %s", displayHour, minute, amPm);
     }
 }
 
