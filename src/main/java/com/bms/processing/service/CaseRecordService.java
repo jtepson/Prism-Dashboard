@@ -95,6 +95,8 @@ public class CaseRecordService {
                         || record.getDuramapStatus() == ThirdPartyStatus.ERROR
                         || record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR;
 
+        PatientStatus oldStatus = record.getPatientStatus();
+
         if (hasThirdPartyErrors) {
             record.setPatientStatus(PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS);
         } else if (hasInternalErrors) {
@@ -105,7 +107,21 @@ public class CaseRecordService {
 
         record.setProcessedDate(LocalDateTime.now());
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "CASE_FINALIZED",
+                "Case finalized for "
+                        + savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName(),
+                oldStatus.name(),
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity markCaseAsError(CaseRecordEntity record, String errorExplanation) {
