@@ -9,6 +9,8 @@ import com.bms.processing.components.DashboardMetricCard;
 import com.bms.processing.components.DashboardWidget;
 import com.bms.processing.components.PatientQuickView;
 import com.bms.processing.service.SiteService;
+import com.bms.processing.service.AuditEventService;
+import com.bms.processing.entity.AuditEventEntity;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -96,12 +98,17 @@ public class SummaryView extends VerticalLayout {
     private final Select<String> completedColumn = new Select<>();
     private final Select<String> errorsColumn = new Select<>();
 
+    //Audit logging
+    private final AuditEventService auditEventService;
+
     public SummaryView(
-        CaseRecordService caseRecordService,
-        SiteService siteService
+                CaseRecordService caseRecordService,
+                SiteService siteService,
+                AuditEventService auditEventService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
+        this.auditEventService = auditEventService;
 
         setSizeFull();
         setPadding(true);
@@ -1513,19 +1520,32 @@ public class SummaryView extends VerticalLayout {
         return grid;
     }
 
-    //Placeholder for the recent activity, will update once audit logging is built in. Thinking it will show status changes, returns to statuses, etc.
+    //Updated to account for audit logging for recent activity 06012026
     private Component buildRecentActivityWidget() {
         VerticalLayout activity = new VerticalLayout();
         activity.setPadding(false);
-        activity.setSpacing(true);
+        activity.setSpacing(false);
         activity.setWidthFull();
 
-        activity.add(
-                buildActivityItem("Now", "Activity logging will appear here once audit events are wired."),
-                buildActivityItem("Planned", "Patient moved to Processing"),
-                buildActivityItem("Planned", "Third-party status changed"),
-                buildActivityItem("Planned", "Case finalized or returned to queue")
-        );
+        var events = auditEventService.getRecentEvents();
+
+        if (events.isEmpty()) {
+                activity.add(
+                        buildActivityItem("None", "No recent activity yet.")
+                );
+                return activity;
+        }
+
+        events.stream()
+                .limit(8)
+                .forEach(event ->
+                        activity.add(
+                                buildActivityItem(
+                                        formatDateTimeCompact(event.getCreatedAt()),
+                                        event.getMessage()
+                                )
+                        )
+                );
 
         return activity;
     }
