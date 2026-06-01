@@ -162,7 +162,7 @@ public class CaseRecordDialog extends Dialog {
         );
 
         Details workflowDetails = new Details("Workflow Details", workflowForm);
-        workflowDetails.setOpened(true);
+        workflowDetails.setOpened(false);
 
         FormLayout thirdPartyForm = new FormLayout();
         thirdPartyForm.setWidthFull();
@@ -232,7 +232,7 @@ public class CaseRecordDialog extends Dialog {
         }
         
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
-        thirdPartyDetails.setOpened(true);
+        thirdPartyDetails.setOpened(false);
 
         TextArea notes = new TextArea("General Notes");
         notes.setWidthFull();
