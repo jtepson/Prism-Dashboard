@@ -119,10 +119,25 @@ public class CaseRecordService {
             );
         }
 
+        PatientStatus oldStatus = record.getPatientStatus();
+
         record.setNotes(errorExplanation.trim());
         record.setPatientStatus(PatientStatus.ERROR);
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "CASE_ERROR",
+                "Error reported for "
+                        + savedRecord.getPatientLastName() + ", "
+                        + savedRecord.getPatientFirstName(),
+                oldStatus != null ? oldStatus.name() : null,
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity updateImekaStatus(
@@ -563,8 +578,25 @@ public class CaseRecordService {
             );
         }
 
+        PatientStatus oldStatus = record.getPatientStatus();
+
         record.setPatientStatus(PatientStatus.PROCESSING);
-        return repository.save(record);
+
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "RETURNED_TO_PROCESSING",
+                "Error resolved, "
+                        + savedRecord.getPatientLastName() + ", "
+                        + savedRecord.getPatientFirstName()
+                        + " returned to Processing",
+                oldStatus.name(),
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity updateSummaryIdentityFields(
