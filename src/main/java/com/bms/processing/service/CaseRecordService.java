@@ -566,13 +566,29 @@ public class CaseRecordService {
             );
         }
 
+        PatientStatus oldStatus = record.getPatientStatus();
+
         record.setPatientStatus(PatientStatus.COMPLETED);
 
         if (record.getCompletedDate() == null) {
             record.setCompletedDate(LocalDateTime.now());
         }
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "CASE_COMPLETED",
+                "Case completed for "
+                        + savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName(),
+                oldStatus.name(),
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity updateInvoiceSent(CaseRecordEntity record, boolean invoiceSent) {
