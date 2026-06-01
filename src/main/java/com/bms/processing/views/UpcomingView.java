@@ -7,6 +7,9 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.SiteDialog;
+import com.bms.processing.entity.SiteEntity;
+import com.bms.processing.service.SiteService;
+import com.bms.processing.service.AuditEventService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -21,8 +24,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.bms.processing.entity.SiteEntity;
-import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import jakarta.annotation.security.PermitAll;
 
@@ -36,12 +37,17 @@ public class UpcomingView extends VerticalLayout {
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
+    //Audit logging svc
+    private final AuditEventService auditEventService;
+
     public UpcomingView(
-            CaseRecordService caseRecordService,
-            SiteService siteService
+                CaseRecordService caseRecordService,
+                SiteService siteService,
+                AuditEventService auditEventService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
+        this.auditEventService = auditEventService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -346,6 +352,18 @@ public class UpcomingView extends VerticalLayout {
                 record.setPatientStatus(PatientStatus.UPCOMING);
 
                 caseRecordService.createUpcomingCase(record);
+
+                //audit log
+                auditEventService.logEvent(
+                        record.getId(),
+                        "PATIENT_CREATED",
+                        "Patient created in Upcoming queue",
+                        null,
+                        record.getPatientLastName() + ", "
+                                + record.getPatientFirstName(),
+                        "SYSTEM"
+                );
+
                 refreshUpcomingGrid();
                 dialog.close();
             } catch (InvalidWorkflowTransitionException ex) {
