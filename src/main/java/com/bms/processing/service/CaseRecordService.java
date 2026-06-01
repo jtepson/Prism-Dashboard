@@ -112,10 +112,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_FINALIZED",
-                "Case finalized for "
-                        + savedRecord.getPatientLastName()
-                        + ", "
-                        + savedRecord.getPatientFirstName(),
+                "Case completed for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -152,9 +149,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_ERROR",
-                "Error reported for "
-                        + savedRecord.getPatientLastName() + ", "
-                        + savedRecord.getPatientFirstName(),
+                "Error reported for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus != null ? oldStatus.name() : null,
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -508,9 +503,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "IMAGES_RECEIVED",
-                savedRecord.getPatientLastName() + ", "
-                        + savedRecord.getPatientFirstName()
-                        + " images received",
+                "Images received for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -537,9 +530,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "PROCESSING_STARTED",
-                savedRecord.getPatientLastName() + ", "
-                        + savedRecord.getPatientFirstName()
-                        + " processing started",
+                "Processing started for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -579,10 +570,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_COMPLETED",
-                "Case completed for "
-                        + savedRecord.getPatientLastName()
-                        + ", "
-                        + savedRecord.getPatientFirstName(),
+                "Case completed for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -626,10 +614,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "RETURNED_TO_PROCESSING",
-                "Error resolved, "
-                        + savedRecord.getPatientLastName() + ", "
-                        + savedRecord.getPatientFirstName()
-                        + " returned to Processing",
+                "Error resolved for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName() + ", returned to Processing",
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
@@ -693,7 +678,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "PATIENT_CREATED",
-                "Patient created in Upcoming queue",
+                "Patient created: " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 null,
                 savedRecord.getPatientLastName() + ", "
                         + savedRecord.getPatientFirstName(),
