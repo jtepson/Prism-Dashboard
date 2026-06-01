@@ -490,9 +490,24 @@ public class CaseRecordService {
             );
         }
 
+        PatientStatus oldStatus = record.getPatientStatus();
+
         record.setPatientStatus(PatientStatus.PROCESSING);
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "PROCESSING_STARTED",
+                savedRecord.getPatientLastName() + ", "
+                        + savedRecord.getPatientFirstName()
+                        + " processing started",
+                oldStatus.name(),
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity markCompleted(CaseRecordEntity record) {
