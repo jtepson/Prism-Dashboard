@@ -14,9 +14,14 @@ import java.util.List;
 public class CaseRecordService {
 
     private final CaseRecordRepository repository;
+    private final AuditEventService auditEventService;
 
-    public CaseRecordService(CaseRecordRepository repository) {
+    public CaseRecordService(
+            CaseRecordRepository repository,
+            AuditEventService auditEventService
+    ) {
         this.repository = repository;
+        this.auditEventService = auditEventService;
     }
 
     public List<CaseRecordEntity> findAll() {
@@ -416,6 +421,9 @@ public class CaseRecordService {
     }
     
     public CaseRecordEntity markImagesReceived(CaseRecordEntity record) {
+        
+        //saving pt status in db for audit logging purposes
+        PatientStatus oldStatus = record.getPatientStatus();
         validateRecord(record);
 
         if (record.getPatientStatus() != PatientStatus.UPCOMING
@@ -457,7 +465,20 @@ public class CaseRecordService {
             record.setNeuroreaderErrorNote(null);
         }
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "IMAGES_RECEIVED",
+                savedRecord.getPatientLastName() + ", "
+                        + savedRecord.getPatientFirstName()
+                        + " images received",
+                oldStatus.name(),
+                savedRecord.getPatientStatus().name(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity startProcessing(CaseRecordEntity record) {
@@ -581,7 +602,19 @@ public class CaseRecordService {
         clearProcessingFields(record);
         normalizeThirdPartyDefaults(record);
 
-        return repository.save(record);
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logEvent(
+                savedRecord.getId(),
+                "PATIENT_CREATED",
+                "Patient created in Upcoming queue",
+                null,
+                savedRecord.getPatientLastName() + ", "
+                        + savedRecord.getPatientFirstName(),
+                "SYSTEM"
+        );
+
+        return savedRecord;
     }
 
     private String trimToNull(String value) {

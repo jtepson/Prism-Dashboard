@@ -9,7 +9,6 @@ import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.SiteDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
-import com.bms.processing.service.AuditEventService;
 import com.bms.processing.model.PatientStatus;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -38,17 +37,12 @@ public class UpcomingView extends VerticalLayout {
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
-    //Audit logging svc
-    private final AuditEventService auditEventService;
-
     public UpcomingView(
                 CaseRecordService caseRecordService,
-                SiteService siteService,
-                AuditEventService auditEventService
+                SiteService siteService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
-        this.auditEventService = auditEventService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -129,26 +123,13 @@ public class UpcomingView extends VerticalLayout {
             Button markReceivedButton = new Button("Mark Received");
             markReceivedButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
                 
+            //Updated listener, audit logging will now be found in caserecordservice 6012026
             markReceivedButton.addClickListener(event -> {
                 try {
 
                         PatientStatus oldStatus = record.getPatientStatus();
 
                         caseRecordService.markImagesReceived(record);
-
-                        auditEventService.logEvent(
-                                record.getId(),
-                                "IMAGES_RECEIVED",
-                                record.getPatientLastName() + ", "
-                                        + record.getPatientFirstName()
-                                        + " images received",
-                                oldStatus != null ? oldStatus.name() : null,
-                                record.getPatientStatus() != null
-                                        ? record.getPatientStatus().name()
-                                        : null,
-                                "SYSTEM"
-                        );
-
                         refreshUpcomingGrid();
 
                 } catch (InvalidWorkflowTransitionException ex) {
@@ -371,17 +352,6 @@ public class UpcomingView extends VerticalLayout {
                 record.setPatientStatus(PatientStatus.UPCOMING);
 
                 caseRecordService.createUpcomingCase(record);
-
-                //audit log
-                auditEventService.logEvent(
-                        record.getId(),
-                        "PATIENT_CREATED",
-                        "Patient created in Upcoming queue",
-                        null,
-                        record.getPatientLastName() + ", "
-                                + record.getPatientFirstName(),
-                        "SYSTEM"
-                );
 
                 refreshUpcomingGrid();
                 dialog.close();

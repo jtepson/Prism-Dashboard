@@ -5,6 +5,7 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.repository.CaseRecordRepository;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
+import com.bms.processing.service.AuditEventService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,12 +20,18 @@ import static org.mockito.Mockito.*;
 class CaseRecordServiceTest {
 
     private CaseRecordRepository repository;
+    private AuditEventService auditEventService;
     private CaseRecordService caseRecordService;
 
     @BeforeEach
     void setUp() {
         repository = mock(CaseRecordRepository.class);
-        caseRecordService = new CaseRecordService(repository);
+        auditEventService = mock(AuditEventService.class);
+
+        caseRecordService = new CaseRecordService(
+                repository,
+                auditEventService
+        );
 
         when(repository.save(any(CaseRecordEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
