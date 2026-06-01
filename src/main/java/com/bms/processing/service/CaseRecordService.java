@@ -124,6 +124,13 @@ public class CaseRecordService {
         record.setNotes(errorExplanation.trim());
         record.setPatientStatus(PatientStatus.ERROR);
 
+        if (record.getPatientStatus() != PatientStatus.ACQUIRED
+                && record.getPatientStatus() != PatientStatus.PROCESSING) {
+            throw new InvalidWorkflowTransitionException(
+                    "Only ACQUIRED or PROCESSING cases can be moved to Errors."
+            );
+        }
+
         CaseRecordEntity savedRecord = repository.save(record);
 
         auditEventService.logEvent(
