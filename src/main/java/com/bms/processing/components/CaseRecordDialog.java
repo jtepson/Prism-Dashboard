@@ -6,6 +6,8 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.entity.SiteEntity;
+import com.bms.processing.entity.AuditEventEntity;
+import com.bms.processing.service.AuditEventService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -22,9 +24,12 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CaseRecordDialog extends Dialog {
 
@@ -38,21 +43,24 @@ public class CaseRecordDialog extends Dialog {
     }
     
     private final CaseRecordService caseRecordService;
+    private final AuditEventService auditEventService;
     private final SiteService siteService;
     private final CaseRecordEntity record;
     private final Mode mode;
     private final Runnable afterSave;
 
     public CaseRecordDialog(
-            CaseRecordEntity record,
-            CaseRecordService caseRecordService,
-            Mode mode,
-            Runnable afterSave,
-            SiteService siteService
+                CaseRecordEntity record,
+                CaseRecordService caseRecordService,
+                Mode mode,
+                Runnable afterSave,
+                SiteService siteService,
+                AuditEventService auditEventService
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
+        this.auditEventService = auditEventService;
         this.mode = mode;
         this.afterSave = afterSave;
 

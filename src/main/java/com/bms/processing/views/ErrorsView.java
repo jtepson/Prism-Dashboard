@@ -6,6 +6,8 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.service.AuditEventService;
+import com.bms.processing.entity.AuditEventEntity;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -27,11 +29,16 @@ import jakarta.annotation.security.PermitAll;
 public class ErrorsView extends VerticalLayout {
 
     private final CaseRecordService caseRecordService;
+    private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
-    public ErrorsView(CaseRecordService caseRecordService) {
-        this.caseRecordService = caseRecordService;
+    public ErrorsView(
+            CaseRecordService caseRecordService,
+            AuditEventService auditEventService
+    ) {
+            this.caseRecordService = caseRecordService;
+            this.auditEventService = auditEventService;
 
         setSizeFull();
         setPadding(true);
@@ -53,11 +60,12 @@ public class ErrorsView extends VerticalLayout {
 
         grid.addItemClickListener(event ->
                 new CaseRecordDialog(
-                    event.getItem(),
-                    caseRecordService,
-                    CaseRecordDialog.Mode.ERRORS,
-                    this::refreshErrorsGrid,
-                    null
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.ERRORS,
+                        this::refreshErrorsGrid,
+                        null,
+                        auditEventService
                 ).open()
         );
 

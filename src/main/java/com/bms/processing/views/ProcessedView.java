@@ -6,6 +6,8 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.service.AuditEventService;
+import com.bms.processing.entity.AuditEventEntity;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -26,11 +28,16 @@ import jakarta.annotation.security.PermitAll;
 public class ProcessedView extends VerticalLayout {
 
     private final CaseRecordService caseRecordService;
+    private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
-    public ProcessedView(CaseRecordService caseRecordService) {
-        this.caseRecordService = caseRecordService;
+    public ProcessedView(
+            CaseRecordService caseRecordService,
+            AuditEventService auditEventService
+    ) {
+            this.caseRecordService = caseRecordService;
+            this.auditEventService = auditEventService;
 
         setSizeFull();
         setPadding(true);
@@ -51,14 +58,15 @@ public class ProcessedView extends VerticalLayout {
         refreshProcessedGrid();
         
         grid.addItemClickListener(event ->
-            new CaseRecordDialog(
-                event.getItem(),
-                caseRecordService,
-                CaseRecordDialog.Mode.PROCESSED,
-                this::refreshProcessedGrid,
-                null
-            ).open()
-    );
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.PROCESSED,
+                        this::refreshProcessedGrid,
+                        null,
+                        auditEventService
+                ).open()
+        );
 
         add(header, subtitle, searchField, grid);
         expand(grid);

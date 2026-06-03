@@ -263,7 +263,15 @@ vaadin-grid.interactive-grid::part(body-cell) {
     cursor: pointer;
 }
 
+vaadin-grid.interactive-grid::part(row):hover {
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
 vaadin-grid.interactive-grid::part(row):hover::part(body-cell) {
+    background-color: rgba(37, 99, 235, 0.08);
+}
+
+vaadin-grid.interactive-grid::part(body-cell):hover {
     background-color: rgba(37, 99, 235, 0.08);
 }
 

@@ -758,7 +758,8 @@ public class SummaryView extends VerticalLayout {
                         caseRecordService,
                         CaseRecordDialog.Mode.SUMMARY,
                         this::rebuildDashboard,
-                        null
+                        null,
+                        auditEventService
                 ).open()
         );
         return grid;
@@ -1583,7 +1584,8 @@ public class SummaryView extends VerticalLayout {
                                 (dialogMode == CaseRecordDialog.Mode.UPCOMING
                                         || dialogMode == CaseRecordDialog.Mode.PROCESSING)
                                         ? siteService
-                                        : null
+                                        : null,
+                                auditEventService
                         );
 
                         dialog.addDetachListener(event -> {

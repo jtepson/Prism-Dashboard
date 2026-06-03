@@ -6,6 +6,8 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.service.AuditEventService;
+import com.bms.processing.entity.AuditEventEntity;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -26,11 +28,16 @@ import java.time.LocalDateTime;
 public class CompletedView extends VerticalLayout {
 
     private final CaseRecordService caseRecordService;
+    private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
-    public CompletedView(CaseRecordService caseRecordService) {
-        this.caseRecordService = caseRecordService;
+    public CompletedView(
+            CaseRecordService caseRecordService,
+            AuditEventService auditEventService
+    ) {
+            this.caseRecordService = caseRecordService;
+            this.auditEventService = auditEventService;
 
         setSizeFull();
         setPadding(true);
@@ -52,11 +59,12 @@ public class CompletedView extends VerticalLayout {
 
         grid.addItemClickListener(event ->
                 new CaseRecordDialog(
-                    event.getItem(),
-                    caseRecordService,
-                    CaseRecordDialog.Mode.COMPLETED,
-                    this::refreshCompletedGrid,
-                    null
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.COMPLETED,
+                        this::refreshCompletedGrid,
+                        null,
+                        auditEventService
                 ).open()
         );
 

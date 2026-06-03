@@ -9,6 +9,7 @@ import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.SiteDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
+import com.bms.processing.service.AuditEventService;
 import com.bms.processing.model.PatientStatus;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -34,15 +35,18 @@ public class UpcomingView extends VerticalLayout {
 
     private final SiteService siteService;
     private final CaseRecordService caseRecordService;
+    private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
-                SiteService siteService
+                SiteService siteService,
+                AuditEventService auditEventService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
+        this.auditEventService = auditEventService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -69,13 +73,14 @@ public class UpcomingView extends VerticalLayout {
         refreshUpcomingGrid();
 
         grid.addItemClickListener(event ->
-            new CaseRecordDialog(
-                    event.getItem(),
-                    caseRecordService,
-                    CaseRecordDialog.Mode.UPCOMING,
-                    this::refreshUpcomingGrid,
-                    siteService
-            ).open()
+                new CaseRecordDialog(
+                        event.getItem(),
+                        caseRecordService,
+                        CaseRecordDialog.Mode.UPCOMING,
+                        this::refreshUpcomingGrid,
+                        siteService,
+                        auditEventService
+                ).open()
         );
 
         add(headerRow, subtitle, searchField, grid);

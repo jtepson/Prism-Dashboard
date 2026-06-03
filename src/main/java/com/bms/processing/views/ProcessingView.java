@@ -9,6 +9,8 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.service.AuditEventService;
+import com.bms.processing.entity.AuditEventEntity;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -46,16 +48,19 @@ import java.time.LocalDateTime;
 public class ProcessingView extends VerticalLayout {
 
     private final CaseRecordService caseRecordService;
+	private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
 	private final TextField searchField = new TextField();
 	private final SiteService siteService;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
-			SiteService siteService
+			SiteService siteService,
+			AuditEventService auditEventService
 	) {
         this.caseRecordService = caseRecordService;
 		this.siteService = siteService;
+		this.auditEventService = auditEventService;
 		setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -72,13 +77,14 @@ public class ProcessingView extends VerticalLayout {
 		refreshProcessingGrid();
 
 		grid.addItemClickListener(event ->
-			new CaseRecordDialog(
-                event.getItem(),
-                caseRecordService,
-                CaseRecordDialog.Mode.PROCESSING,
-                this::refreshProcessingGrid,
-				siteService
-            ).open()
+				new CaseRecordDialog(
+						event.getItem(),
+						caseRecordService,
+						CaseRecordDialog.Mode.PROCESSING,
+						this::refreshProcessingGrid,
+						siteService,
+						auditEventService
+				).open()
 		);
 
         add(searchField, grid);
