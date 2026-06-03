@@ -318,6 +318,43 @@ public class CaseRecordDialog extends Dialog {
         Details notesDetails = new Details("Notes", notesLayout);
         notesDetails.setOpened(false);
 
+        //activity section for pt history
+        VerticalLayout historyLayout = new VerticalLayout();
+        historyLayout.setPadding(false);
+        historyLayout.setSpacing(false);
+        historyLayout.setWidthFull();
+
+        var auditEvents = auditEventService.getCaseEvents(record.getId());
+
+        if (auditEvents.isEmpty()) {
+
+        historyLayout.add(
+                new Span("No activity recorded.")
+        );
+
+        } else {
+
+        auditEvents.forEach(event -> {
+
+                Span eventText = new Span(
+                        formatActivityTime(event.getCreatedAt())
+                                + "  "
+                                + event.getMessage()
+                );
+
+                eventText.getStyle()
+                        .set("padding", "0.35rem 0")
+                        .set("display", "block");
+
+                historyLayout.add(eventText);
+        });
+        }
+
+        Details activityHistoryDetails =
+                new Details("Activity History", historyLayout);
+
+        activityHistoryDetails.setOpened(false);
+
         VerticalLayout content = new VerticalLayout();
         content.add(patientDetails);
         switch (mode) {
@@ -325,7 +362,8 @@ public class CaseRecordDialog extends Dialog {
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
-                        notesDetails
+                        notesDetails,
+                        activityHistoryDetails
                 );
             }
 
@@ -365,7 +403,8 @@ public class CaseRecordDialog extends Dialog {
                 content.add(
                         workflowDetails,
                         thirdPartyDetails,
-                        notesDetails
+                        notesDetails,
+                        activityHistoryDetails
                 );
             }
             case PROCESSED -> {
@@ -392,7 +431,8 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         bmsReviewDetails,
-                        notesDetails
+                        notesDetails,
+                        activityHistoryDetails
                 );
                 }
             case COMPLETED -> {
@@ -418,7 +458,8 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         archiveDetails,
-                        notesDetails
+                        notesDetails,
+                        activityHistoryDetails
                 );
             }
             case ERRORS -> {
@@ -451,7 +492,8 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         errorReviewDetails,
-                        notesDetails
+                        notesDetails,
+                        activityHistoryDetails
                 );
             }
         }
@@ -631,6 +673,32 @@ public class CaseRecordDialog extends Dialog {
                 value.getYear() % 100,
                 value.getHour(),
                 value.getMinute()
+        );
+    }
+
+    //activity history helper
+    private String formatActivityTime(LocalDateTime value) {
+
+        if (value == null) {
+                return "";
+        }
+
+        int hour = value.getHour();
+        int minute = value.getMinute();
+
+        int displayHour = hour % 12;
+
+        if (displayHour == 0) {
+                displayHour = 12;
+        }
+
+        String amPm = hour >= 12 ? "PM" : "AM";
+
+        return String.format(
+                "%d:%02d %s",
+                displayHour,
+                minute,
+                amPm
         );
     }
 
