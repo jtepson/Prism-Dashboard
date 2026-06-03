@@ -40,6 +40,8 @@ import java.util.List;
 
 import javax.swing.GroupLayout.Alignment;
 
+import com.bms.processing.service.EmailService;
+import com.vaadin.flow.component.notification.Notification;
 
 @PageTitle("Summary")
 @PermitAll
@@ -102,14 +104,20 @@ public class SummaryView extends VerticalLayout {
     //Audit logging
     private final AuditEventService auditEventService;
 
+    //smtp emailing
+    private final EmailService emailService;
+    
+
     public SummaryView(
                 CaseRecordService caseRecordService,
                 SiteService siteService,
-                AuditEventService auditEventService
+                AuditEventService auditEventService,
+                EmailService emailService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
+        this.emailService = emailService;
 
         setSizeFull();
         setPadding(true);
@@ -282,7 +290,33 @@ public class SummaryView extends VerticalLayout {
                 optionsDialog.open();
         });
 
-        toolbarCard.add(optionsButton);
+        //Test email section, will remove
+        Button testEmailButton = new Button("Test Email");
+        testEmailButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        testEmailButton.addClickListener(event -> {
+                try {
+                        emailService.sendTestEmail(
+                                "jepperson@prismclinicalimaging.com"
+                        );
+
+                        Notification.show(
+                                "Test email sent.",
+                                3000,
+                                Notification.Position.BOTTOM_END
+                        );
+
+                } catch (Exception ex) {
+                        ex.printStackTrace();
+
+                        Notification.show(
+                                "Email failed: " + ex.getMessage(),
+                                7000,
+                                Notification.Position.BOTTOM_END
+                        );
+                }
+        });
+
+        toolbarCard.add(testEmailButton, optionsButton);
         return toolbarCard;
         }
 
