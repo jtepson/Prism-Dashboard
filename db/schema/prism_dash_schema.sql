@@ -116,6 +116,15 @@ CREATE TABLE audit_event (
     created_at timestamp
 );
 
+-- This creates table for email recipients for SMTP sending
+
+CREATE TABLE notification_recipient (
+    id BIGSERIAL PRIMARY KEY,
+    group_name character varying(100) NOT NULL,
+    email_address character varying(255) NOT NULL,
+    enabled boolean NOT NULL DEFAULT true
+);
+
 --
 -- Name: case_record case_record_pkey; Type: CONSTRAINT; Schema: public; Owner: bms
 --
