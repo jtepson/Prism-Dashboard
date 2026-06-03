@@ -6,6 +6,10 @@ import com.bms.processing.views.ProcessedView;
 import com.bms.processing.views.ProcessingView;
 import com.bms.processing.views.SummaryView;
 import com.bms.processing.views.UpcomingView;
+import com.bms.processing.views.manage.ManagePatientsView;
+import com.bms.processing.views.manage.ManageSitesView;
+import com.bms.processing.views.manage.ManageNotificationsView;
+import com.bms.processing.views.manage.ManageEmailTemplatesView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -93,7 +97,18 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Processed", ProcessedView.class, new Icon(VaadinIcon.CHECK_CIRCLE_O)));
         nav.addItem(new SideNavItem("Completed", CompletedView.class, new Icon(VaadinIcon.CHECK_CIRCLE)));
         nav.addItem(new SideNavItem("Errors", ErrorsView.class, new Icon(VaadinIcon.WARNING)));
-        nav.addItem(new SideNavItem("Settings", SummaryView.class, new Icon(VaadinIcon.COG_O)));
+        SideNavItem manage = new SideNavItem(
+                "Manage",
+                "",
+                new Icon(VaadinIcon.TOOLS)
+        );
+
+        manage.addItem(new SideNavItem("Patients", ManagePatientsView.class));
+        manage.addItem(new SideNavItem("Sites", ManageSitesView.class));
+        manage.addItem(new SideNavItem("Notification Groups", ManageNotificationsView.class));
+        manage.addItem(new SideNavItem("Email Templates", ManageEmailTemplatesView.class));
+
+        nav.addItem(manage);
 
         Scroller scroller = new Scroller(nav);
         scroller.setSizeFull();
