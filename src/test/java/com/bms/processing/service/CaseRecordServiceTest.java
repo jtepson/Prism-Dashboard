@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import com.bms.processing.service.NotificationService;
+
 class CaseRecordServiceTest {
 
     private CaseRecordRepository repository;
@@ -32,7 +34,8 @@ class CaseRecordServiceTest {
 
         caseRecordService = new CaseRecordService(
                 repository,
-                auditEventService
+                auditEventService,
+                notificationService
         );
 
         when(repository.save(any(CaseRecordEntity.class)))

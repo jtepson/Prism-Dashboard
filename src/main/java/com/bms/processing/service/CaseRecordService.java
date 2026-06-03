@@ -114,6 +114,7 @@ public class CaseRecordService {
 
         CaseRecordEntity savedRecord = repository.save(record);
 
+        //audit event
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_FINALIZED",
@@ -121,6 +122,13 @@ public class CaseRecordService {
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
+        );
+
+        //email trigger
+        notificationService.notifyCaseFinalized(
+                savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName()
         );
 
         return savedRecord;
@@ -151,6 +159,7 @@ public class CaseRecordService {
 
         CaseRecordEntity savedRecord = repository.save(record);
 
+        //audit event
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_ERROR",
@@ -158,6 +167,14 @@ public class CaseRecordService {
                 oldStatus != null ? oldStatus.name() : null,
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
+        );
+
+        //email trigger
+        notificationService.notifyCaseError(
+                savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName(),
+                errorExplanation.trim()
         );
 
         return savedRecord;
@@ -688,6 +705,7 @@ public class CaseRecordService {
 
         CaseRecordEntity savedRecord = repository.save(record);
 
+        //audit event
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "PATIENT_CREATED",
@@ -696,6 +714,13 @@ public class CaseRecordService {
                 savedRecord.getPatientLastName() + ", "
                         + savedRecord.getPatientFirstName(),
                 "SYSTEM"
+        );
+
+        //email trigger
+        notificationService.notifyPatientCreated(
+                savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName()
         );
 
         return savedRecord;

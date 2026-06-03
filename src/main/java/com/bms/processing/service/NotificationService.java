@@ -22,15 +22,6 @@ public class NotificationService {
         emailService.sendTestEmail(to);
     }
 
-    //test sending method, removed personal email and made it db backed
-    public void notifyCaseCompleted(String patientName) {
-        sendToGroup(
-                "CASE_COMPLETED",
-                "Prism Dashboard: Case Completed",
-                "Case completed for " + patientName
-        );
-    }
-
     //group sending method
     public void sendToGroup(
             String groupName,
@@ -46,5 +37,38 @@ public class NotificationService {
                                 body
                         )
                 );
+    }
+
+    //test sending method, removed personal email and made it db backed
+    public void notifyCaseCompleted(String patientName) {
+        sendToGroup(
+                "CASE_COMPLETED",
+                "Prism Dashboard: Case Completed",
+                "Case completed for " + patientName
+        );
+    }
+
+    public void notifyPatientCreated(String patientName) {
+        sendToGroup(
+                "PATIENT_CREATED",
+                "Prism Dashboard: Patient Created",
+                "Patient created: " + patientName
+        );
+    }
+
+    public void notifyCaseFinalized(String patientName) {
+        sendToGroup(
+                "CASE_FINALIZED",
+                "Prism Dashboard: Patient Processed",
+                "Patient processed and ready for review: " + patientName
+        );
+    }
+
+    public void notifyCaseError(String patientName, String errorMessage) {
+        sendToGroup(
+                "CASE_ERROR",
+                "Prism Dashboard: Error Reported",
+                "Error reported for " + patientName + "\n\n" + errorMessage
+        );
     }
 }
