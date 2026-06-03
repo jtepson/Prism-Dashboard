@@ -14,4 +14,12 @@ public class NotificationService {
     public void sendTestNotification(String to) {
         emailService.sendTestEmail(to);
     }
+
+    public void notifyCaseCompleted(String patientName) {
+        emailService.sendEmail(
+                "jepperson@prismclinical.com",
+                "Prism Dashboard: Case Completed",
+                "Case completed for " + patientName
+        );
+    }
 }
