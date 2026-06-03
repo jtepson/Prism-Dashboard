@@ -296,7 +296,7 @@ public class SummaryView extends VerticalLayout {
         testEmailButton.addClickListener(event -> {
                 try {
                         emailService.sendTestEmail(
-                                "jepperson@prismclinicalimaging.com"
+                                "jepperson@prismclinical.com"
                         );
 
                         Notification.show(

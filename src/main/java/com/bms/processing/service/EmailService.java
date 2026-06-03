@@ -17,6 +17,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
 
         message.setTo(to);
+        message.setFrom("support@prismclinicalimaging.com");
         message.setSubject("Prism Dashboard Test Email");
         message.setText("Hello from Prism Dashboard SMTP test.");
 
