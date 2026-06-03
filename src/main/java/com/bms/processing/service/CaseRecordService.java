@@ -10,18 +10,23 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.management.Notification;
+
 @Service
 public class CaseRecordService {
 
     private final CaseRecordRepository repository;
     private final AuditEventService auditEventService;
+    private final NotificationService notificationService;
 
     public CaseRecordService(
             CaseRecordRepository repository,
-            AuditEventService auditEventService
+            AuditEventService auditEventService,
+            NotificationService notificationService
     ) {
         this.repository = repository;
         this.auditEventService = auditEventService;
+        this.notificationService = notificationService;
     }
 
     public List<CaseRecordEntity> findAll() {
@@ -567,6 +572,7 @@ public class CaseRecordService {
 
         CaseRecordEntity savedRecord = repository.save(record);
 
+        //trigger for audit event log
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "CASE_COMPLETED",
@@ -574,6 +580,13 @@ public class CaseRecordService {
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM"
+        );
+        
+        //trigger to send email
+        notificationService.notifyCaseCompleted(
+                savedRecord.getPatientLastName()
+                        + ", "
+                        + savedRecord.getPatientFirstName()
         );
 
         return savedRecord;
