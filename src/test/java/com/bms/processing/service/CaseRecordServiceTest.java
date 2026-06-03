@@ -22,11 +22,13 @@ class CaseRecordServiceTest {
     private CaseRecordRepository repository;
     private AuditEventService auditEventService;
     private CaseRecordService caseRecordService;
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
         repository = mock(CaseRecordRepository.class);
         auditEventService = mock(AuditEventService.class);
+        notificationService = mock(NotificationService.class);
 
         caseRecordService = new CaseRecordService(
                 repository,
