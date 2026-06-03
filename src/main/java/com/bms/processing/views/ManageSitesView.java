@@ -7,8 +7,11 @@ import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -44,6 +47,9 @@ public class ManageSitesView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
+        getStyle()
+                .set("background", "#f5f7fb");
+
         H2 title = new H2("Site Management");
         title.getStyle()
                 .set("margin", "0")
@@ -76,25 +82,50 @@ public class ManageSitesView extends VerticalLayout {
 
         searchField.setPlaceholder("Search sites...");
         searchField.setClearButtonVisible(true);
-        searchField.setWidth("420px");
+        searchField.setWidthFull();
         searchField.addValueChangeListener(event -> refreshSiteList());
 
         configureGrid();
         refreshGrid();
 
-        //Expanding grid formatting here
+        //Expanding grid formatting here, updated 6032026
         HorizontalLayout mainLayout = new HorizontalLayout();
-        mainLayout.setSizeFull();
+        mainLayout.setWidthFull();
+        mainLayout.setHeight("620px");
         mainLayout.setSpacing(true);
+        mainLayout.getStyle()
+            .set("gap", "1rem")
+            .set("align-items", "stretch");
 
-        VerticalLayout leftPanel = new VerticalLayout(searchField, siteList);
+        Span allSitesLabel = new Span("All Sites");
+        allSitesLabel.getStyle()
+                .set("font-weight", "700")
+                .set("font-size", "0.85rem")
+                .set("color", "#1e293b");
+
+        VerticalLayout leftPanel = new VerticalLayout(searchField, allSitesLabel, siteList);
         leftPanel.setWidth("320px");
-        leftPanel.setPadding(false);
+        leftPanel.setMinWidth("300px");
+        leftPanel.setMaxWidth("360px");
+        leftPanel.getStyle()
+                .set("background", "#ffffff")
+                .set("border", "1px solid #dbe3ee")
+                .set("border-radius", "14px")
+                .set("padding", "1rem")
+                .set("box-shadow", "0 2px 8px rgba(15, 23, 42, 0.04)");
+        leftPanel.setPadding(true);
         leftPanel.setSpacing(true);
 
         siteDetails.setWidthFull();
-        siteDetails.setPadding(false);
+        siteDetails.setPadding(true);
         siteDetails.setSpacing(true);
+        siteDetails.getStyle()
+                .set("background", "#ffffff")
+                .set("border", "1px solid #dbe3ee")
+                .set("border-radius", "14px")
+                .set("box-shadow", "0 2px 8px rgba(15, 23, 42, 0.04)")
+                .set("min-height", "420px")
+                .set("padding", "1.25rem");
 
         mainLayout.add(leftPanel, siteDetails);
         mainLayout.expand(siteDetails);
@@ -189,10 +220,17 @@ public class ManageSitesView extends VerticalLayout {
                 .forEach(site -> {
                     Button siteButton = new Button(site.getFacilityName());
                     siteButton.setWidthFull();
+                    siteButton.getStyle();
                     siteButton.getStyle()
                             .set("justify-content", "flex-start")
                             .set("border-radius", "10px")
-                            .set("font-weight", "600");
+                            .set("font-weight", "600")
+                            .set("background", selectedSite != null
+                                    && selectedSite.getId() != null
+                                    && selectedSite.getId().equals(site.getId())
+                                    ? "#dbeafe"
+                                    : "#f8fafc")
+                            .set("color", "#1d4ed8");
 
                     siteButton.addClickListener(event -> {
                         selectedSite = site;
@@ -236,14 +274,42 @@ public class ManageSitesView extends VerticalLayout {
         Button archiveButton = new Button("Archive Site");
         archiveButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        HorizontalLayout headerRow = new HorizontalLayout(siteTitle, editButton, archiveButton);
+        Span activeBadge = new Span("ACTIVE");
+        activeBadge.getStyle()
+                .set("background", "#dcfce7")
+                .set("color", "#15803d")
+                .set("border-radius", "999px")
+                .set("padding", "0.2rem 0.55rem")
+                .set("font-size", "0.72rem")
+                .set("font-weight", "800");
+
+        HorizontalLayout titleGroup = new HorizontalLayout(siteTitle, activeBadge);
+        titleGroup.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout actionGroup = new HorizontalLayout(editButton, archiveButton);
+        actionGroup.setSpacing(true);
+
+        HorizontalLayout headerRow = new HorizontalLayout(titleGroup, actionGroup);
         headerRow.setWidthFull();
         headerRow.setAlignItems(Alignment.CENTER);
         headerRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        HorizontalLayout cardRow = new HorizontalLayout();
+        Tabs tabs = new Tabs(
+                new Tab("Overview"),
+                new Tab("Contacts"),
+                new Tab("Notes")
+        );
+        tabs.getStyle()
+                .set("border-bottom", "1px solid #e2e8f0");
+
+        //Changing formatting of page to be a card
+        Div cardRow = new Div();
+        cardRow.getStyle()
+                .set("display", "grid")
+                .set("grid-template-columns", "repeat(4, minmax(240px, 1fr))")
+                .set("gap", "1rem")
+                .set("width", "100%");
         cardRow.setWidthFull();
-        cardRow.setSpacing(true);
 
         cardRow.add(
                 buildInfoCard(
@@ -260,10 +326,20 @@ public class ManageSitesView extends VerticalLayout {
                 buildInfoCard(
                         "Transfer Information",
                         "Transfer Method", site.getTransferMethod()
+                ),
+                buildInfoCard(
+                        "Status / Dates",
+                        "Status", "Active",
+                        "Date Added", "-",
+                        "Last Updated", "-"
+                ),
+                buildInfoCard(
+                        "Notes",
+                        "Notes", "-"
                 )
         );
 
-        siteDetails.add(headerRow, cardRow);
+        siteDetails.add(headerRow, tabs, cardRow);
     }
 
     private Component buildInfoCard(
@@ -273,6 +349,7 @@ public class ManageSitesView extends VerticalLayout {
         VerticalLayout card = new VerticalLayout();
         card.setPadding(true);
         card.setSpacing(false);
+        //This needs tweaked
         card.setWidthFull();
 
         card.getStyle()
