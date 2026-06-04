@@ -12,6 +12,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -71,7 +72,11 @@ public class ManageSitesView extends VerticalLayout {
         addSiteButton.addClickListener(event ->
                 new SiteDialog(
                         siteService,
-                        site -> refreshGrid()
+                        site -> {
+                            selectedSite = site;
+                            refreshSiteList();
+                            renderSiteDetails(site);
+                        }
                 ).open()
         );
 
@@ -234,6 +239,7 @@ public class ManageSitesView extends VerticalLayout {
 
                     siteButton.addClickListener(event -> {
                         selectedSite = site;
+                        refreshSiteList();
                         renderSiteDetails(site);
                     });
 
@@ -264,20 +270,33 @@ public class ManageSitesView extends VerticalLayout {
         Button editButton = new Button("Edit Site");
         editButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editButton.addClickListener(event ->
-                Notification.show(
-                        "Edit Site coming next.",
-                        3000,
-                        Notification.Position.BOTTOM_END
-                )
+                new SiteDialog(
+                        siteService,
+                        site,
+                        savedSite -> {
+                            selectedSite = savedSite;
+                            refreshSiteList();
+                            renderSiteDetails(savedSite);
+                        }
+                ).open()
         );
 
         Button archiveButton = new Button("Archive Site");
         archiveButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        archiveButton.addClickListener(event -> {
+            site.setActive(false);
+            SiteEntity saved = siteService.save(site);
+            selectedSite = saved;
+            refreshSiteList();
+            renderSiteDetails(saved);
+        });
 
-        Span activeBadge = new Span("ACTIVE");
+        boolean active = !Boolean.FALSE.equals(site.getActive());
+
+        Span activeBadge = new Span(active ? "ACTIVE" : "INACTIVE");
         activeBadge.getStyle()
-                .set("background", "#dcfce7")
-                .set("color", "#15803d")
+                .set("background", active ? "#dcfce7" : "#e2e8f0")
+                .set("color", active ? "#15803d" : "#475569")
                 .set("border-radius", "999px")
                 .set("padding", "0.2rem 0.55rem")
                 .set("font-size", "0.72rem")
@@ -294,15 +313,42 @@ public class ManageSitesView extends VerticalLayout {
         headerRow.setAlignItems(Alignment.CENTER);
         headerRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
+        //notes tab details
+        Tab overviewTab = new Tab("Overview");
+        Tab contactsTab = new Tab("Contacts");
+        Tab notesTab = new Tab("Notes");
+
         Tabs tabs = new Tabs(
-                new Tab("Overview"),
-                new Tab("Contacts"),
-                new Tab("Notes")
+                overviewTab,
+                contactsTab,
+                notesTab
         );
+
         tabs.getStyle()
                 .set("border-bottom", "1px solid #e2e8f0");
 
-        //Changing formatting of page to be a card
+        Div tabContent = new Div();
+        tabContent.setWidthFull();
+
+        tabs.addSelectedChangeListener(event -> {
+            tabContent.removeAll();
+
+            if (event.getSelectedTab() == overviewTab) {
+                tabContent.add(buildOverviewContent(site));
+            } else if (event.getSelectedTab() == contactsTab) {
+                tabContent.add(new Span("Contacts coming next."));
+            } else {
+                tabContent.add(buildNotesContent(site));
+            }
+        });
+
+        tabContent.add(buildOverviewContent(site));
+
+        siteDetails.add(headerRow, tabs, tabContent);
+    }
+
+    //Moving overview card
+    private Component buildOverviewContent(SiteEntity site) {
         Div cardRow = new Div();
         cardRow.getStyle()
                 .set("display", "grid")
@@ -329,17 +375,13 @@ public class ManageSitesView extends VerticalLayout {
                 ),
                 buildInfoCard(
                         "Status / Dates",
-                        "Status", "Active",
+                        "Status", Boolean.FALSE.equals(site.getActive()) ? "Inactive" : "Active",
                         "Date Added", "-",
                         "Last Updated", "-"
-                ),
-                buildInfoCard(
-                        "Notes",
-                        "Notes", "-"
                 )
         );
 
-        siteDetails.add(headerRow, tabs, cardRow);
+        return cardRow;
     }
 
     private Component buildInfoCard(
@@ -391,5 +433,32 @@ public class ManageSitesView extends VerticalLayout {
         }
 
         return card;
+    }
+
+    //Notes response and save feedback
+    private Component buildNotesContent(SiteEntity site) {
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setPadding(false);
+        wrapper.setSpacing(true);
+        wrapper.setWidthFull();
+
+        TextArea notesArea = new TextArea("Site Notes");
+
+        notesArea.setWidthFull();
+        notesArea.setMinHeight("220px");
+        notesArea.setValue(site.getNotes() == null ? "" : site.getNotes());
+
+        Button saveNotesButton = new Button("Save Notes");
+        saveNotesButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        saveNotesButton.addClickListener(event -> {
+            site.setNotes(notesArea.getValue());
+            SiteEntity saved = siteService.save(site);
+            selectedSite = saved;
+            Notification.show("Site notes saved.", 2500, Notification.Position.BOTTOM_END);
+        });
+
+        wrapper.add(notesArea, saveNotesButton);
+        return wrapper;
     }
 }

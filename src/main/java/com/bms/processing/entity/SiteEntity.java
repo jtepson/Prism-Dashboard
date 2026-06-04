@@ -94,4 +94,26 @@ public class SiteEntity {
     public void setMagnetStrength(String magnetStrength) {
         this.magnetStrength = magnetStrength;
     }
+
+    @Column(name = "active")
+    private Boolean active = true;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }

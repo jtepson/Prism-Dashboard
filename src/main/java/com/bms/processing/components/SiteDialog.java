@@ -17,30 +17,38 @@ public class SiteDialog extends Dialog {
 
     public SiteDialog(
             SiteService siteService,
+            SiteEntity existingSite,
             Consumer<SiteEntity> onSiteSaved
     ) {
-        setHeaderTitle("Add Site");
+        boolean editMode = existingSite != null;
+
+        setHeaderTitle(editMode ? "Edit Site" : "Add Site");
         setWidth("700px");
 
         TextField facilityName = new TextField("Facility Name");
-        facilityName.setWidthFull();
-
         TextField address = new TextField("Address");
-        address.setWidthFull();
-
         TextField primaryContact = new TextField("Primary Contact");
-        primaryContact.setWidthFull();
-
         TextField transferMethod = new TextField("Transfer Method");
-        transferMethod.setWidthFull();
-
         Checkbox imekaCertified = new Checkbox("IMEKA Certified");
-
         TextField scannerBrand = new TextField("Scanner Brand");
-        scannerBrand.setWidthFull();
-
         TextField magnetStrength = new TextField("Magnet Strength");
+
+        facilityName.setWidthFull();
+        address.setWidthFull();
+        primaryContact.setWidthFull();
+        transferMethod.setWidthFull();
+        scannerBrand.setWidthFull();
         magnetStrength.setWidthFull();
+
+        if (editMode) {
+            facilityName.setValue(nullToEmpty(existingSite.getFacilityName()));
+            address.setValue(nullToEmpty(existingSite.getAddress()));
+            primaryContact.setValue(nullToEmpty(existingSite.getPrimaryContact()));
+            transferMethod.setValue(nullToEmpty(existingSite.getTransferMethod()));
+            imekaCertified.setValue(Boolean.TRUE.equals(existingSite.getImekaCertified()));
+            scannerBrand.setValue(nullToEmpty(existingSite.getScannerBrand()));
+            magnetStrength.setValue(nullToEmpty(existingSite.getMagnetStrength()));
+        }
 
         FormLayout formLayout = new FormLayout();
         formLayout.setWidthFull();
@@ -61,28 +69,37 @@ public class SiteDialog extends Dialog {
 
         Button cancelButton = new Button("Cancel", e -> close());
 
-        Button saveButton = new Button("Save");
+        Button saveButton = new Button(editMode ? "Save Changes" : "Save");
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         saveButton.addClickListener(event -> {
-            if (facilityName.getValue().trim().isEmpty()) {
+            String name = facilityName.getValue().trim();
+
+            if (name.isEmpty()) {
                 showError("Facility name is required.");
                 return;
             }
 
-            if (siteService.exists(facilityName.getValue().trim())) {
+            Long currentId = editMode ? existingSite.getId() : null;
+
+            if (siteService.existsForOtherSite(name, currentId)) {
                 showError("A site with this facility name already exists.");
                 return;
             }
 
-            SiteEntity site = new SiteEntity();
-            site.setFacilityName(facilityName.getValue().trim());
+            SiteEntity site = editMode ? existingSite : new SiteEntity();
+
+            site.setFacilityName(name);
             site.setAddress(address.getValue().trim());
             site.setPrimaryContact(primaryContact.getValue().trim());
             site.setTransferMethod(transferMethod.getValue().trim());
             site.setImekaCertified(imekaCertified.getValue());
             site.setScannerBrand(scannerBrand.getValue().trim());
             site.setMagnetStrength(magnetStrength.getValue().trim());
+
+            if (site.getActive() == null) {
+                site.setActive(true);
+            }
 
             SiteEntity saved = siteService.save(site);
 
@@ -95,6 +112,17 @@ public class SiteDialog extends Dialog {
 
         add(formLayout);
         getFooter().add(cancelButton, saveButton);
+    }
+
+    public SiteDialog(
+            SiteService siteService,
+            Consumer<SiteEntity> onSiteSaved
+    ) {
+        this(siteService, null, onSiteSaved);
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private void showError(String message) {

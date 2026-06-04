@@ -31,6 +31,15 @@ public class SiteService {
         return repository.existsByFacilityNameIgnoreCase(facilityName);
     }
 
+    public boolean existsForOtherSite(String facilityName, Long currentSiteId) {
+        return repository.findAll().stream()
+                .anyMatch(site ->
+                        site.getFacilityName() != null
+                                && site.getFacilityName().equalsIgnoreCase(facilityName)
+                                && (currentSiteId == null || !site.getId().equals(currentSiteId))
+                );
+    }
+
     public List<SiteEntity> search(String text) {
         return repository.findByFacilityNameContainingIgnoreCaseOrderByFacilityNameAsc(text);
     }
