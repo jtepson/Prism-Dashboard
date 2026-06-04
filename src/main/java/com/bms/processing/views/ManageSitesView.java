@@ -223,27 +223,16 @@ public class ManageSitesView extends VerticalLayout {
                                 || contains(site.getMagnetStrength(), filter)
                 )
                 .forEach(site -> {
-                    Button siteButton = new Button(site.getFacilityName());
-                    siteButton.setWidthFull();
-                    siteButton.getStyle();
-                    siteButton.getStyle()
-                            .set("justify-content", "flex-start")
-                            .set("border-radius", "10px")
-                            .set("font-weight", "600")
-                            .set("background", selectedSite != null
-                                    && selectedSite.getId() != null
-                                    && selectedSite.getId().equals(site.getId())
-                                    ? "#dbeafe"
-                                    : "#f8fafc")
-                            .set("color", "#1d4ed8");
+                    //Changing button style for site list, didn't like the "button" look, wanted a seemless list look 6042026
+                    Component siteCard = buildSiteListCard(site);
 
-                    siteButton.addClickListener(event -> {
+                    siteCard.getElement().addEventListener("click", event -> {
                         selectedSite = site;
                         refreshSiteList();
                         renderSiteDetails(site);
                     });
 
-                    siteList.add(siteButton);
+                    siteList.add(siteCard);
                 });
 
         if (selectedSite == null && siteList.getComponentCount() > 0) {
@@ -253,6 +242,87 @@ public class ManageSitesView extends VerticalLayout {
         }
     }
 
+    private Component buildSiteListCard(SiteEntity site) {
+        boolean selected = selectedSite != null
+                && selectedSite.getId() != null
+                && selectedSite.getId().equals(site.getId());
+
+        boolean active = !Boolean.FALSE.equals(site.getActive());
+
+        VerticalLayout card = new VerticalLayout();
+        card.setWidthFull();
+        card.setPadding(false);
+        card.setSpacing(false);
+
+        card.getStyle()
+                .set("background", selected ? "#eef6ff" : "#ffffff")
+                .set("border", selected ? "1px solid #3b82f6" : "1px solid #e2e8f0")
+                .set("border-radius", "14px")
+                .set("padding", "0.85rem")
+                .set("cursor", "pointer")
+                .set("box-shadow", selected
+                        ? "0 6px 16px rgba(59, 130, 246, 0.16)"
+                        : "0 2px 6px rgba(15, 23, 42, 0.04)");
+
+        Span name = new Span(site.getFacilityName() == null ? "Unnamed Site" : site.getFacilityName());
+        name.getStyle()
+                .set("font-weight", "800")
+                .set("font-size", "0.95rem")
+                .set("color", "#0f172a");
+
+        Span badge = new Span(active ? "ACTIVE" : "INACTIVE");
+        badge.getStyle()
+                .set("background", active ? "#dcfce7" : "#e2e8f0")
+                .set("color", active ? "#15803d" : "#475569")
+                .set("border-radius", "999px")
+                .set("padding", "0.15rem 0.5rem")
+                .set("font-size", "0.68rem")
+                .set("font-weight", "800");
+
+        HorizontalLayout topRow = new HorizontalLayout(name, badge);
+        topRow.setWidthFull();
+        topRow.setAlignItems(Alignment.CENTER);
+        topRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        Span scanner = new Span(formatScanner(site));
+        scanner.getStyle()
+                .set("font-size", "0.78rem")
+                .set("color", "#64748b")
+                .set("font-weight", "600")
+                .set("margin-top", "0.35rem");
+
+        Span transfer = new Span(site.getTransferMethod() == null || site.getTransferMethod().isBlank()
+                ? "Transfer method not set"
+                : site.getTransferMethod());
+        transfer.getStyle()
+                .set("font-size", "0.78rem")
+                .set("color", "#334155")
+                .set("margin-top", "0.15rem");
+
+        card.add(topRow, scanner, transfer);
+
+        return card;
+    }
+
+    private String formatScanner(SiteEntity site) {
+        String brand = site.getScannerBrand();
+        String magnet = site.getMagnetStrength();
+
+        if ((brand == null || brand.isBlank()) && (magnet == null || magnet.isBlank())) {
+            return "Scanner not set";
+        }
+
+        if (brand == null || brand.isBlank()) {
+            return magnet;
+        }
+
+        if (magnet == null || magnet.isBlank()) {
+            return brand;
+        }
+
+        return brand + " • " + magnet;
+    }
+    
     private void renderSiteDetails(SiteEntity site) {
         siteDetails.removeAll();
 
