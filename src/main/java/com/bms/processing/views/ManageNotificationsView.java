@@ -18,6 +18,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -360,11 +362,52 @@ public class ManageNotificationsView extends VerticalLayout {
             openRecipientDialog(null, row.groupName());
         });
 
+        Tab recipientsTab = new Tab("Recipients");
+        Tab settingsTab = new Tab("Settings");
+        Tab previewTab = new Tab("Email Preview");
+        Tab activityTab = new Tab("Activity");
+
+        Tabs tabs = new Tabs(
+                recipientsTab,
+                settingsTab,
+                previewTab,
+                activityTab
+        );
+
+        tabs.setWidthFull();
+
+        VerticalLayout recipientsContent = new VerticalLayout(
+                addRecipientButton,
+                recipientGrid
+        );
+
+        recipientsContent.setPadding(false);
+        recipientsContent.setSpacing(true);
+
+        Span placeholder = new Span("This section will be added in a later step.");
+        placeholder.getStyle()
+                .set("color", "#64748b")
+                .set("font-size", "0.9rem");
+
+        VerticalLayout tabContent = new VerticalLayout(recipientsContent);
+        tabContent.setPadding(false);
+        tabContent.setSpacing(true);
+
+        tabs.addSelectedChangeListener(event -> {
+            tabContent.removeAll();
+
+            if (event.getSelectedTab() == recipientsTab) {
+                tabContent.add(recipientsContent);
+            } else {
+                tabContent.add(placeholder);
+            }
+        });
+
         VerticalLayout leftSide = new VerticalLayout(
                 title,
                 description,
-                addRecipientButton,
-                recipientGrid
+                tabs,
+                tabContent
         );
 
         leftSide.setPadding(false);
@@ -386,7 +429,7 @@ public class ManageNotificationsView extends VerticalLayout {
         detailsPanel.getElement()
                 .getStyle()
                 .set("min-width", "280px");
-                
+
         content.setPadding(false);
         content.setSpacing(true);
 
