@@ -121,10 +121,35 @@ public class ManageNotificationsView extends VerticalLayout {
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
-        grid.addColumn(row -> "Active")
-                .setHeader("Status")
-                .setAutoWidth(true)
-                .setFlexGrow(0);
+        grid.addComponentColumn(row -> {
+
+            int enabledCount = (int) getRecipientsForGroup(row.groupName())
+                    .stream()
+                    .filter(r -> Boolean.TRUE.equals(r.getEnabled()))
+                    .count();
+
+            Span badge = new Span(
+                    enabledCount > 0 ? "Active" : "Inactive"
+            );
+
+            badge.getStyle()
+                    .set("padding", "4px 10px")
+                    .set("border-radius", "999px")
+                    .set("font-size", "0.75rem")
+                    .set("font-weight", "600")
+                    .set("background",
+                            enabledCount > 0
+                                    ? "#dcfce7"
+                                    : "#fee2e2")
+                    .set("color",
+                            enabledCount > 0
+                                    ? "#166534"
+                                    : "#991b1b");
+
+            return badge;
+
+        }).setHeader("Status")
+        .setAutoWidth(true);
 
         grid.addComponentColumn(this::buildActionsCell)
                 .setHeader("Actions")
@@ -169,28 +194,38 @@ public class ManageNotificationsView extends VerticalLayout {
     }
 
     private Component buildRecipientsCell(NotificationRuleRow row) {
-        List<NotificationRecipientEntity> recipients = getRecipientsForGroup(row.groupName());
 
-        if (recipients.isEmpty()) {
-            Span empty = new Span("No recipients");
-            empty.getStyle().set("color", "#94a3b8");
-            return empty;
-        }
+        List<NotificationRecipientEntity> recipients =
+                getRecipientsForGroup(row.groupName());
 
-        String summary = recipients.stream()
+        VerticalLayout layout = new VerticalLayout();
+        layout.setPadding(false);
+        layout.setSpacing(false);
+
+        Span count = new Span(
+                recipients.size() + " recipient"
+                        + (recipients.size() == 1 ? "" : "s")
+        );
+
+        count.getStyle()
+                .set("font-weight", "600")
+                .set("color", "#0f172a");
+
+        String preview = recipients.stream()
                 .map(NotificationRecipientEntity::getEmailAddress)
                 .limit(2)
                 .reduce((a, b) -> a + ", " + b)
-                .orElse("");
+                .orElse("No recipients configured");
 
-        if (recipients.size() > 2) {
-            summary += " +" + (recipients.size() - 2) + " more";
-        }
+        Span emails = new Span(preview);
 
-        Span text = new Span(summary);
-        text.getStyle().set("color", "#334155");
+        emails.getStyle()
+                .set("font-size", "0.8rem")
+                .set("color", "#64748b");
 
-        return text;
+        layout.add(count, emails);
+
+        return layout;
     }
 
     private Component buildActionsCell(NotificationRuleRow row) {
