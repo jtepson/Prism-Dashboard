@@ -13,6 +13,9 @@ public class SiteContactEntity {
     @Column(name = "contact_name")
     private String contactName;
 
+    @Column(name = "title")
+    private String title;
+
     private String email;
 
     private String phone;
@@ -31,6 +34,14 @@ public class SiteContactEntity {
 
     public void setContactName(String contactName) {
         this.contactName = contactName;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getEmail() {

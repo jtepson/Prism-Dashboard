@@ -606,6 +606,16 @@ public class ManageSitesView extends VerticalLayout {
             name.getStyle()
                     .set("font-weight", "700");
 
+            Span title = new Span(
+                    contact.getTitle() == null
+                            ? "-"
+                            : contact.getTitle()
+            );
+
+            title.getStyle()
+                    .set("color", "#64748b")
+                    .set("font-size", "0.82rem");
+
             Span email = new Span(
                     contact.getEmail() == null
                             ? "-"
@@ -618,7 +628,7 @@ public class ManageSitesView extends VerticalLayout {
                             : contact.getPhone()
             );
 
-            card.add(name, email, phone);
+            card.add(name, title, email, phone);
 
             wrapper.add(card);
         }

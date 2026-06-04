@@ -28,6 +28,9 @@ public class SiteContactDialog extends Dialog {
         TextField contactName = new TextField("Contact Name");
         contactName.setWidthFull();
 
+        TextField title = new TextField("Title");
+        title.setWidthFull();
+
         EmailField email = new EmailField("Email");
         email.setWidthFull();
 
@@ -36,11 +39,17 @@ public class SiteContactDialog extends Dialog {
 
         if (editMode) {
             contactName.setValue(nullToEmpty(existingContact.getContactName()));
+            title.setValue(nullToEmpty(existingContact.getTitle()));
             email.setValue(nullToEmpty(existingContact.getEmail()));
             phone.setValue(nullToEmpty(existingContact.getPhone()));
         }
 
-        FormLayout formLayout = new FormLayout(contactName, email, phone);
+        FormLayout formLayout = new FormLayout(
+                contactName,
+                title,
+                email,
+                phone
+        );
         formLayout.setWidthFull();
 
         Button cancelButton = new Button("Cancel", event -> close());
@@ -55,6 +64,7 @@ public class SiteContactDialog extends Dialog {
 
             contact.setSite(site);
             contact.setContactName(contactName.getValue().trim());
+            contact.setTitle(title.getValue().trim());
             contact.setEmail(email.getValue().trim());
             contact.setPhone(phone.getValue().trim());
 

@@ -143,6 +143,7 @@ CREATE TABLE site_contact (
     id BIGSERIAL PRIMARY KEY,
     site_id BIGINT NOT NULL,
     contact_name VARCHAR(255),
+	title VARCHAR(255);
     email VARCHAR(255),
     phone VARCHAR(50),
 
