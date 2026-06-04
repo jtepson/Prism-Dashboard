@@ -628,7 +628,37 @@ public class ManageSitesView extends VerticalLayout {
                             : contact.getPhone()
             );
 
-            card.add(name, title, email, phone);
+            Button editButton = new Button("Edit");
+            editButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+
+            editButton.addClickListener(event ->
+                    new SiteContactDialog(
+                            siteContactService,
+                            site,
+                            contact,
+                            savedContact -> {
+                                siteDetails.removeAll();
+                                renderSiteDetails(site);
+                            }
+                    ).open()
+            );
+
+            Button deleteButton = new Button("Delete");
+            deleteButton.addThemeVariants(
+                    ButtonVariant.LUMO_SMALL,
+                    ButtonVariant.LUMO_ERROR
+            );
+
+            deleteButton.addClickListener(event -> {
+                siteContactService.delete(contact);
+                siteDetails.removeAll();
+                renderSiteDetails(site);
+            });
+
+            HorizontalLayout buttonRow = new HorizontalLayout(editButton, deleteButton);
+            buttonRow.setSpacing(true);
+
+            card.add(name, title, email, phone, buttonRow);
 
             wrapper.add(card);
         }
