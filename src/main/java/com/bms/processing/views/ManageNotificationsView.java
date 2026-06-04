@@ -236,6 +236,55 @@ public class ManageNotificationsView extends VerticalLayout {
         return editButton;
     }
 
+    private Component buildRuleDetails(NotificationRuleRow row) {
+
+        VerticalLayout details = new VerticalLayout();
+        details.setPadding(true);
+        details.setSpacing(true);
+
+        details.getStyle()
+                .set("border", "1px solid #e2e8f0")
+                .set("border-radius", "10px")
+                .set("background", "#f8fafc");
+
+        H3 title = new H3("Rule Details");
+        title.getStyle().set("margin", "0");
+
+        details.add(
+                title,
+                createDetailRow("Status / Event", row.label()),
+                createDetailRow("Notification Group", row.groupName()),
+                createDetailRow("Description", row.description()),
+                createDetailRow("Recipients",
+                        String.valueOf(
+                                getRecipientsForGroup(row.groupName()).size()
+                        ))
+        );
+
+        return details;
+    }
+
+    private Component createDetailRow(String label, String value) {
+
+        VerticalLayout row = new VerticalLayout();
+        row.setPadding(false);
+        row.setSpacing(false);
+
+        Span labelSpan = new Span(label);
+        labelSpan.getStyle()
+                .set("font-size", "0.75rem")
+                .set("color", "#64748b");
+
+        Span valueSpan = new Span(value);
+        valueSpan.getStyle()
+                .set("font-weight", "600")
+                .set("color", "#0f172a");
+
+        row.add(labelSpan, valueSpan);
+
+        return row;
+    }
+
     private void refreshGrid() {
         String filter = searchField.getValue() == null
                 ? ""
@@ -311,12 +360,33 @@ public class ManageNotificationsView extends VerticalLayout {
             openRecipientDialog(null, row.groupName());
         });
 
-        VerticalLayout content = new VerticalLayout(
+        VerticalLayout leftSide = new VerticalLayout(
                 title,
                 description,
                 addRecipientButton,
                 recipientGrid
         );
+
+        leftSide.setPadding(false);
+        leftSide.setSpacing(true);
+        leftSide.setWidthFull();
+
+        Component detailsPanel =
+                buildRuleDetails(row);
+
+        HorizontalLayout content =
+                new HorizontalLayout(
+                        leftSide,
+                        detailsPanel
+                );
+
+        content.setWidthFull();
+
+        leftSide.setFlexGrow(1);
+        detailsPanel.getElement()
+                .getStyle()
+                .set("min-width", "280px");
+                
         content.setPadding(false);
         content.setSpacing(true);
 
