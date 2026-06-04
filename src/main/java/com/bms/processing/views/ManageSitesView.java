@@ -4,6 +4,8 @@ import com.bms.processing.components.SiteDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.SiteService;
+import com.bms.processing.service.SiteContactService;
+import com.bms.processing.entity.SiteContactEntity;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -41,8 +43,15 @@ public class ManageSitesView extends VerticalLayout {
     private final VerticalLayout siteDetails = new VerticalLayout();
     private SiteEntity selectedSite;
 
-    public ManageSitesView(SiteService siteService) {
+    //Site contacts
+    private final SiteContactService siteContactService;
+
+    public ManageSitesView(
+            SiteService siteService,
+            SiteContactService siteContactService
+    ){
         this.siteService = siteService;
+        this.siteContactService = siteContactService;
 
         setSizeFull();
         setPadding(true);
@@ -422,7 +431,7 @@ public class ManageSitesView extends VerticalLayout {
             if (event.getSelectedTab() == overviewTab) {
                 tabContent.add(buildOverviewContent(site));
             } else if (event.getSelectedTab() == contactsTab) {
-                tabContent.add(new Span("Contacts coming next."));
+                tabContent.add(buildContactsContent(site));
             } else {
                 tabContent.add(buildNotesContent(site));
             }
@@ -548,6 +557,59 @@ public class ManageSitesView extends VerticalLayout {
         });
 
         wrapper.add(notesArea, saveNotesButton);
+        return wrapper;
+    }
+
+    //Contact information for sites
+    private Component buildContactsContent(SiteEntity site) {
+
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setPadding(false);
+        wrapper.setSpacing(true);
+        wrapper.setWidthFull();
+
+        Button addContactButton = new Button("+ Add Contact");
+
+        wrapper.add(addContactButton);
+
+        for (SiteContactEntity contact :
+                siteContactService.getContactsForSite(site)) {
+
+            VerticalLayout card = new VerticalLayout();
+            card.setPadding(true);
+            card.setSpacing(false);
+
+            card.getStyle()
+                    .set("border", "1px solid #dbe3ee")
+                    .set("border-radius", "12px")
+                    .set("background", "#ffffff");
+
+            Span name = new Span(
+                    contact.getContactName() == null
+                            ? "Unnamed Contact"
+                            : contact.getContactName()
+            );
+
+            name.getStyle()
+                    .set("font-weight", "700");
+
+            Span email = new Span(
+                    contact.getEmail() == null
+                            ? "-"
+                            : contact.getEmail()
+            );
+
+            Span phone = new Span(
+                    contact.getPhone() == null
+                            ? "-"
+                            : contact.getPhone()
+            );
+
+            card.add(name, email, phone);
+
+            wrapper.add(card);
+        }
+
         return wrapper;
     }
 }
