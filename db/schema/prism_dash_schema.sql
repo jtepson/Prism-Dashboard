@@ -76,15 +76,27 @@ CREATE TABLE public.case_record (
     CONSTRAINT case_record_processing_outcome_check CHECK (((processing_outcome)::text = ANY ((ARRAY['PENDING'::character varying, 'UPLOADED'::character varying, 'DURAMAP_SENT'::character varying])::text[])))
 );
 
+-- Updated facility address entries 6042026
+
 CREATE TABLE public.site (
     id BIGSERIAL PRIMARY KEY,
     facility_name character varying(255),
+
     address character varying(255),
+    address_line_1 character varying(255),
+    address_line_2 character varying(255),
+    city character varying(100),
+    state character varying(10),
+    zip_code character varying(20),
+
     primary_contact character varying(255),
     transfer_method character varying(255),
     imeka_certified boolean,
     scanner_brand character varying(255),
-    magnet_strength character varying(255)
+    magnet_strength character varying(255),
+
+    active boolean DEFAULT true,
+    notes text
 );
 
 ALTER TABLE public.case_record OWNER TO bms;
@@ -123,6 +135,21 @@ CREATE TABLE notification_recipient (
     group_name character varying(100) NOT NULL,
     email_address character varying(255) NOT NULL,
     enabled boolean NOT NULL DEFAULT true
+);
+
+-- Table for site contacts
+
+CREATE TABLE site_contact (
+    id BIGSERIAL PRIMARY KEY,
+    site_id BIGINT NOT NULL,
+    contact_name VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+
+    CONSTRAINT fk_site_contact_site
+        FOREIGN KEY (site_id)
+        REFERENCES site(id)
+        ON DELETE CASCADE
 );
 
 --
