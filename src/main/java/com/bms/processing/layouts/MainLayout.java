@@ -9,7 +9,6 @@ import com.bms.processing.views.UpcomingView;
 import com.bms.processing.views.manage.ManagePatientsView;
 import com.bms.processing.views.manage.ManageSitesView;
 import com.bms.processing.views.manage.ManageNotificationsView;
-import com.bms.processing.views.manage.ManageEmailTemplatesView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -106,7 +105,6 @@ public class MainLayout extends AppLayout {
         manage.addItem(new SideNavItem("Patients", ManagePatientsView.class));
         manage.addItem(new SideNavItem("Sites", ManageSitesView.class));
         manage.addItem(new SideNavItem("Notification Groups", ManageNotificationsView.class));
-        manage.addItem(new SideNavItem("Email Templates", ManageEmailTemplatesView.class));
 
         nav.addItem(manage);
 
