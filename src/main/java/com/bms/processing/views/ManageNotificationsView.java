@@ -601,16 +601,31 @@ public class ManageNotificationsView extends VerticalLayout {
         return layout;
     }
 
+    // mock email preview until templates are stored
     private Component buildEmailPreviewTab(NotificationRuleRow row) {
-        Span subject = new Span("Subject: Prism Dashboard: " + row.label());
 
-        Span body = new Span(
-                "Preview body will be connected to email templates in a later step."
-        );
+        Span subject =
+                new Span("Subject: " + getPreviewSubject(row));
 
-        VerticalLayout previewBox = new VerticalLayout(subject, body);
+        subject.getStyle()
+                .set("font-weight", "700")
+                .set("color", "#0f172a");
+
+        Span body =
+                new Span(getPreviewBody(row));
+
+        body.getStyle()
+                .set("white-space", "pre-line")
+                .set("color", "#334155");
+
+        VerticalLayout previewBox =
+                new VerticalLayout(subject, body);
+
+        // make it feel like an email card
         previewBox.setPadding(true);
         previewBox.setSpacing(true);
+        previewBox.setWidthFull();
+
         previewBox.getStyle()
                 .set("border", "1px solid #e2e8f0")
                 .set("border-radius", "10px")
@@ -628,5 +643,67 @@ public class ManageNotificationsView extends VerticalLayout {
                 .set("font-size", "0.9rem");
 
         return activity;
+    }
+
+    // temporary subject mapping per workflow event
+    private String getPreviewSubject(NotificationRuleRow row) {
+
+        return switch (row.groupName()) {
+            case "PATIENT_CREATED" ->
+                    "Prism Dashboard: Patient Created";
+            case "CASE_FINALIZED" ->
+                    "Prism Dashboard: Patient Processed";
+            case "CASE_COMPLETED" ->
+                    "Prism Dashboard: Case Completed";
+            case "CASE_ERROR" ->
+                    "Prism Dashboard: Error Reported";
+            default ->
+                    "Prism Dashboard: Notification";
+        };
+    }
+
+    // temporary body mapping per workflow event
+    private String getPreviewBody(NotificationRuleRow row) {
+
+        return switch (row.groupName()) {
+            case "PATIENT_CREATED" ->
+                    """
+                    A new patient has been created in Prism Dashboard.
+
+                    Patient: {{patientName}}
+                    Status: Upcoming
+
+                    Please review intake details when available.
+                    """;
+            case "CASE_FINALIZED" ->
+                    """
+                    A patient has been processed and is ready for review.
+
+                    Patient: {{patientName}}
+                    Status: Processed
+
+                    Please review the processed case.
+                    """;
+            case "CASE_COMPLETED" ->
+                    """
+                    A patient case has been marked completed.
+
+                    Patient: {{patientName}}
+                    Status: Completed
+
+                    No further action is required.
+                    """;
+            case "CASE_ERROR" ->
+                    """
+                    An error has been reported for a patient case.
+
+                    Patient: {{patientName}}
+                    Error: {{errorMessage}}
+
+                    Please review the case and resolve the issue.
+                    """;
+            default ->
+                    "A Prism Dashboard notification event occurred.";
+        };
     }
 }
