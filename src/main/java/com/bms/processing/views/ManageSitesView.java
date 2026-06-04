@@ -1,6 +1,7 @@
 package com.bms.processing.views.manage;
 
 import com.bms.processing.components.SiteDialog;
+import com.bms.processing.components.SiteContactDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.SiteService;
@@ -569,6 +570,18 @@ public class ManageSitesView extends VerticalLayout {
         wrapper.setWidthFull();
 
         Button addContactButton = new Button("+ Add Contact");
+
+        addContactButton.addClickListener(event ->
+                new SiteContactDialog(
+                        siteContactService,
+                        site,
+                        null,
+                        savedContact -> {
+                            siteDetails.removeAll();
+                            renderSiteDetails(site);
+                        }
+                ).open()
+        );
 
         wrapper.add(addContactButton);
 
