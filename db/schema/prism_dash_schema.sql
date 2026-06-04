@@ -153,6 +153,15 @@ CREATE TABLE site_contact (
         ON DELETE CASCADE
 );
 
+-- Email template table
+CREATE TABLE email_template (
+    id BIGSERIAL PRIMARY KEY,
+    template_key VARCHAR(100) UNIQUE NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    body TEXT NOT NULL,
+    enabled BOOLEAN DEFAULT TRUE
+);
+
 --
 -- Name: case_record case_record_pkey; Type: CONSTRAINT; Schema: public; Owner: bms
 --

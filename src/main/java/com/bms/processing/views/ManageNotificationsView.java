@@ -20,6 +20,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -601,37 +602,56 @@ public class ManageNotificationsView extends VerticalLayout {
         return layout;
     }
 
-    // mock email preview until templates are stored
+    // editable template mockup, save comes later
     private Component buildEmailPreviewTab(NotificationRuleRow row) {
 
-        Span subject =
-                new Span("Subject: " + getPreviewSubject(row));
+        TextField subjectField =
+                new TextField("Email Subject");
 
-        subject.getStyle()
-                .set("font-weight", "700")
-                .set("color", "#0f172a");
+        subjectField.setValue(getPreviewSubject(row));
+        subjectField.setWidthFull();
 
-        Span body =
-                new Span(getPreviewBody(row));
+        TextArea bodyField =
+                new TextArea("Email Body");
 
-        body.getStyle()
-                .set("white-space", "pre-line")
-                .set("color", "#334155");
+        bodyField.setValue(getPreviewBody(row));
+        bodyField.setWidthFull();
+        bodyField.setHeight("260px");
 
-        VerticalLayout previewBox =
-                new VerticalLayout(subject, body);
+        // these are supported placeholders
+        Span helper =
+                new Span("Available variables: {{patientName}}, {{patientId}}, {{status}}, {{errorMessage}}");
 
-        // make it feel like an email card
-        previewBox.setPadding(true);
-        previewBox.setSpacing(true);
-        previewBox.setWidthFull();
+        helper.getStyle()
+                .set("font-size", "0.8rem")
+                .set("color", "#64748b");
 
-        previewBox.getStyle()
+        Button saveTemplateButton =
+                new Button("Save Template");
+
+        saveTemplateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        // no DB yet, so disabled for now
+        saveTemplateButton.setEnabled(false);
+
+        VerticalLayout templateEditor =
+                new VerticalLayout(
+                        subjectField,
+                        bodyField,
+                        helper,
+                        saveTemplateButton
+                );
+
+        templateEditor.setPadding(true);
+        templateEditor.setSpacing(true);
+        templateEditor.setWidthFull();
+
+        templateEditor.getStyle()
                 .set("border", "1px solid #e2e8f0")
                 .set("border-radius", "10px")
                 .set("background", "#ffffff");
 
-        return previewBox;
+        return templateEditor;
     }
 
     // placeholder until audit events are wired in
