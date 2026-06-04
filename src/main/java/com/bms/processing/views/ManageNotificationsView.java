@@ -609,23 +609,37 @@ public class ManageNotificationsView extends VerticalLayout {
         return layout;
     }
 
-    // editable template mockup, save comes later
+    // editable email template for this rule
     private Component buildEmailPreviewTab(NotificationRuleRow row) {
+
+        EmailTemplateEntity template =
+                emailTemplateService.findByKey(row.groupName())
+                        .orElseGet(() -> {
+                            EmailTemplateEntity created =
+                                    new EmailTemplateEntity();
+
+                            created.setTemplateKey(row.groupName());
+                            created.setSubject(getPreviewSubject(row));
+                            created.setBody(getPreviewBody(row));
+                            created.setEnabled(true);
+
+                            return created;
+                        });
 
         TextField subjectField =
                 new TextField("Email Subject");
 
-        subjectField.setValue(getPreviewSubject(row));
+        subjectField.setValue(template.getSubject());
         subjectField.setWidthFull();
 
         TextArea bodyField =
                 new TextArea("Email Body");
 
-        bodyField.setValue(getPreviewBody(row));
+        bodyField.setValue(template.getBody());
         bodyField.setWidthFull();
         bodyField.setHeight("260px");
 
-        // these are supported placeholders
+        // these are the variables we support first
         Span helper =
                 new Span("Available variables: {{patientName}}, {{patientId}}, {{status}}, {{errorMessage}}");
 
@@ -638,8 +652,13 @@ public class ManageNotificationsView extends VerticalLayout {
 
         saveTemplateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // no DB yet, so disabled for now
-        saveTemplateButton.setEnabled(false);
+        saveTemplateButton.addClickListener(event -> {
+            template.setSubject(subjectField.getValue().trim());
+            template.setBody(bodyField.getValue().trim());
+            template.setEnabled(true);
+
+            emailTemplateService.save(template);
+        });
 
         VerticalLayout templateEditor =
                 new VerticalLayout(
