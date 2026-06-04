@@ -5,6 +5,7 @@ import com.bms.processing.service.SiteService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
@@ -26,7 +27,31 @@ public class SiteDialog extends Dialog {
         setWidth("700px");
 
         TextField facilityName = new TextField("Facility Name");
-        TextField address = new TextField("Address");
+        
+        //Updated address entry for sites 6042026
+        TextField addressLine1 = new TextField("Address Line 1");
+        addressLine1.setWidthFull();
+
+        TextField addressLine2 = new TextField("Address Line 2");
+        addressLine2.setWidthFull();
+
+        TextField city = new TextField("City");
+        city.setWidthFull();
+
+        ComboBox<String> state = new ComboBox<>("State");
+        state.setWidthFull();
+
+        state.setItems(
+                "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+                "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+                "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+                "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+                "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
+        );
+
+        TextField zipCode = new TextField("ZIP Code");
+        zipCode.setWidthFull();
+
         TextField primaryContact = new TextField("Primary Contact");
         TextField transferMethod = new TextField("Transfer Method");
         Checkbox imekaCertified = new Checkbox("IMEKA Certified");
@@ -34,7 +59,7 @@ public class SiteDialog extends Dialog {
         TextField magnetStrength = new TextField("Magnet Strength");
 
         facilityName.setWidthFull();
-        address.setWidthFull();
+        addressLine1.setWidthFull();
         primaryContact.setWidthFull();
         transferMethod.setWidthFull();
         scannerBrand.setWidthFull();
@@ -42,7 +67,11 @@ public class SiteDialog extends Dialog {
 
         if (editMode) {
             facilityName.setValue(nullToEmpty(existingSite.getFacilityName()));
-            address.setValue(nullToEmpty(existingSite.getAddress()));
+            addressLine1.setValue(nullToEmpty(existingSite.getAddressLine1()));
+            addressLine2.setValue(nullToEmpty(existingSite.getAddressLine2()));
+            city.setValue(nullToEmpty(existingSite.getCity()));
+            state.setValue(existingSite.getState());
+            zipCode.setValue(nullToEmpty(existingSite.getZipCode()));
             primaryContact.setValue(nullToEmpty(existingSite.getPrimaryContact()));
             transferMethod.setValue(nullToEmpty(existingSite.getTransferMethod()));
             imekaCertified.setValue(Boolean.TRUE.equals(existingSite.getImekaCertified()));
@@ -59,7 +88,11 @@ public class SiteDialog extends Dialog {
 
         formLayout.add(
                 facilityName,
-                address,
+                addressLine1,
+                addressLine2,
+                city,
+                state,
+                zipCode,
                 primaryContact,
                 transferMethod,
                 imekaCertified,
@@ -90,7 +123,11 @@ public class SiteDialog extends Dialog {
             SiteEntity site = editMode ? existingSite : new SiteEntity();
 
             site.setFacilityName(name);
-            site.setAddress(address.getValue().trim());
+            site.setAddressLine1(addressLine1.getValue().trim());
+            site.setAddressLine2(addressLine2.getValue().trim());
+            site.setCity(city.getValue().trim());
+            site.setState(state.getValue());
+            site.setZipCode(zipCode.getValue().trim());
             site.setPrimaryContact(primaryContact.getValue().trim());
             site.setTransferMethod(transferMethod.getValue().trim());
             site.setImekaCertified(imekaCertified.getValue());

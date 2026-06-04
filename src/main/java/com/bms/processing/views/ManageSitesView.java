@@ -149,9 +149,19 @@ public class ManageSitesView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        grid.addColumn(SiteEntity::getAddress)
-                .setHeader("Address")
-                .setAutoWidth(true);
+        grid.addColumn(site ->
+                String.join(", ",
+                        java.util.stream.Stream.of(
+                                site.getAddressLine1(),
+                                site.getCity(),
+                                site.getState()
+                        )
+                        .filter(value -> value != null && !value.isBlank())
+                        .toList()
+                )
+        )
+        .setHeader("Location")
+        .setAutoWidth(true);
 
         grid.addColumn(SiteEntity::getTransferMethod)
                 .setHeader("Transfer Method")
@@ -192,7 +202,11 @@ public class ManageSitesView extends VerticalLayout {
                         .filter(site ->
                                 filter.isEmpty()
                                         || contains(site.getFacilityName(), filter)
-                                        || contains(site.getAddress(), filter)
+                                        || contains(site.getAddressLine1(), filter)
+                                        || contains(site.getAddressLine2(), filter)
+                                        || contains(site.getCity(), filter)
+                                        || contains(site.getState(), filter)
+                                        || contains(site.getZipCode(), filter)
                                         || contains(site.getTransferMethod(), filter)
                                         || contains(site.getScannerBrand(), filter)
                                         || contains(site.getMagnetStrength(), filter)
@@ -217,7 +231,11 @@ public class ManageSitesView extends VerticalLayout {
                 .filter(site ->
                         filter.isEmpty()
                                 || contains(site.getFacilityName(), filter)
-                                || contains(site.getAddress(), filter)
+                                || contains(site.getAddressLine1(), filter)
+                                || contains(site.getAddressLine2(), filter)
+                                || contains(site.getCity(), filter)
+                                || contains(site.getState(), filter)
+                                || contains(site.getZipCode(), filter)
                                 || contains(site.getTransferMethod(), filter)
                                 || contains(site.getScannerBrand(), filter)
                                 || contains(site.getMagnetStrength(), filter)
@@ -284,8 +302,10 @@ public class ManageSitesView extends VerticalLayout {
         topRow.setAlignItems(Alignment.CENTER);
         topRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        Span scanner = new Span(formatScanner(site));
-        scanner.getStyle()
+        Span location = new Span(
+                buildLocation(site)
+        );
+        location.getStyle()
                 .set("font-size", "0.78rem")
                 .set("color", "#64748b")
                 .set("font-weight", "600")
@@ -299,30 +319,26 @@ public class ManageSitesView extends VerticalLayout {
                 .set("color", "#334155")
                 .set("margin-top", "0.15rem");
 
-        card.add(topRow, scanner, transfer);
+        card.add(topRow, location, transfer);
 
         return card;
     }
 
-    private String formatScanner(SiteEntity site) {
-        String brand = site.getScannerBrand();
-        String magnet = site.getMagnetStrength();
+    private String buildLocation(SiteEntity site) {
+        String city = site.getCity();
+        String state = site.getState();
 
-        if ((brand == null || brand.isBlank()) && (magnet == null || magnet.isBlank())) {
-            return "Scanner not set";
+        if (city == null || city.isBlank()) {
+            return "Location not set";
         }
 
-        if (brand == null || brand.isBlank()) {
-            return magnet;
+        if (state == null || state.isBlank()) {
+            return city;
         }
 
-        if (magnet == null || magnet.isBlank()) {
-            return brand;
-        }
-
-        return brand + " • " + magnet;
+        return city + ", " + state;
     }
-    
+
     private void renderSiteDetails(SiteEntity site) {
         siteDetails.removeAll();
 
@@ -431,7 +447,10 @@ public class ManageSitesView extends VerticalLayout {
                 buildInfoCard(
                         "Facility Information",
                         "Facility Name", site.getFacilityName(),
-                        "Address", site.getAddress()
+                        "Address", site.getAddressLine1(),
+                        "City", site.getCity(),
+                        "State", site.getState(),
+                        "ZIP", site.getZipCode()
                 ),
                 buildInfoCard(
                         "Scanner Information",
