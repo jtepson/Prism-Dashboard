@@ -311,7 +311,7 @@ public class ManageNotificationsView extends VerticalLayout {
     private void openRuleDialog(NotificationRuleRow row) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle(row.label() + " Notification Rule");
-        dialog.setWidth("780px");
+        dialog.setWidth("1100px");
 
         H3 title = new H3(row.label());
         title.getStyle().set("margin", "0");
@@ -353,7 +353,8 @@ public class ManageNotificationsView extends VerticalLayout {
         }).setHeader("Actions").setAutoWidth(true);
 
         recipientGrid.setItems(getRecipientsForGroup(row.groupName()));
-        recipientGrid.setHeight("300px");
+        recipientGrid.setHeight("360px");
+        recipientGrid.setWidthFull();
 
         Button addRecipientButton = new Button("+ Add Recipient");
         addRecipientButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -398,8 +399,12 @@ public class ManageNotificationsView extends VerticalLayout {
 
             if (event.getSelectedTab() == recipientsTab) {
                 tabContent.add(recipientsContent);
+            } else if (event.getSelectedTab() == settingsTab) {
+                tabContent.add(buildSettingsTab(row));
+            } else if (event.getSelectedTab() == previewTab) {
+                tabContent.add(buildEmailPreviewTab(row));
             } else {
-                tabContent.add(placeholder);
+                tabContent.add(buildActivityTab(row));
             }
         });
 
@@ -425,10 +430,11 @@ public class ManageNotificationsView extends VerticalLayout {
 
         content.setWidthFull();
 
-        leftSide.setFlexGrow(1);
+        leftSide.setWidth("700px");
         detailsPanel.getElement()
                 .getStyle()
-                .set("min-width", "280px");
+                .set("min-width", "360px")
+                .set("max-width", "360px");
 
         content.setPadding(false);
         content.setSpacing(true);
@@ -552,5 +558,75 @@ public class ManageNotificationsView extends VerticalLayout {
             String iconBackground,
             String iconColor
     ) {
+    }
+
+    private Component buildSettingsTab(NotificationRuleRow row) {
+        // rule-level options will eventually persist
+        Checkbox enabled =
+                new Checkbox("Enable this notification rule", true);
+
+        enabled.setReadOnly(true);
+
+        // future: immediate vs digest delivery
+        Checkbox sendImmediately =
+                new Checkbox("Send notifications immediately", true);
+
+        sendImmediately.setReadOnly(true);
+
+        // future: allow turning emails off
+        Checkbox emailEnabled =
+                new Checkbox("Email delivery enabled", true);
+
+        emailEnabled.setReadOnly(true);
+
+        Span note =
+                new Span(
+                        "Settings are currently placeholders until notification rule storage is implemented."
+                );
+
+        note.getStyle()
+                .set("color", "#64748b");
+
+        VerticalLayout layout =
+                new VerticalLayout(
+                        enabled,
+                        sendImmediately,
+                        emailEnabled,
+                        note
+                );
+
+        layout.setPadding(false);
+        layout.setSpacing(true);
+
+        return layout;
+    }
+
+    private Component buildEmailPreviewTab(NotificationRuleRow row) {
+        Span subject = new Span("Subject: Prism Dashboard: " + row.label());
+
+        Span body = new Span(
+                "Preview body will be connected to email templates in a later step."
+        );
+
+        VerticalLayout previewBox = new VerticalLayout(subject, body);
+        previewBox.setPadding(true);
+        previewBox.setSpacing(true);
+        previewBox.getStyle()
+                .set("border", "1px solid #e2e8f0")
+                .set("border-radius", "10px")
+                .set("background", "#ffffff");
+
+        return previewBox;
+    }
+
+    // placeholder until audit events are wired in
+    private Component buildActivityTab(NotificationRuleRow row) {
+        Span activity = new Span("No recent activity logged for this notification rule.");
+
+        activity.getStyle()
+                .set("color", "#64748b")
+                .set("font-size", "0.9rem");
+
+        return activity;
     }
 }
