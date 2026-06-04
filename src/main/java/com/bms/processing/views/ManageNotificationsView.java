@@ -3,6 +3,8 @@ package com.bms.processing.views.manage;
 import com.bms.processing.entity.NotificationRecipientEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.NotificationRecipientService;
+import com.bms.processing.entity.EmailTemplateEntity;
+import com.bms.processing.service.EmailTemplateService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -35,14 +37,19 @@ import java.util.List;
 public class ManageNotificationsView extends VerticalLayout {
 
     private final NotificationRecipientService notificationRecipientService;
+    private final EmailTemplateService emailTemplateService;
 
     private final Grid<NotificationRuleRow> grid =
             new Grid<>(NotificationRuleRow.class, false);
 
     private final TextField searchField = new TextField();
 
-    public ManageNotificationsView(NotificationRecipientService notificationRecipientService) {
+    public ManageNotificationsView(
+            NotificationRecipientService notificationRecipientService,
+            EmailTemplateService emailTemplateService
+    ) {
         this.notificationRecipientService = notificationRecipientService;
+        this.emailTemplateService = emailTemplateService;
 
         setSizeFull();
         setPadding(true);
