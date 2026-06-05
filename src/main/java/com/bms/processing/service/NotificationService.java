@@ -50,6 +50,7 @@ public class NotificationService {
             String fallbackBody,
             String patientName,
             String patientId,
+            String sitename,
             String status,
             String errorMessage
     ) {
@@ -71,7 +72,8 @@ public class NotificationService {
                 patientName,
                 patientId,
                 status,
-                errorMessage
+                errorMessage,
+                sitename
         );
 
         body = replaceTemplateVariables(
@@ -79,19 +81,21 @@ public class NotificationService {
                 patientName,
                 patientId,
                 status,
+                sitename,
                 errorMessage
         );
 
         sendToGroup(groupName, subject, body);
     }
 
-    // simple placeholder replacement for now
+    // placeholder replacement for now
     private String replaceTemplateVariables(
             String value,
             String patientName,
             String patientId,
             String status,
-            String errorMessage
+            String errorMessage,
+            String siteName
     ) {
         if (value == null) {
             return "";
@@ -101,7 +105,8 @@ public class NotificationService {
                 .replace("{{patientName}}", safe(patientName))
                 .replace("{{patientId}}", safe(patientId))
                 .replace("{{status}}", safe(status))
-                .replace("{{errorMessage}}", safe(errorMessage));
+                .replace("{{errorMessage}}", safe(errorMessage))
+                .replace("{{siteName}}", safe(siteName));
     }
 
     // keeps emails from saying null
@@ -116,6 +121,7 @@ public class NotificationService {
                 "Case completed for {{patientName}}",
                 patientName,
                 "",
+                "",
                 "Completed",
                 ""
         );
@@ -127,6 +133,7 @@ public class NotificationService {
                 "Prism Dashboard: Patient Created",
                 "Patient created: {{patientName}}",
                 patientName,
+                "",
                 "",
                 "Upcoming",
                 ""
@@ -140,6 +147,7 @@ public class NotificationService {
                 "Patient processed and ready for review: {{patientName}}",
                 patientName,
                 "",
+                "",
                 "Processed",
                 ""
         );
@@ -151,6 +159,7 @@ public class NotificationService {
                 "Prism Dashboard: Error Reported",
                 "Error reported for {{patientName}}\n\n{{errorMessage}}",
                 patientName,
+                "",
                 "",
                 "Error",
                 errorMessage

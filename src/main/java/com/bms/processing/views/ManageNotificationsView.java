@@ -17,6 +17,7 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -355,6 +356,13 @@ public class ManageNotificationsView extends VerticalLayout {
                 notificationRecipientService.delete(recipient);
                 recipientGrid.setItems(getRecipientsForGroup(row.groupName()));
                 refreshGrid();
+
+                // quick delete confirmation
+                Notification.show(
+                        "Recipient deleted.",
+                        3000,
+                        Notification.Position.BOTTOM_END
+                );
             });
 
             return new HorizontalLayout(editButton, deleteButton);
@@ -504,6 +512,13 @@ public class ManageNotificationsView extends VerticalLayout {
             notificationRecipientService.save(recipient);
             refreshGrid();
             dialog.close();
+
+            // let user know it actually saved
+            Notification.show(
+                    editMode ? "Recipient updated." : "Recipient added.",
+                    3000,
+                    Notification.Position.BOTTOM_END
+            );
         });
 
         dialog.add(form);
@@ -639,10 +654,9 @@ public class ManageNotificationsView extends VerticalLayout {
         bodyField.setWidthFull();
         bodyField.setHeight("260px");
 
-        // these are the variables we support first
+        // these are the variables we support, updated 6052026 with a few new variables for temps
         Span helper =
-                new Span("Available variables: {{patientName}}, {{patientId}}, {{status}}, {{errorMessage}}");
-
+                new Span("Available variables: {{patientName}}, {{patientId}}, {{siteName}}, {{status}}, {{errorMessage}}");
         helper.getStyle()
                 .set("font-size", "0.8rem")
                 .set("color", "#64748b");
@@ -658,6 +672,13 @@ public class ManageNotificationsView extends VerticalLayout {
             template.setEnabled(true);
 
             emailTemplateService.save(template);
+
+            // little save confirmation
+            Notification.show(
+                    "Template saved successfully.",
+                    3000,
+                    Notification.Position.BOTTOM_END
+            );
         });
 
         VerticalLayout templateEditor =
