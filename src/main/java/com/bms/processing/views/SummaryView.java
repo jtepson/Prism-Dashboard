@@ -38,9 +38,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.GroupLayout.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 
-import com.bms.processing.service.EmailService;
 import com.vaadin.flow.component.notification.Notification;
 
 @PageTitle("Summary")
@@ -104,20 +104,14 @@ public class SummaryView extends VerticalLayout {
     //Audit logging
     private final AuditEventService auditEventService;
 
-    //smtp emailing
-    private final EmailService emailService;
-    
-
     public SummaryView(
                 CaseRecordService caseRecordService,
                 SiteService siteService,
-                AuditEventService auditEventService,
-                EmailService emailService
+                AuditEventService auditEventService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
-        this.emailService = emailService;
 
         setSizeFull();
         setPadding(true);
@@ -136,12 +130,10 @@ public class SummaryView extends VerticalLayout {
                         .set("margin-top", "0")
                         .set("font-size", "0.98rem");
 
-        Div toolbarCard = buildToolbarCard();
-
         searchField.setPlaceholder("Search last name, ID, or site");
         searchField.setClearButtonVisible(true);
         searchField.setWidth("420px");
-        searchField.addValueChangeListener(event -> rebuildDashboard());
+        searchField.addValueChangeListener(event -> refreshDashboardGrid());
 
         dashboardBody.setPadding(false);
         dashboardBody.setSpacing(true);
@@ -180,145 +172,58 @@ public class SummaryView extends VerticalLayout {
 
         quickViewBackdrop.addClickListener(event -> hideQuickView());
 
-        dashboardGridContainer.setWidthFull();
-        dashboardGridContainer.removeAll();
-        dashboardGridContainer.add(buildDashboardGrid());
-
-        List<String> columns = List.of("Left", "Right");
-
-        needsAttentionColumn.setItems(columns);
-        processedColumn.setItems(columns);
-        recentActivityColumn.setItems(columns);
-        processingQueueColumn.setItems(columns);
-        upcomingColumn.setItems(columns);
-        completedColumn.setItems(columns);
-        errorsColumn.setItems(columns);
-
-        needsAttentionColumn.setValue("Left");
-        processedColumn.setValue("Left");
-        recentActivityColumn.setValue("Left");
-        completedColumn.setValue("Left");
-
-        processingQueueColumn.setValue("Right");
-        upcomingColumn.setValue("Right");
-        errorsColumn.setValue("Right");
-
         add(
-                buildDashboardHeader(title, subtitle, toolbarCard),
+                buildDashboardHeader(title, subtitle),
+                buildTopActionRow(),
                 buildMetricSection(),
-                searchField,
-                dashboardGridContainer,
+                buildFixedDashboardLayout(),
                 quickViewBackdrop,
                 quickViewPanel
         );
 
-        normalizeSectionOrderSelections();
-        rebuildDashboard();
     }
 
-    private Div buildToolbarCard() {
-        Div toolbarCard = new Div();
-        toolbarCard.setWidthFull();
-        toolbarCard.getStyle()
-                .set("display", "flex")
-                .set("justify-content", "flex-end")
-                .set("align-items", "center");
+    private Component buildFixedDashboardLayout() {
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setWidthFull();
+        wrapper.setPadding(false);
+        wrapper.setSpacing(true);
 
-    Button optionsButton = new Button("Options", new Icon(VaadinIcon.COG));
-    optionsButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-    optionsButton.getElement().setProperty("title", "Dashboard Options");
-    optionsButton.getStyle()
-        .set("border", "1px solid #dbe3ee")
-        .set("border-radius", "999px")
-        .set("padding", "0.45rem 0.9rem")
-        .set("background", "#ffffff")
-        .set("box-shadow", "0 2px 8px rgba(15, 23, 42, 0.05)")
-        .set("font-weight", "600")
-        .set("color", "#334155");
+        Div topGrid = new Div();
+        topGrid.getStyle()
+                .set("display", "grid")
+                .set("grid-template-columns", "repeat(auto-fit, minmax(420px, 1fr))")
+                .set("gap", "1rem")
+                .set("width", "100%");
 
-        //Options for the dashboard grid, updated 0527
-        optionsButton.addClickListener(event -> {
+        topGrid.add(
+                new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
+                new DashboardWidget("Processing", buildProcessingQueueWidget()),
+                new DashboardWidget("Recent Activity", buildRecentActivityWidget())
+        );
 
-                Checkbox tempNeedsAttention = new Checkbox("Needs Attention", showNeedsAttention.getValue());
-                Checkbox tempProcessed = new Checkbox("Processed", showProcessedWidget.getValue());
-                Checkbox tempRecentActivity = new Checkbox("Recent Activity", showRecentActivity.getValue());
-                Checkbox tempProcessingQueue = new Checkbox("Processing", showProcessingQueue.getValue());
-                Checkbox tempUpcoming = new Checkbox("Upcoming", showUpcomingWidget.getValue());
-                Checkbox tempCompleted = new Checkbox("Completed (30 Days)", showCompletedWidget.getValue());
-                Checkbox tempErrors = new Checkbox("Errors", showErrorsWidget.getValue());
+        Div separator = new Div();
+        separator.getStyle()
+                .set("height", "1px")
+                .set("background", "#dbe3ee")
+                .set("margin", "0.5rem 0 0.25rem 0")
+                .set("width", "100%");
 
-                VerticalLayout widgetColumn = new VerticalLayout(
-                        new Span("Visible Widgets"),
-                        tempNeedsAttention,
-                        tempProcessed,
-                        tempRecentActivity,
-                        tempProcessingQueue,
-                        tempUpcoming,
-                        tempCompleted,
-                        tempErrors
-                );
+        VerticalLayout lowerStack = new VerticalLayout();
+        lowerStack.setWidthFull();
+        lowerStack.setPadding(false);
+        lowerStack.setSpacing(true);
 
-                widgetColumn.setPadding(false);
-                widgetColumn.setSpacing(false);
+        lowerStack.add(
+                new DashboardWidget("Upcoming", buildUpcomingWidget()),
+                new DashboardWidget("Errors", buildErrorsWidget()),
+                new DashboardWidget("Processed", buildProcessedWidget()),
+                new DashboardWidget("Completed (Last 30 Days)", buildCompletedWidget())
+        );
 
-                Dialog optionsDialog = new Dialog();
-                optionsDialog.setHeaderTitle("Dashboard Options");
-                optionsDialog.setCloseOnOutsideClick(true);
-                optionsDialog.setCloseOnEsc(true);
-                optionsDialog.setWidth("420px");
-
-                Button cancelButton = new Button("Cancel", e -> optionsDialog.close());
-
-                Button saveButton = new Button("Save");
-                saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-                saveButton.addClickListener(e -> {
-                        showNeedsAttention.setValue(tempNeedsAttention.getValue());
-                        showProcessedWidget.setValue(tempProcessed.getValue());
-                        showRecentActivity.setValue(tempRecentActivity.getValue());
-                        showProcessingQueue.setValue(tempProcessingQueue.getValue());
-                        showUpcomingWidget.setValue(tempUpcoming.getValue());
-                        showCompletedWidget.setValue(tempCompleted.getValue());
-                        showErrorsWidget.setValue(tempErrors.getValue());
-
-                        refreshDashboardGrid();
-                        optionsDialog.close();
-                });
-
-                optionsDialog.add(widgetColumn);
-                optionsDialog.getFooter().add(cancelButton, saveButton);
-                optionsDialog.open();
-        });
-
-        //Test email section, will remove
-        Button testEmailButton = new Button("Test Email");
-        testEmailButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        testEmailButton.addClickListener(event -> {
-                try {
-                        emailService.sendTestEmail(
-                                "jepperson@prismclinical.com"
-                        );
-
-                        Notification.show(
-                                "Test email sent.",
-                                3000,
-                                Notification.Position.BOTTOM_END
-                        );
-
-                } catch (Exception ex) {
-                        ex.printStackTrace();
-
-                        Notification.show(
-                                "Email failed: " + ex.getMessage(),
-                                7000,
-                                Notification.Position.BOTTOM_END
-                        );
-                }
-        });
-
-        toolbarCard.add(testEmailButton, optionsButton);
-        return toolbarCard;
-        }
+        wrapper.add(topGrid, separator, lowerStack);
+        return wrapper;
+    }
 
     private void rebuildDashboard() {
         dashboardBody.removeAll();
@@ -1200,15 +1105,14 @@ public class SummaryView extends VerticalLayout {
         return metrics;
     }
 
-    private HorizontalLayout buildDashboardHeader(H2 title, Span subtitle, Div toolbarCard) {
+    private HorizontalLayout buildDashboardHeader(H2 title, Span subtitle) {
         VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
         titleBlock.setPadding(false);
         titleBlock.setSpacing(false);
 
-        HorizontalLayout header = new HorizontalLayout(titleBlock, toolbarCard);
+        HorizontalLayout header = new HorizontalLayout(titleBlock);
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         return header;
     }
@@ -1341,9 +1245,13 @@ public class SummaryView extends VerticalLayout {
         return grid;
     }
 
-    //Processing grid section for dash
+    //Proccesing grid for the dashboard
     private Component buildProcessingQueueWidget() {
         Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
+
+        grid.setColumnReorderingAllowed(false);
+        grid.setWidthFull();
+
         applyStandardGridStyle(grid, true);
 
         grid.setPartNameGenerator(record ->
@@ -1358,20 +1266,20 @@ public class SummaryView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")
-                .setAutoWidth(true);
+                .setFlexGrow(1);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("First")
-                .setAutoWidth(true);
+                .setFlexGrow(1);
 
         grid.addColumn(CaseRecordEntity::getSiteName)
                 .setHeader("Site")
-                .setAutoWidth(true);
+                .setFlexGrow(2);
 
         grid.addComponentColumn(record ->
                 buildStatusChip(formatEnum(record.getPatientStatus())))
                 .setHeader("Status")
-                .setAutoWidth(true);
+                .setFlexGrow(1);
 
         grid.setItems(getProcessingRecords());
 
@@ -1380,7 +1288,7 @@ public class SummaryView extends VerticalLayout {
         );
 
         return grid;
-    }
+}
 
     //Here is the upcoming grid obj
     private Component buildUpcomingWidget() {
@@ -1668,10 +1576,18 @@ public class SummaryView extends VerticalLayout {
         };
     }
 
-    //persistent row hovering on grids
+    //persistent row hovering on grids, rebuilt for new dashboard revision - updated 6082026
     private void refreshDashboardGrid() {
-        dashboardGridContainer.removeAll();
-        dashboardGridContainer.add(buildDashboardGrid());
+        removeAll();
+
+        add(
+                buildDashboardHeader(new H2("BMS Dashboard"), new Span("Operational overview of workflow status and patient queues.")),
+                buildTopActionRow(),
+                buildMetricSection(),
+                buildFixedDashboardLayout(),
+                quickViewBackdrop,
+                quickViewPanel
+        );
     }
 
     //Will allow configrable widget placement regardless of side now
@@ -1786,6 +1702,24 @@ public class SummaryView extends VerticalLayout {
         String amPm = hour >= 12 ? "PM" : "AM";
 
         return String.format("%d:%02d %s", displayHour, minute, amPm);
+    }
+
+    private Component buildTopActionRow() {
+        HorizontalLayout row = new HorizontalLayout();
+        row.setWidthFull();
+        row.setAlignItems(Alignment.CENTER);
+        row.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        searchField.setPlaceholder("Search patient last name, ID, or site...");
+        searchField.setClearButtonVisible(true);
+        searchField.setWidth("420px");
+        searchField.addValueChangeListener(event -> refreshDashboardGrid());
+
+        Button addPatientButton = new Button("+ Add Patient");
+        addPatientButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        row.add(searchField, addPatientButton);
+        return row;
     }
 }
 
