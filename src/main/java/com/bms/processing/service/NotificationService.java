@@ -4,6 +4,8 @@ import com.bms.processing.entity.EmailTemplateEntity;
 import com.bms.processing.repository.NotificationRecipientRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class NotificationService {
 
@@ -26,21 +28,43 @@ public class NotificationService {
         emailService.sendTestEmail(to);
     }
 
-    // group sending method with final subject/body
+    // group sending method with final subject/body. Sends one email per workflow event updated 6082026
     public void sendToGroup(
-            String groupName,
-            String subject,
-            String body
-    ) {
-        notificationRecipientRepository
-                .findByGroupNameAndEnabledTrue(groupName)
-                .forEach(recipient ->
-                        emailService.sendEmail(
-                                recipient.getEmailAddress(),
-                                subject,
-                                body
+                String groupName,
+                String subject,
+                String body
+        ) {
+        List<String> toRecipients =
+                notificationRecipientRepository
+                        .findByGroupNameAndEnabledTrue(groupName)
+                        .stream()
+                        .filter(recipient ->
+                                !"CC".equalsIgnoreCase(recipient.getRecipientType())
                         )
-                );
+                        .map(recipient -> recipient.getEmailAddress())
+                        .toList();
+
+        List<String> ccRecipients =
+                notificationRecipientRepository
+                        .findByGroupNameAndEnabledTrue(groupName)
+                        .stream()
+                        .filter(recipient ->
+                                "CC".equalsIgnoreCase(recipient.getRecipientType())
+                        )
+                        .map(recipient -> recipient.getEmailAddress())
+                        .toList();
+
+        // do not send if nobody is in TO
+        if (toRecipients.isEmpty()) {
+                return;
+        }
+
+        emailService.sendEmail(
+                toRecipients,
+                ccRecipients,
+                subject,
+                body
+        );
     }
 
     // template-backed send path
