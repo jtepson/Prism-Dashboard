@@ -134,6 +134,7 @@ CREATE TABLE notification_recipient (
     id BIGSERIAL PRIMARY KEY,
     group_name character varying(100) NOT NULL,
     email_address character varying(255) NOT NULL,
+    recipient_type character varying(10) NOT NULL DEFAULT 'TO',
     enabled boolean NOT NULL DEFAULT true
 );
 
@@ -143,7 +144,7 @@ CREATE TABLE site_contact (
     id BIGSERIAL PRIMARY KEY,
     site_id BIGINT NOT NULL,
     contact_name VARCHAR(255),
-	title VARCHAR(255);
+	title VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(50),
 

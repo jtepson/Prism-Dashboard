@@ -21,6 +21,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -480,18 +481,36 @@ public class ManageNotificationsView extends VerticalLayout {
 
         Checkbox enabled = new Checkbox("Enabled", true);
 
+        // allows To vs CC recipients
+        Select<String> recipientType = new Select<>();
+        recipientType.setLabel("Recipient Type");
+        recipientType.setItems("TO", "CC");
+        recipientType.setValue("TO");
+        recipientType.setWidthFull();
+
         if (lockedGroupName != null) {
-            groupName.setValue(lockedGroupName);
-            groupName.setReadOnly(true);
+        groupName.setValue(lockedGroupName);
+        groupName.setReadOnly(true);
         }
 
         if (editMode) {
-            groupName.setValue(existingRecipient.getGroupName() == null ? "" : existingRecipient.getGroupName());
-            emailAddress.setValue(existingRecipient.getEmailAddress() == null ? "" : existingRecipient.getEmailAddress());
-            enabled.setValue(Boolean.TRUE.equals(existingRecipient.getEnabled()));
+        groupName.setValue(existingRecipient.getGroupName() == null ? "" : existingRecipient.getGroupName());
+        emailAddress.setValue(existingRecipient.getEmailAddress() == null ? "" : existingRecipient.getEmailAddress());
+        enabled.setValue(Boolean.TRUE.equals(existingRecipient.getEnabled()));
+
+        recipientType.setValue(
+                existingRecipient.getRecipientType() == null
+                        ? "TO"
+                        : existingRecipient.getRecipientType()
+        );
         }
 
-        VerticalLayout form = new VerticalLayout(groupName, emailAddress, enabled);
+        VerticalLayout form = new VerticalLayout(
+                groupName,
+                emailAddress,
+                recipientType,
+                enabled
+        );
         form.setPadding(false);
         form.setSpacing(true);
 
@@ -507,6 +526,7 @@ public class ManageNotificationsView extends VerticalLayout {
 
             recipient.setGroupName(groupName.getValue().trim());
             recipient.setEmailAddress(emailAddress.getValue().trim());
+            recipient.setRecipientType(recipientType.getValue());
             recipient.setEnabled(enabled.getValue());
 
             notificationRecipientService.save(recipient);

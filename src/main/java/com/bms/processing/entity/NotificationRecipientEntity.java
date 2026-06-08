@@ -16,6 +16,9 @@ public class NotificationRecipientEntity {
 
     private Boolean enabled = true;
 
+    // To or CC recipient
+    private String recipientType = "TO";
+
     public Long getId() {
         return id;
     }
@@ -42,5 +45,13 @@ public class NotificationRecipientEntity {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getRecipientType() {
+        return recipientType;
+    }
+
+    public void setRecipientType(String recipientType) {
+        this.recipientType = recipientType;
     }
 }
