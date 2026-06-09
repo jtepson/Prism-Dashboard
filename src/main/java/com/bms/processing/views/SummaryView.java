@@ -184,28 +184,11 @@ public class SummaryView extends VerticalLayout {
 
     }
 
-    private Component buildFixedDashboardLayout() {
+    private Component buildLowerDashboardLayout() {
         VerticalLayout wrapper = new VerticalLayout();
         wrapper.setWidthFull();
         wrapper.setPadding(false);
         wrapper.setSpacing(true);
-
-        Div topGrid = new Div();
-        topGrid.getStyle()
-                .set("display", "grid")
-                .set("grid-template-columns", DASHBOARD_GRID_COLUMNS)
-                .set("gap", "1rem")
-                .set("width", "100%");
-
-        Component needsAttention = new DashboardWidget("Needs Attention", buildNeedsAttentionWidget());
-        Component processing = new DashboardWidget("Processing", buildProcessingQueueWidget());
-        Component recentActivity = new DashboardWidget("Recent Activity", buildRecentActivityWidget());
-
-        needsAttention.getElement().getStyle().set("grid-column", "span 4");
-        processing.getElement().getStyle().set("grid-column", "span 4");
-        recentActivity.getElement().getStyle().set("grid-column", "span 4");
-
-        topGrid.add(needsAttention, processing, recentActivity);
 
         Div separator = new Div();
         separator.getStyle()
@@ -226,14 +209,10 @@ public class SummaryView extends VerticalLayout {
                 new DashboardWidget("Completed (Last 30 Days)", buildCompletedWidget())
         );
 
-        getStyle()
-                .set("overflow-x", "auto")
-                .set("background", "#f5f7fb");
-
-        wrapper.add(topGrid, separator, lowerStack);
+        wrapper.add(separator, lowerStack);
         return wrapper;
     }
-
+    
     //adding this in order to connect widgets and metrics together for alignment - updated 6092026
     private Component buildDashboardPage(H2 title, Span subtitle) {
         VerticalLayout shell = new VerticalLayout();
@@ -250,12 +229,91 @@ public class SummaryView extends VerticalLayout {
 
         shell.add(
                 buildDashboardHeader(title, subtitle),
-                buildMetricSection(),
-                buildFixedDashboardLayout()
+                buildTopDashboardGrid(),
+                buildLowerDashboardLayout()
         );
 
         return shell;
     }
+
+    private Component buildTopDashboardGrid() {
+        Div grid = new Div();
+        grid.setWidthFull();
+
+        grid.getStyle()
+                .set("display", "grid")
+                .set("grid-template-columns", "repeat(12, minmax(0, 1fr))")
+                .set("gap", "1rem")
+                .set("width", "100%");
+
+        Component metricUpcoming = new DashboardMetricCard(
+                "Upcoming",
+                getUpcomingRecords().size(),
+                "Awaiting intake",
+                "#7c3aed",
+                VaadinIcon.CALENDAR
+        );
+
+        Component metricProcessing = new DashboardMetricCard(
+                "Processing",
+                getProcessingRecords().size(),
+                "In progress",
+                "#2563eb",
+                VaadinIcon.REFRESH
+        );
+
+        Component metricErrors = new DashboardMetricCard(
+                "Errors",
+                getErrorRecords().size(),
+                "Needs attention",
+                "#dc2626",
+                VaadinIcon.WARNING
+        );
+
+        Component metricCompleted = new DashboardMetricCard(
+                "Completed",
+                getCompletedLast30Records().size(),
+                "Last 30 days",
+                "#16a34a",
+                VaadinIcon.CHECK_CIRCLE
+        );
+
+        metricUpcoming.getElement().getStyle().set("grid-column", "1 / span 3");
+        metricProcessing.getElement().getStyle().set("grid-column", "4 / span 3");
+        metricErrors.getElement().getStyle().set("grid-column", "7 / span 3");
+        metricCompleted.getElement().getStyle().set("grid-column", "10 / span 3");
+
+        Component needsAttention = new DashboardWidget(
+                "Needs Attention",
+                buildNeedsAttentionWidget()
+        );
+
+        Component processing = new DashboardWidget(
+                "Processing",
+                buildProcessingQueueWidget()
+        );
+
+        Component recentActivity = new DashboardWidget(
+                "Recent Activity",
+                buildRecentActivityWidget()
+        );
+
+        needsAttention.getElement().getStyle().set("grid-column", "1 / span 4");
+        processing.getElement().getStyle().set("grid-column", "5 / span 4");
+        recentActivity.getElement().getStyle().set("grid-column", "9 / span 4");
+
+        grid.add(
+                metricUpcoming,
+                metricProcessing,
+                metricErrors,
+                metricCompleted,
+                needsAttention,
+                processing,
+                recentActivity
+        );
+
+        return grid;
+        }
 
     private void rebuildDashboard() {
         dashboardBody.removeAll();

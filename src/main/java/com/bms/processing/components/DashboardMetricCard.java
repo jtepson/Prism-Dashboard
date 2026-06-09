@@ -18,18 +18,19 @@ public class DashboardMetricCard extends Div {
             String color,
             VaadinIcon icon
     ) {
-        addClassName("dashboard-metric-card");
+        
+    addClassName("dashboard-metric-card");
 
-        getStyle()
-                .set("background", "#ffffff")
-                .set("border", "1px solid #dbe3ee")
-                .set("border-radius", "16px")
-                .set("padding", "1rem")
-                .set("box-shadow", "0 4px 12px rgba(15, 23, 42, 0.06)")
-                .set("border-bottom", "3px solid " + color)
-                .set("min-width", "180px")
-                .set("width", "240px")
-                .set("flex-shrink", "0");
+    getStyle()
+        .set("background", "#ffffff")
+        .set("border", "1px solid #dbe3ee")
+        .set("border-radius", "16px")
+        .set("padding", "1rem")
+        .set("box-shadow", "0 4px 12px rgba(15, 23, 42, 0.06)")
+        .set("border-bottom", "3px solid " + color)
+        .set("min-width", "0")
+        .set("width", "100%")
+        .set("box-sizing", "border-box");
 
         Icon iconComponent = icon.create();
         iconComponent.setSize("28px");
