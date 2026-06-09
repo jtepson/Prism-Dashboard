@@ -96,15 +96,29 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Processed", ProcessedView.class, new Icon(VaadinIcon.CHECK_CIRCLE_O)));
         nav.addItem(new SideNavItem("Completed", CompletedView.class, new Icon(VaadinIcon.CHECK_CIRCLE)));
         nav.addItem(new SideNavItem("Errors", ErrorsView.class, new Icon(VaadinIcon.WARNING)));
+        
+        //updated sidebar for dropdown - updated 6092026
         SideNavItem manage = new SideNavItem(
                 "Manage",
                 "",
                 new Icon(VaadinIcon.TOOLS)
         );
 
-        manage.addItem(new SideNavItem("Patients", ManagePatientsView.class));
-        manage.addItem(new SideNavItem("Sites", ManageSitesView.class));
-        manage.addItem(new SideNavItem("Notification Groups", ManageNotificationsView.class));
+        SideNavItem patients = new SideNavItem("Patients", ManagePatientsView.class);
+        SideNavItem sites = new SideNavItem("Sites", ManageSitesView.class);
+        SideNavItem notificationGroups = new SideNavItem("Notification Groups", ManageNotificationsView.class);
+
+        styleManageChild(patients);
+        styleManageChild(sites);
+        styleManageChild(notificationGroups);
+
+        manage.addItem(patients);
+        manage.addItem(sites);
+        manage.addItem(notificationGroups);
+
+        manage.getStyle()
+                .set("border-radius", "12px")
+                .set("margin-top", "0.25rem");
 
         nav.addItem(manage);
 
@@ -233,5 +247,13 @@ public class MainLayout extends AppLayout {
         drawerLayout.setSizeFull();
 
         addToDrawer(drawerLayout);
+    }
+
+    private void styleManageChild(SideNavItem item) {
+        item.getStyle()
+                .set("margin-left", "1rem")
+                .set("border-radius", "12px")
+                .set("font-weight", "500")
+                .set("padding", "0.15rem 0.25rem");
     }
 }
