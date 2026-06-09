@@ -76,6 +76,10 @@ public class SummaryView extends VerticalLayout {
     private static final String LAYOUT_ROWS = "Rows View";
     private static final String LAYOUT_GRID = "Grid View";
 
+    //addding for dashboard alignment
+    private static final String DASHBOARD_MAX_WIDTH = "1480px";
+    private static final String DASHBOARD_GRID_COLUMNS = "repeat(12, minmax(0, 1fr))";
+
     private final Div quickViewPanel = new Div();
     private final Div quickViewBackdrop = new Div();
 
@@ -114,7 +118,7 @@ public class SummaryView extends VerticalLayout {
         this.auditEventService = auditEventService;
 
         setSizeFull();
-        setPadding(true);
+        setPadding(false);
         setSpacing(true);
 
         H2 title = new H2("BMS Dashboard");
@@ -173,10 +177,7 @@ public class SummaryView extends VerticalLayout {
         quickViewBackdrop.addClickListener(event -> hideQuickView());
 
         add(
-                buildDashboardHeader(title, subtitle),
-                buildTopActionRow(),
-                buildMetricSection(),
-                buildFixedDashboardLayout(),
+                buildDashboardPage(title, subtitle),
                 quickViewBackdrop,
                 quickViewPanel
         );
@@ -192,15 +193,19 @@ public class SummaryView extends VerticalLayout {
         Div topGrid = new Div();
         topGrid.getStyle()
                 .set("display", "grid")
-                .set("grid-template-columns", "repeat(auto-fit, minmax(420px, 1fr))")
+                .set("grid-template-columns", DASHBOARD_GRID_COLUMNS)
                 .set("gap", "1rem")
                 .set("width", "100%");
 
-        topGrid.add(
-                new DashboardWidget("Needs Attention", buildNeedsAttentionWidget()),
-                new DashboardWidget("Processing", buildProcessingQueueWidget()),
-                new DashboardWidget("Recent Activity", buildRecentActivityWidget())
-        );
+        Component needsAttention = new DashboardWidget("Needs Attention", buildNeedsAttentionWidget());
+        Component processing = new DashboardWidget("Processing", buildProcessingQueueWidget());
+        Component recentActivity = new DashboardWidget("Recent Activity", buildRecentActivityWidget());
+
+        needsAttention.getElement().getStyle().set("grid-column", "span 4");
+        processing.getElement().getStyle().set("grid-column", "span 4");
+        recentActivity.getElement().getStyle().set("grid-column", "span 4");
+
+        topGrid.add(needsAttention, processing, recentActivity);
 
         Div separator = new Div();
         separator.getStyle()
@@ -221,8 +226,35 @@ public class SummaryView extends VerticalLayout {
                 new DashboardWidget("Completed (Last 30 Days)", buildCompletedWidget())
         );
 
+        getStyle()
+                .set("overflow-x", "auto")
+                .set("background", "#f5f7fb");
+
         wrapper.add(topGrid, separator, lowerStack);
         return wrapper;
+    }
+
+    //adding this in order to connect widgets and metrics together for alignment - updated 6092026
+    private Component buildDashboardPage(H2 title, Span subtitle) {
+        VerticalLayout shell = new VerticalLayout();
+        shell.setPadding(true);
+        shell.setSpacing(true);
+        shell.setWidthFull();
+
+        shell.getStyle()
+                .set("padding", "1.5rem")
+                .set("max-width", DASHBOARD_MAX_WIDTH)
+                .set("min-width", "980px")
+                .set("margin", "0")
+                .set("box-sizing", "border-box");
+
+        shell.add(
+                buildDashboardHeader(title, subtitle),
+                buildMetricSection(),
+                buildFixedDashboardLayout()
+        );
+
+        return shell;
     }
 
     private void rebuildDashboard() {
@@ -1055,52 +1087,56 @@ public class SummaryView extends VerticalLayout {
     private record SectionDefinition(String title, List<CaseRecordEntity> records, String route) {
     }
 
-    private HorizontalLayout buildMetricSection() {
-
-        HorizontalLayout metrics = new HorizontalLayout();
+    //refining widget trackers here, at first they were too thin so trying to tweak it to get it uniform to widgets below 6092025
+    private Component buildMetricSection() {
+        Div metrics = new Div();
         metrics.setWidthFull();
-        metrics.setPadding(false);
-        metrics.setSpacing(true);
-        metrics.setJustifyContentMode(JustifyContentMode.START);
-        
-        //improving placement for these metric cards at top of screen, the justifycontent above was between but changed to start. That and below grouping of four should keep them tight to each other.
-        metrics.setSpacing(true);
-        metrics.getStyle()
-        .set("gap", "1rem")
-        .set("flex-wrap", "wrap");
 
-        metrics.add(
-                new DashboardMetricCard(
-                        "Upcoming",
-                        getUpcomingRecords().size(),
-                        "Awaiting intake",
-                        "#7c3aed",
-                        VaadinIcon.CALENDAR
-                ),
-                new DashboardMetricCard(
-                        "Processing",
-                        getProcessingRecords().size(),
-                        "In progress",
-                        "#2563eb",
-                        VaadinIcon.REFRESH
-                ),
-                new DashboardMetricCard(
-                        "Errors",
-                        getErrorRecords().size(),
-                        "Needs attention",
-                        "#dc2626",
-                        VaadinIcon.WARNING
-                ),
-                new DashboardMetricCard(
-                        "Completed",
-                        getCompletedLast30Records().size(),
-                        "Last 30 days",
-                        "#16a34a",
-                        VaadinIcon.CHECK_CIRCLE
-                )
-        );
         metrics.getStyle()
-        .set("margin-bottom", "1rem");
+                .set("display", "grid")
+                .set("grid-template-columns", DASHBOARD_GRID_COLUMNS)
+                .set("gap", "1rem")
+                .set("width", "100%")
+                .set("margin-bottom", "1rem");
+
+        Component upcoming = new DashboardMetricCard(
+                "Upcoming",
+                getUpcomingRecords().size(),
+                "Awaiting intake",
+                "#7c3aed",
+                VaadinIcon.CALENDAR
+        );
+
+        Component processing = new DashboardMetricCard(
+                "Processing",
+                getProcessingRecords().size(),
+                "In progress",
+                "#2563eb",
+                VaadinIcon.REFRESH
+        );
+
+        Component errors = new DashboardMetricCard(
+                "Errors",
+                getErrorRecords().size(),
+                "Needs attention",
+                "#dc2626",
+                VaadinIcon.WARNING
+        );
+
+        Component completed = new DashboardMetricCard(
+                "Completed",
+                getCompletedLast30Records().size(),
+                "Last 30 days",
+                "#16a34a",
+                VaadinIcon.CHECK_CIRCLE
+        );
+
+        upcoming.getElement().getStyle().set("grid-column", "span 3");
+        processing.getElement().getStyle().set("grid-column", "span 3");
+        errors.getElement().getStyle().set("grid-column", "span 3");
+        completed.getElement().getStyle().set("grid-column", "span 3");
+
+        metrics.add(upcoming, processing, errors, completed);
 
         return metrics;
     }
@@ -1576,20 +1612,20 @@ public class SummaryView extends VerticalLayout {
         };
     }
 
-    //persistent row hovering on grids, rebuilt for new dashboard revision - updated 6082026
+    //persistent row hovering on grids, rebuilt for new dashboard revision - updated 6082026, updated again 6092026, trying to nail down this alignment
     private void refreshDashboardGrid() {
         removeAll();
 
         add(
-                buildDashboardHeader(new H2("BMS Dashboard"), new Span("Operational overview of workflow status and patient queues.")),
-                buildTopActionRow(),
-                buildMetricSection(),
-                buildFixedDashboardLayout(),
-                quickViewBackdrop,
-                quickViewPanel
+                        buildDashboardPage(
+                                new H2("BMS Dashboard"),
+                                new Span("Operational overview of workflow status and patient queues.")
+                        ),
+                        quickViewBackdrop,
+                        quickViewPanel
         );
     }
-
+    
     //Will allow configrable widget placement regardless of side now
     private void addWidgetToColumn(
         VerticalLayout leftColumn,
@@ -1704,22 +1740,5 @@ public class SummaryView extends VerticalLayout {
         return String.format("%d:%02d %s", displayHour, minute, amPm);
     }
 
-    private Component buildTopActionRow() {
-        HorizontalLayout row = new HorizontalLayout();
-        row.setWidthFull();
-        row.setAlignItems(Alignment.CENTER);
-        row.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        searchField.setPlaceholder("Search patient last name, ID, or site...");
-        searchField.setClearButtonVisible(true);
-        searchField.setWidth("420px");
-        searchField.addValueChangeListener(event -> refreshDashboardGrid());
-
-        Button addPatientButton = new Button("+ Add Patient");
-        addPatientButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        row.add(searchField, addPatientButton);
-        return row;
-    }
 }
 
