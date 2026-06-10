@@ -16,6 +16,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -73,11 +74,12 @@ public class MainLayout extends AppLayout {
             logo.setWidth("64px");
             logo.setHeight("64px");
 
-            H2 appName = new H2("Prism Clinical Imaging");
-            appName.getStyle()
-                    .set("margin", "0")
-                    .set("font-size", "1.15rem")
-                    .set("font-weight", "700");
+                H2 appName = new H2("Prism Clinical Imaging");
+                appName.getStyle()
+                        .set("margin", "0")
+                        .set("font-size", "1.15rem")
+                        .set("font-weight", "700")
+                        .set("color", "#ffffff");
 
             HorizontalLayout branding = new HorizontalLayout(
                     logo,
@@ -187,31 +189,35 @@ public class MainLayout extends AppLayout {
             Div avatar = new Div();
             avatar.setText(initials);
             avatar.getStyle()
-                    .set("width", "36px")
-                    .set("height", "36px")
-                    .set("border-radius", "999px")
-                    .set("background", "#dbeafe")
-                    .set("color", "#1d4ed8")
-                    .set("display", "flex")
-                    .set("align-items", "center")
-                    .set("justify-content", "center")
-                    .set("font-weight", "800")
-                    .set("flex-shrink", "0");
+                        .set("width", "38px")
+                        .set("height", "38px")
+                        .set("border-radius", "999px")
+                        .set("background", "linear-gradient(135deg, #f4f7ff, #dbeafe)")
+                        .set("color", "#2563eb")
+                        .set("display", "flex")
+                        .set("align-items", "center")
+                        .set("justify-content", "center")
+                        .set("font-weight", "800")
+                        .set("flex-shrink", "0")
+                        .set("box-shadow", "0 2px 10px rgba(0,0,0,0.20)");
 
             Span userName = new Span(displayName);
             userName.getStyle()
-                    .set("color", "#ffffff")
-                    .set("font-weight", "700");
+                        .set("color", "#ffffff")
+                        .set("font-weight", "700")
+                        .set("font-size", "0.86rem")
+                        .set("white-space", "nowrap");
 
             Span userRole = new Span(userRoleDisplay);
             userRole.getStyle()
-                    .set("color", "#a7f3d0")
-                    .set("font-size", "0.78rem")
-                    .set("font-weight", "600");
+                        .set("color", "#a7f3d0")
+                        .set("font-size", "0.72rem")
+                        .set("font-weight", "600");
 
             VerticalLayout userText = new VerticalLayout(userName, userRole);
             userText.setPadding(false);
             userText.setSpacing(false);
+            userText.getStyle().set("min-width", "0");
 
             HorizontalLayout userRow = new HorizontalLayout(avatar, userText);
             userRow.setAlignItems(Alignment.CENTER);
@@ -220,53 +226,55 @@ public class MainLayout extends AppLayout {
             Button logoutButton = new Button("Logout");
                 logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 logoutButton.getStyle()
-                        .set("font-size", "0.8rem")
-                        .set("font-weight", "700")
-                        .set("color", "#fca5a5")
-                        .set("padding", "0");
+                        .set("color", "#ff8f8f")
+                        .set("font-size", "0.86rem")
+                        .set("font-weight", "600")
+                        .set("cursor", "pointer")
+                        .set("transition", "all 0.15s ease");
+
+                logoutButton.addClassName("sidebar-logout-button");
 
                 logoutButton.addClickListener(event ->
                         authenticationContext.logout()
-                );
+        );
 
         HorizontalLayout userTopRow = new HorizontalLayout(avatar, userText);
         userTopRow.setAlignItems(Alignment.CENTER);
         userTopRow.setWidthFull();
         userTopRow.setSpacing(true);
         userTopRow.setPadding(false);
+        userTopRow.getStyle().set("min-width", "0");
 
-        Div divider = new Div();
+        Hr divider = new Hr();
         divider.getStyle()
+                .set("margin", "0.55rem 0")
+                .set("border", "none")
                 .set("height", "1px")
-                .set("width", "100%")
-                .set("background", "rgba(255, 255, 255, 0.18)")
-                .set("margin", "0.75rem 0");
+                .set("background",
+                        "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)");
 
-        Icon logoutIcon = VaadinIcon.SIGN_OUT.create();
-        logoutIcon.setSize("18px");
-        logoutIcon.getStyle()
-                .set("color", "#fca5a5");
-
-        HorizontalLayout logoutRow = new HorizontalLayout(logoutIcon, logoutButton);
-        logoutRow.setAlignItems(Alignment.CENTER);
-        logoutRow.setSpacing(true);
+        HorizontalLayout logoutRow = new HorizontalLayout(logoutButton);
+        logoutRow.setWidthFull();
+        logoutRow.setPadding(false);
+        logoutRow.setSpacing(false);
 
         userCard.removeAll();
         userCard.add(userTopRow, divider, logoutRow);
 
         userCard.setWidth("90%");
-        userCard.setMaxWidth("190px");
+        userCard.setMaxWidth("215px");
 
         userCard.getStyle()
-                .set("background", "rgba(255, 255, 255, 0.09)")
-                .set("border", "1px solid rgba(167, 243, 208, 0.28)")
+                .set("background",
+                        "linear-gradient(#0f4a4f, #0f4a4f) padding-box, " +
+                        "linear-gradient(135deg, rgba(94,234,212,0.95), rgba(255,255,255,0.18), rgba(20,184,166,0.25)) border-box")
+                .set("border", "1px solid transparent")
                 .set("border-radius", "18px")
-                .set("padding", "1rem")
-                .set("color", "#e6fffb")
-                .set("box-shadow", "0 16px 36px rgba(0, 0, 0, 0.22)")
-                .set("backdrop-filter", "blur(12px)")
-                .set("margin-bottom", "1rem")
-                .set("cursor", "pointer");
+                .set("padding", "0.75rem")
+                .set("margin-bottom", "18px")
+                .set("box-shadow", "0 10px 26px rgba(0,0,0,0.22)")
+                .set("color", "#ffffff")
+                .set("box-sizing", "border-box");
 
         VerticalLayout drawerLayout =
             new VerticalLayout(branding, scroller, userCard);

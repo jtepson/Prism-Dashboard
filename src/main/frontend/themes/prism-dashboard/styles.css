@@ -160,7 +160,7 @@ vaadin-grid::part(header-cell) {
 }
 
 vaadin-grid::part(cell) {
-  background: #ffffff;
+  background: transparent;
   color: var(--pacs-text);
   border-bottom: 1px solid #edf2f7;
 }
@@ -201,6 +201,11 @@ vaadin-dialog-overlay::part(header),
 vaadin-dialog-overlay::part(footer) {
   background: #ffffff;
   color: var(--pacs-text);
+}
+
+.sidebar-logout-button:hover {
+    color: #ffb4b4 !important;
+    transform: translateX(2px);
 }
 
 .summary-dashboard {
@@ -303,6 +308,7 @@ vaadin-dialog-overlay::part(footer) {
 }
 
 vaadin-grid.interactive-grid::part(body-cell) {
+    background-color: transparent;
     transition: background-color 0.15s ease-in-out;
     cursor: pointer;
 }
@@ -311,12 +317,8 @@ vaadin-grid.interactive-grid::part(row):hover {
     background-color: rgba(37, 99, 235, 0.08);
 }
 
-vaadin-grid.interactive-grid::part(row):hover::part(body-cell) {
-    background-color: rgba(37, 99, 235, 0.08);
-}
-
-vaadin-grid.interactive-grid::part(body-cell):hover {
-    background-color: rgba(37, 99, 235, 0.08);
+vaadin-grid.interactive-grid::part(header-cell) {
+    background: #f8fafc !important;
 }
 
 vaadin-grid.interactive-grid::part(summary-selected-row-cell) {
