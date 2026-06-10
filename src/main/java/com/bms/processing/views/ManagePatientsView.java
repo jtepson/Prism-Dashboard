@@ -7,6 +7,7 @@ import com.bms.processing.service.AuditEventService;
 import com.bms.processing.service.CaseRecordService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -82,6 +83,12 @@ public class ManagePatientsView extends VerticalLayout {
 
     private void configureGrid() {
         grid.setSizeFull();
+        grid.setWidthFull();
+        grid.addClassName("workflow-grid");
+
+        grid.addThemeVariants(
+                GridVariant.LUMO_ROW_STRIPES
+        );
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last")

@@ -19,6 +19,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -89,12 +90,18 @@ public class UpcomingView extends VerticalLayout {
 
     private void configureGrid() {
         grid.setSizeFull();
-    
+        grid.setWidthFull();
+        grid.addClassName("workflow-grid");
+
+        grid.addThemeVariants(
+                GridVariant.LUMO_ROW_STRIPES
+        );
+
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")
                 .setSortable(true)
                 .setAutoWidth(true);
-    
+
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("Patient First")
                 .setSortable(true)

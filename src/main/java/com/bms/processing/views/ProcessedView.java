@@ -74,11 +74,12 @@ public class ProcessedView extends VerticalLayout {
 
     private void configureGrid() {
         grid.setSizeFull();
+        grid.setWidthFull();
+        grid.addClassName("workflow-grid");
+
         grid.addThemeVariants(
-                GridVariant.LUMO_ROW_STRIPES,
-                GridVariant.LUMO_WRAP_CELL_CONTENT,
-                GridVariant.LUMO_COLUMN_BORDERS
-        );
+                GridVariant.LUMO_ROW_STRIPES
+    );
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")

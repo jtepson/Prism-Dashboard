@@ -11,6 +11,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -112,11 +113,12 @@ public class ManageNotificationsView extends VerticalLayout {
 
     private void configureGrid() {
         grid.setSizeFull();
-        grid.getStyle()
-                .set("background", "white")
-                .set("border", "1px solid #e2e8f0")
-                .set("border-radius", "10px")
-                .set("overflow", "hidden");
+        grid.setWidthFull();
+        grid.addClassName("workflow-grid");
+
+        grid.addThemeVariants(
+                GridVariant.LUMO_ROW_STRIPES
+        );
 
         grid.addComponentColumn(this::buildStatusCell)
                 .setHeader("Status / Event")
@@ -489,20 +491,20 @@ public class ManageNotificationsView extends VerticalLayout {
         recipientType.setWidthFull();
 
         if (lockedGroupName != null) {
-        groupName.setValue(lockedGroupName);
-        groupName.setReadOnly(true);
-        }
+                groupName.setValue(lockedGroupName);
+                groupName.setReadOnly(true);
+                }
 
         if (editMode) {
-        groupName.setValue(existingRecipient.getGroupName() == null ? "" : existingRecipient.getGroupName());
-        emailAddress.setValue(existingRecipient.getEmailAddress() == null ? "" : existingRecipient.getEmailAddress());
-        enabled.setValue(Boolean.TRUE.equals(existingRecipient.getEnabled()));
+                groupName.setValue(existingRecipient.getGroupName() == null ? "" : existingRecipient.getGroupName());
+                emailAddress.setValue(existingRecipient.getEmailAddress() == null ? "" : existingRecipient.getEmailAddress());
+                enabled.setValue(Boolean.TRUE.equals(existingRecipient.getEnabled()));
 
-        recipientType.setValue(
-                existingRecipient.getRecipientType() == null
-                        ? "TO"
-                        : existingRecipient.getRecipientType()
-        );
+                recipientType.setValue(
+                        existingRecipient.getRecipientType() == null
+                                ? "TO"
+                                : existingRecipient.getRecipientType()
+                );
         }
 
         VerticalLayout form = new VerticalLayout(

@@ -324,3 +324,19 @@ vaadin-grid.interactive-grid::part(header-cell) {
 vaadin-grid.interactive-grid::part(summary-selected-row-cell) {
     background-color: rgba(37, 99, 235, 0.14);
 }
+
+.workflow-grid {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.workflow-grid::part(header-cell) {
+    background: #edf8f7;
+    color: #0f4f57;
+    font-weight: 700;
+    border-bottom: 2px solid #bfe4df;
+}
+
+.workflow-grid::part(body-cell) {
+    border-bottom: 1px solid #eef2f7;
+}
