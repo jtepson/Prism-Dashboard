@@ -13,6 +13,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
@@ -100,7 +101,7 @@ public class MainLayout extends AppLayout {
         //updated sidebar for dropdown - updated 6092026
         SideNavItem manage = new SideNavItem(
                 "Manage",
-                "",
+                (Class<? extends Component>) null,
                 new Icon(VaadinIcon.TOOLS)
         );
 
@@ -181,7 +182,7 @@ public class MainLayout extends AppLayout {
                 }
         }
 
-        //User placeholder
+        //User card design and formatting - updated 6092026 with dark glass style
         Div userCard = new Div();
             Div avatar = new Div();
             avatar.setText(initials);
@@ -199,13 +200,14 @@ public class MainLayout extends AppLayout {
 
             Span userName = new Span(displayName);
             userName.getStyle()
-                    .set("font-weight", "700")
-                    .set("font-size", "0.9rem");
+                    .set("color", "#ffffff")
+                    .set("font-weight", "700");
 
             Span userRole = new Span(userRoleDisplay);
             userRole.getStyle()
-                    .set("color", "#64748b")
-                    .set("font-size", "0.78rem");
+                    .set("color", "#a7f3d0")
+                    .set("font-size", "0.78rem")
+                    .set("font-weight", "600");
 
             VerticalLayout userText = new VerticalLayout(userName, userRole);
             userText.setPadding(false);
@@ -219,8 +221,8 @@ public class MainLayout extends AppLayout {
                 logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 logoutButton.getStyle()
                         .set("font-size", "0.8rem")
-                        .set("font-weight", "600")
-                        .set("color", "#dc2626")
+                        .set("font-weight", "700")
+                        .set("color", "#fca5a5")
                         .set("padding", "0");
 
                 logoutButton.addClickListener(event ->
@@ -229,22 +231,26 @@ public class MainLayout extends AppLayout {
 
             userCard.removeAll();
             userCard.add(userRow, logoutButton);
+            userCard.setWidth("190px");
             userCard.getStyle()
-                    .set("margin", "1rem")
-                    .set("padding", "0.75rem")
-                    .set("border", "1px solid #dbe3ee")
-                    .set("border-radius", "12px")
-                    .set("background", "#f8fafc")
-                    .set("font-size", "0.85rem")
-                    .set("font-weight", "600");
+                .set("background", "rgba(255, 255, 255, 0.08)")
+                .set("border", "1px solid rgba(255, 255, 255, 0.14)")
+                .set("border-radius", "14px")
+                .set("padding", "0.9rem")
+                .set("margin-bottom", "16px")
+                .set("color", "#e6fffb");
             userCard.getStyle()
-                    .set("cursor", "pointer");
+                .set("cursor", "pointer");
 
         VerticalLayout drawerLayout =
             new VerticalLayout(branding, scroller, userCard);
         drawerLayout.setPadding(false);
         drawerLayout.setSpacing(false);
         drawerLayout.setSizeFull();
+
+        drawerLayout.setDefaultHorizontalComponentAlignment(
+                Alignment.CENTER
+        );
 
         addToDrawer(drawerLayout);
     }

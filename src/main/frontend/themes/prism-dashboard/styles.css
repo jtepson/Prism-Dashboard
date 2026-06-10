@@ -43,8 +43,14 @@ vaadin-app-layout {
 }
 
 vaadin-app-layout::part(drawer) {
-  background: #ffffff;
-  border-right: 1px solid var(--pacs-border);
+  background: linear-gradient(
+      180deg,
+      #00464a 0%,
+      #00383d 45%,
+      #002f35 100%
+  );
+  border-right: none;
+  color: #e6fffb;
 }
 
 vaadin-app-layout::part(navbar) {
@@ -54,39 +60,77 @@ vaadin-app-layout::part(navbar) {
   backdrop-filter: blur(10px);
 }
 
+vaadin-app-layout::part(drawer) {
+  background: linear-gradient(180deg, #00464a 0%, #00383d 45%, #002f35 100%);
+  border-right: none;
+  color: #e6fffb;
+}
+
 vaadin-side-nav {
-  color: var(--pacs-text);
+  padding: 0.75rem;
+  color: #e6fffb;
 }
 
 vaadin-side-nav-item {
-  color: var(--pacs-text);
+  color: #e6fffb;
 }
 
-vaadin-side-nav-item::part(content) {
-  color: var(--pacs-text);
+vaadin-side-nav-item::part(content),
+vaadin-side-nav-item::part(link) {
+  color: #e6fffb;
 }
 
 vaadin-side-nav-item::part(link) {
-  color: var(--pacs-text);
-  border-radius: 10px;
+  border-radius: 12px;
+  min-height: 48px;
+  padding: 6px 10px;
   transition: background 0.18s ease, color 0.18s ease;
 }
 
 vaadin-side-nav-item::part(link):hover {
-  background: #eff6ff;
+  background: rgba(20, 184, 166, 0.16);
 }
 
 vaadin-side-nav-item[current]::part(link) {
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-weight: 600;
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.85), rgba(14, 165, 160, 0.62));
+  color: #ffffff;
+  font-weight: 700;
 }
 
-vaadin-side-nav-item vaadin-icon,
-vaadin-app-layout vaadin-icon,
-vaadin-button vaadin-icon {
-  color: var(--pacs-accent-strong);
+vaadin-side-nav-item vaadin-icon {
+  color: #d7fffb;
   opacity: 1;
+}
+
+vaadin-side-nav-item[current] vaadin-icon {
+  color: #ffffff;
+}
+
+/* Manage submenu */
+vaadin-side-nav-item vaadin-side-nav-item::part(link) {
+  margin-left: 1.6rem;
+  min-height: 42px;
+  font-size: 0.94rem;
+  color: #d7fffb;
+  background: transparent;
+}
+
+vaadin-side-nav-item vaadin-side-nav-item::part(link):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+vaadin-side-nav-item vaadin-side-nav-item[current]::part(link) {
+  background: rgba(20, 184, 166, 0.22);
+  color: #ffffff;
+}
+
+vaadin-side-nav-item::part(toggle) {
+  color: #d7fffb;
+  opacity: 1;
+}
+
+vaadin-side-nav-item[expanded]::part(toggle) {
+  color: #ffffff;
 }
 
 /* Headers */
