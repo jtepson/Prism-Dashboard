@@ -229,17 +229,43 @@ public class MainLayout extends AppLayout {
                         authenticationContext.logout()
                 );
 
-            userCard.removeAll();
-            userCard.add(userRow, logoutButton);
-            userCard.setWidth("190px");
-            userCard.getStyle()
-                .set("background", "rgba(255, 255, 255, 0.08)")
-                .set("border", "1px solid rgba(255, 255, 255, 0.14)")
-                .set("border-radius", "14px")
-                .set("padding", "0.9rem")
-                .set("margin-bottom", "16px")
-                .set("color", "#e6fffb");
-            userCard.getStyle()
+        HorizontalLayout userTopRow = new HorizontalLayout(avatar, userText);
+        userTopRow.setAlignItems(Alignment.CENTER);
+        userTopRow.setWidthFull();
+        userTopRow.setSpacing(true);
+        userTopRow.setPadding(false);
+
+        Div divider = new Div();
+        divider.getStyle()
+                .set("height", "1px")
+                .set("width", "100%")
+                .set("background", "rgba(255, 255, 255, 0.18)")
+                .set("margin", "0.75rem 0");
+
+        Icon logoutIcon = VaadinIcon.SIGN_OUT.create();
+        logoutIcon.setSize("18px");
+        logoutIcon.getStyle()
+                .set("color", "#fca5a5");
+
+        HorizontalLayout logoutRow = new HorizontalLayout(logoutIcon, logoutButton);
+        logoutRow.setAlignItems(Alignment.CENTER);
+        logoutRow.setSpacing(true);
+
+        userCard.removeAll();
+        userCard.add(userTopRow, divider, logoutRow);
+
+        userCard.setWidth("90%");
+        userCard.setMaxWidth("190px");
+
+        userCard.getStyle()
+                .set("background", "rgba(255, 255, 255, 0.09)")
+                .set("border", "1px solid rgba(167, 243, 208, 0.28)")
+                .set("border-radius", "18px")
+                .set("padding", "1rem")
+                .set("color", "#e6fffb")
+                .set("box-shadow", "0 16px 36px rgba(0, 0, 0, 0.22)")
+                .set("backdrop-filter", "blur(12px)")
+                .set("margin-bottom", "1rem")
                 .set("cursor", "pointer");
 
         VerticalLayout drawerLayout =
