@@ -11,6 +11,7 @@ import com.bms.processing.components.PatientQuickView;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.entity.AuditEventEntity;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -85,6 +86,8 @@ public class SummaryView extends VerticalLayout {
 
     private final Div dashboardGridContainer = new Div();
 
+    private final PatientFileService patientFileService;
+
     private CaseRecordEntity selectedRecord;
 
     //Updated options menu selections for dash grid 0527
@@ -111,11 +114,13 @@ public class SummaryView extends VerticalLayout {
     public SummaryView(
                 CaseRecordService caseRecordService,
                 SiteService siteService,
-                AuditEventService auditEventService
+                AuditEventService auditEventService,
+                PatientFileService patientFileService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
+        this.patientFileService = patientFileService;
 
         setSizeFull();
         setPadding(false);
@@ -212,7 +217,7 @@ public class SummaryView extends VerticalLayout {
         wrapper.add(separator, lowerStack);
         return wrapper;
     }
-    
+
     //adding this in order to connect widgets and metrics together for alignment - updated 6092026
     private Component buildDashboardPage(H2 title, Span subtitle) {
         VerticalLayout shell = new VerticalLayout();
@@ -788,7 +793,8 @@ public class SummaryView extends VerticalLayout {
                         CaseRecordDialog.Mode.SUMMARY,
                         this::rebuildDashboard,
                         null,
-                        auditEventService
+                        auditEventService,
+                        patientFileService
                 ).open()
         );
         return grid;
@@ -1621,7 +1627,8 @@ public class SummaryView extends VerticalLayout {
                                         || dialogMode == CaseRecordDialog.Mode.PROCESSING)
                                         ? siteService
                                         : null,
-                                auditEventService
+                                auditEventService,
+                                patientFileService
                         );
 
                         dialog.addDetachListener(event -> {

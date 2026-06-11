@@ -11,6 +11,7 @@ import com.bms.processing.service.SiteService;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.entity.AuditEventEntity;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -52,15 +53,18 @@ public class ProcessingView extends VerticalLayout {
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
 	private final TextField searchField = new TextField();
 	private final SiteService siteService;
+	private final PatientFileService patientFileService;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
-			SiteService siteService,
-			AuditEventService auditEventService
-	) {
+            SiteService siteService,
+            AuditEventService auditEventService,
+            PatientFileService patientFileService
+    ) {
         this.caseRecordService = caseRecordService;
-		this.siteService = siteService;
-		this.auditEventService = auditEventService;
+        this.siteService = siteService;
+        this.auditEventService = auditEventService;
+        this.patientFileService = patientFileService;
 		setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -83,7 +87,8 @@ public class ProcessingView extends VerticalLayout {
 						CaseRecordDialog.Mode.PROCESSING,
 						this::refreshProcessingGrid,
 						siteService,
-						auditEventService
+						auditEventService,
+                        patientFileService
 				).open()
 		);
 

@@ -5,6 +5,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.service.CaseRecordService;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -30,12 +31,16 @@ public class ManagePatientsView extends VerticalLayout {
 
     private final TextField searchField = new TextField();
 
+    private final PatientFileService patientFileService;
+
     public ManagePatientsView(
             CaseRecordService caseRecordService,
-            AuditEventService auditEventService
+            AuditEventService auditEventService,
+            PatientFileService patientFileService
     ) {
         this.caseRecordService = caseRecordService;
         this.auditEventService = auditEventService;
+        this.patientFileService = patientFileService;
 
         setSizeFull();
         setPadding(true);
@@ -133,7 +138,8 @@ public class ManagePatientsView extends VerticalLayout {
                         CaseRecordDialog.Mode.SUMMARY,
                         this::refreshGrid,
                         null,
-                        auditEventService
+                        auditEventService,
+                        patientFileService
                 ).open()
         );
     }

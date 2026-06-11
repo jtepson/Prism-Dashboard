@@ -11,6 +11,7 @@ import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.model.PatientStatus;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -39,15 +40,18 @@ public class UpcomingView extends VerticalLayout {
     private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
+    private final PatientFileService patientFileService;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
                 SiteService siteService,
-                AuditEventService auditEventService
+                AuditEventService auditEventService,
+                PatientFileService patientFileService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
+        this.patientFileService = patientFileService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -80,7 +84,8 @@ public class UpcomingView extends VerticalLayout {
                         CaseRecordDialog.Mode.UPCOMING,
                         this::refreshUpcomingGrid,
                         siteService,
-                        auditEventService
+                        auditEventService,
+                        patientFileService
                 ).open()
         );
 

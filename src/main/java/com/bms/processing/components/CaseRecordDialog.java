@@ -8,6 +8,7 @@ import com.bms.processing.service.SiteService;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.AuditEventService;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -49,13 +50,16 @@ public class CaseRecordDialog extends Dialog {
     private final Mode mode;
     private final Runnable afterSave;
 
+    private final PatientFileService patientFileService;
+
     public CaseRecordDialog(
-                CaseRecordEntity record,
-                CaseRecordService caseRecordService,
-                Mode mode,
-                Runnable afterSave,
-                SiteService siteService,
-                AuditEventService auditEventService
+        CaseRecordEntity record,
+        CaseRecordService caseRecordService,
+        Mode mode,
+        Runnable afterSave,
+        SiteService siteService,
+        AuditEventService auditEventService,
+        PatientFileService patientFileService
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
@@ -63,6 +67,7 @@ public class CaseRecordDialog extends Dialog {
         this.auditEventService = auditEventService;
         this.mode = mode;
         this.afterSave = afterSave;
+        this.patientFileService = patientFileService;
 
         setHeaderTitle("Patient Summary");
         setWidth("900px");
@@ -350,6 +355,14 @@ public class CaseRecordDialog extends Dialog {
         });
         }
 
+        PatientFilesSection patientFilesSection =
+                new PatientFilesSection(record, patientFileService);
+
+        Details patientFilesDetails =
+                new Details("Patient Files", patientFilesSection);
+
+        patientFilesDetails.setOpened(false);
+
         Details activityHistoryDetails =
                 new Details("Activity History", historyLayout);
 
@@ -363,6 +376,7 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         notesDetails,
+                        patientFilesDetails,
                         activityHistoryDetails
                 );
             }
@@ -404,6 +418,7 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         notesDetails,
+                        patientFilesDetails,
                         activityHistoryDetails
                 );
             }
@@ -432,6 +447,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         bmsReviewDetails,
                         notesDetails,
+                        patientFilesDetails,
                         activityHistoryDetails
                 );
                 }
@@ -459,6 +475,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         archiveDetails,
                         notesDetails,
+                        patientFilesDetails,
                         activityHistoryDetails
                 );
             }
@@ -493,6 +510,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         errorReviewDetails,
                         notesDetails,
+                        patientFilesDetails,
                         activityHistoryDetails
                 );
             }

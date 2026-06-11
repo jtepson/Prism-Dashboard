@@ -8,6 +8,7 @@ import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.entity.AuditEventEntity;
+import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -31,13 +32,16 @@ public class CompletedView extends VerticalLayout {
     private final AuditEventService auditEventService;
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
+    private final PatientFileService patientFileService;
 
     public CompletedView(
             CaseRecordService caseRecordService,
-            AuditEventService auditEventService
+            AuditEventService auditEventService,
+            PatientFileService patientFileService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
+            this.patientFileService = patientFileService;
 
         setSizeFull();
         setPadding(true);
@@ -64,7 +68,8 @@ public class CompletedView extends VerticalLayout {
                         CaseRecordDialog.Mode.COMPLETED,
                         this::refreshCompletedGrid,
                         null,
-                        auditEventService
+                        auditEventService,
+                        patientFileService
                 ).open()
         );
 
