@@ -163,6 +163,68 @@ CREATE TABLE email_template (
     enabled BOOLEAN DEFAULT TRUE
 );
 
+CREATE TABLE dicom_config (
+    id BIGSERIAL PRIMARY KEY,
+    config_name VARCHAR(255) NOT NULL,
+    remote_ae_title VARCHAR(64) NOT NULL,
+    remote_host VARCHAR(255) NOT NULL,
+    remote_port INTEGER NOT NULL,
+    local_ae_title VARCHAR(64) NOT NULL,
+    retrieve_ae_title VARCHAR(64),
+    storage_path VARCHAR(1000) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE patient_file (
+    id BIGSERIAL PRIMARY KEY,
+    case_record_id BIGINT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    original_file_name VARCHAR(255),
+    file_type VARCHAR(100) NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    file_date DATE,
+    content_type VARCHAR(255),
+    file_size BIGINT,
+    storage_path VARCHAR(1000) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_patient_file_case_record
+        FOREIGN KEY (case_record_id)
+        REFERENCES case_record(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE patient_ticket (
+    id BIGSERIAL PRIMARY KEY,
+    case_record_id BIGINT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'OPEN',
+    assigned_to VARCHAR(100),
+    created_by VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT fk_patient_ticket_case_record
+        FOREIGN KEY (case_record_id)
+        REFERENCES case_record(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE patient_ticket_message (
+    id BIGSERIAL PRIMARY KEY,
+    patient_ticket_id BIGINT NOT NULL,
+    message TEXT NOT NULL,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_patient_ticket_message_ticket
+        FOREIGN KEY (patient_ticket_id)
+        REFERENCES patient_ticket(id)
+        ON DELETE CASCADE
+);
+
 --
 -- Name: case_record case_record_pkey; Type: CONSTRAINT; Schema: public; Owner: bms
 --
