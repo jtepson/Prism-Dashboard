@@ -109,15 +109,15 @@ public class MainLayout extends AppLayout {
 
         SideNavItem patients = new SideNavItem("Patients", ManagePatientsView.class);
         SideNavItem sites = new SideNavItem("Sites", ManageSitesView.class);
-        SideNavItem notificationGroups = new SideNavItem("Notification Groups", ManageNotificationsView.class);
+        SideNavItem notifications = new SideNavItem("Notifications", ManageNotificationsView.class);
 
         styleManageChild(patients);
         styleManageChild(sites);
-        styleManageChild(notificationGroups);
+        styleManageChild(notifications);
 
         manage.addItem(patients);
         manage.addItem(sites);
-        manage.addItem(notificationGroups);
+        manage.addItem(notifications);
 
         manage.getStyle()
                 .set("border-radius", "12px")
