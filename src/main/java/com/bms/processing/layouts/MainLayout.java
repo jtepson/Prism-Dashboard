@@ -9,6 +9,7 @@ import com.bms.processing.views.UpcomingView;
 import com.bms.processing.views.manage.ManagePatientsView;
 import com.bms.processing.views.manage.ManageSitesView;
 import com.bms.processing.views.manage.ManageNotificationsView;
+import com.bms.processing.views.manage.ManageDicomView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -110,14 +111,17 @@ public class MainLayout extends AppLayout {
         SideNavItem patients = new SideNavItem("Patients", ManagePatientsView.class);
         SideNavItem sites = new SideNavItem("Sites", ManageSitesView.class);
         SideNavItem notifications = new SideNavItem("Notifications", ManageNotificationsView.class);
+        SideNavItem dicomConfiguration = new SideNavItem("DICOM Configuration", ManageDicomView.class);
 
         styleManageChild(patients);
         styleManageChild(sites);
         styleManageChild(notifications);
+        styleManageChild(dicomConfiguration);
 
         manage.addItem(patients);
         manage.addItem(sites);
         manage.addItem(notifications);
+        manage.addItem(dicomConfiguration);
 
         manage.getStyle()
                 .set("border-radius", "12px")
