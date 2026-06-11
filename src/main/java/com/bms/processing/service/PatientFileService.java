@@ -4,6 +4,8 @@ import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.repository.PatientFileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.InputStream;
+import java.nio.file.StandardCopyOption;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,6 +64,49 @@ public class PatientFileService {
         entity.setFileDate(LocalDate.now());
         entity.setContentType(file.getContentType());
         entity.setFileSize(file.getSize());
+        entity.setStoragePath(targetPath.toString());
+
+        return repository.save(entity);
+    }
+
+    public PatientFileEntity saveManualPdf(
+            Long caseRecordId,
+            String originalFilename,
+            String contentType,
+            long fileSize,
+            InputStream inputStream,
+            String baseStoragePath
+    ) throws IOException {
+
+        if (caseRecordId == null) {
+            throw new IllegalArgumentException("Case record ID is required.");
+        }
+
+        if (inputStream == null) {
+            throw new IllegalArgumentException("A PDF file is required.");
+        }
+
+        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
+            throw new IllegalArgumentException("Only PDF files are allowed.");
+        }
+
+        Path caseDirectory = Path.of(baseStoragePath, "patient-files", caseRecordId.toString());
+        Files.createDirectories(caseDirectory);
+
+        String storedFileName = UUID.randomUUID() + ".pdf";
+        Path targetPath = caseDirectory.resolve(storedFileName);
+
+        Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        PatientFileEntity entity = new PatientFileEntity();
+        entity.setCaseRecordId(caseRecordId);
+        entity.setFileName(storedFileName);
+        entity.setOriginalFileName(originalFilename);
+        entity.setFileType("Report");
+        entity.setSource("Manual Upload");
+        entity.setFileDate(LocalDate.now());
+        entity.setContentType(contentType == null || contentType.isBlank() ? "application/pdf" : contentType);
+        entity.setFileSize(fileSize);
         entity.setStoragePath(targetPath.toString());
 
         return repository.save(entity);
