@@ -73,12 +73,7 @@ public class ManageDicomView extends VerticalLayout {
                 .set("font-weight", "800")
                 .set("color", "#0f172a");
 
-        Span breadcrumb = new Span("Manage  ›  DICOM Configuration  ›  Edit");
-        breadcrumb.getStyle()
-                .set("color", "#64748b")
-                .set("font-size", "0.9rem");
-
-        VerticalLayout header = new VerticalLayout(title, breadcrumb);
+        VerticalLayout header = new VerticalLayout(title);
         header.setPadding(false);
         header.setSpacing(false);
 
