@@ -12,6 +12,8 @@ import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.PatientFileService;
+import com.bms.processing.service.DicomConfigService;
+import com.bms.processing.service.DicomService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -56,19 +58,26 @@ public class ProcessingView extends VerticalLayout {
 	private final SiteService siteService;
 	private final PatientFileService patientFileService;
 	private final String baseStoragePath;
+    private final DicomConfigService dicomConfigService;
+    private final DicomService dicomService;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
             SiteService siteService,
             AuditEventService auditEventService,
             PatientFileService patientFileService,
-			@Value("${prism.files.storage-path}") String baseStoragePath
+			@Value("${prism.files.storage-path}") String baseStoragePath,
+			DicomConfigService dicomConfigService,
+			DicomService dicomService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
         this.patientFileService = patientFileService;
 		this.baseStoragePath = baseStoragePath;
+		this.dicomConfigService = dicomConfigService;
+        this.dicomService = dicomService;
+
 		setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -93,7 +102,9 @@ public class ProcessingView extends VerticalLayout {
 						siteService,
 						auditEventService,
                         patientFileService,
-						baseStoragePath
+						baseStoragePath,
+						dicomConfigService,
+                        dicomService
 				).open()
 		);
 

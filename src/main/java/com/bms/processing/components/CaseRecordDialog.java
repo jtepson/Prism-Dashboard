@@ -9,6 +9,9 @@ import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.service.PatientFileService;
+import com.bms.processing.service.DicomConfigService;
+import com.bms.processing.service.DicomService;
+import com.bms.processing.model.DicomStudyResult;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -55,6 +58,10 @@ public class CaseRecordDialog extends Dialog {
     private final PatientFileService patientFileService;
     private final String baseStoragePath;
 
+    //updated 6122026 to also include DICCM fields
+    private final DicomConfigService dicomConfigService;
+    private final DicomService dicomService;
+
     public CaseRecordDialog(
         CaseRecordEntity record,
         CaseRecordService caseRecordService,
@@ -63,7 +70,9 @@ public class CaseRecordDialog extends Dialog {
         SiteService siteService,
         AuditEventService auditEventService,
         PatientFileService patientFileService,
-        String baseStoragePath
+        String baseStoragePath,
+        DicomConfigService dicomConfigService,
+        DicomService dicomService
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
@@ -73,6 +82,8 @@ public class CaseRecordDialog extends Dialog {
         this.afterSave = afterSave;
         this.patientFileService = patientFileService;
         this.baseStoragePath = baseStoragePath;
+        this.dicomConfigService = dicomConfigService;
+        this.dicomService = dicomService;
 
         setHeaderTitle("Patient Summary");
         setWidth("900px");
