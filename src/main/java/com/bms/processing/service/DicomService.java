@@ -1,6 +1,7 @@
 package com.bms.processing.service;
 
 import com.bms.processing.entity.DicomConfigEntity;
+import com.bms.processing.model.DicomStudyResult;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -12,6 +13,8 @@ import org.dcm4che3.net.DimseRSP;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -108,5 +111,21 @@ public class DicomService {
         }
 
         return "Retrieve test placeholder successful.";
+    }
+
+    public List<DicomStudyResult> queryStudies(
+            DicomConfigEntity config,
+            String patientName,
+            String patientId
+    ) {
+
+        List<DicomStudyResult> results = new ArrayList<>();
+
+        /*
+        * Real C-FIND implementation next.
+        * Returning empty list for now.
+        */
+
+        return results;
     }
 }
