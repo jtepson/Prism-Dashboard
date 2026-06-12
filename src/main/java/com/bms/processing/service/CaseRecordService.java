@@ -782,4 +782,18 @@ public class CaseRecordService {
             record.setNeuroreaderErrorNote(null);
         }
     }
+
+    public CaseRecordEntity updateDicomLink(
+            CaseRecordEntity record,
+            String studyInstanceUid,
+            String accessionNumber
+    ) {
+        validateRecord(record);
+
+        record.setStudyInstanceUid(trimToNull(studyInstanceUid));
+        record.setAccessionNumber(trimToNull(accessionNumber));
+        record.setDicomLinked(record.getStudyInstanceUid() != null);
+
+        return repository.save(record);
+    }
 }
