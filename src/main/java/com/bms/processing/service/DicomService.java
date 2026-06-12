@@ -284,4 +284,11 @@ public class DicomService {
 
         return results;
     }
+
+    public List<DicomReportResult> findReports(
+            DicomConfigEntity config,
+            String studyInstanceUid
+    ) {
+        return findReportsInternal(config, studyInstanceUid);
+    }
 }

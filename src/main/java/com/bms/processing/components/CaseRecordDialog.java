@@ -350,11 +350,38 @@ public class CaseRecordDialog extends Dialog {
                                 return;
                 }
 
-                Notification.show(
-                        "Report query coming next.",
-                        3000,
-                        Notification.Position.MIDDLE
-                );
+                try {
+                        var config = dicomConfigService.getActiveConfiguration();
+
+                        if (config == null) {
+                                Notification.show(
+                                        "No DICOM configuration found.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+                                return;
+                        }
+
+                        var reports = dicomService.findReports(
+                                config,
+                                studyInstanceUid.getValue()
+                        );
+
+                        Notification.show(
+                                "Found " + reports.size() + " report(s).",
+                                3000,
+                                Notification.Position.MIDDLE
+                        );
+
+                        } catch (Exception ex) {
+                        ex.printStackTrace();
+
+                        Notification.show(
+                                "Report query failed: " + ex.getMessage(),
+                                5000,
+                                Notification.Position.MIDDLE
+                        );
+                }
         });
 
         Button clearDicomLinkButton = new Button("Clear Link", new Icon(VaadinIcon.CLOSE));
