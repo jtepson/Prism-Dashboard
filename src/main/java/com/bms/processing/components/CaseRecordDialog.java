@@ -252,6 +252,31 @@ public class CaseRecordDialog extends Dialog {
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(false);
 
+        FormLayout dicomForm = new FormLayout();
+        dicomForm.setWidthFull();
+        dicomForm.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("700px", 2)
+        );
+
+        dicomForm.add(
+                buildDisplayField(
+                        "Study Linked",
+                        Boolean.TRUE.equals(record.getDicomLinked()) ? "Yes" : "No"
+                ),
+                buildDisplayField(
+                        "Study Instance UID",
+                        nullSafe(record.getStudyInstanceUid())
+                ),
+                buildDisplayField(
+                        "Accession Number",
+                        nullSafe(record.getAccessionNumber())
+                )
+        );
+
+        Details dicomDetails = new Details("DICOM", dicomForm);
+        dicomDetails.setOpened(false);
+
         TextArea notes = new TextArea("General Notes");
         notes.setWidthFull();
         notes.setValue(nullSafe(record.getNotes()));
@@ -381,6 +406,7 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         notesDetails,
+                        dicomDetails,
                         patientFilesDetails,
                         activityHistoryDetails
                 );
@@ -423,6 +449,7 @@ public class CaseRecordDialog extends Dialog {
                         workflowDetails,
                         thirdPartyDetails,
                         notesDetails,
+                        dicomDetails,
                         patientFilesDetails,
                         activityHistoryDetails
                 );
@@ -452,6 +479,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         bmsReviewDetails,
                         notesDetails,
+                        dicomDetails,
                         patientFilesDetails,
                         activityHistoryDetails
                 );
@@ -480,6 +508,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         archiveDetails,
                         notesDetails,
+                        dicomDetails,
                         patientFilesDetails,
                         activityHistoryDetails
                 );
@@ -515,6 +544,7 @@ public class CaseRecordDialog extends Dialog {
                         thirdPartyDetails,
                         errorReviewDetails,
                         notesDetails,
+                        dicomDetails,
                         patientFilesDetails,
                         activityHistoryDetails
                 );
