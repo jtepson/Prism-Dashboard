@@ -12,6 +12,7 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.model.DicomStudyResult;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -832,5 +833,71 @@ public class CaseRecordDialog extends Dialog {
         );
     }
 
+    private void openDicomStudyResultsDialog(
+                List<DicomStudyResult> studies,
+                TextField studyInstanceUid,
+                TextField accessionNumber
+        ) {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Select DICOM Study");
+                dialog.setWidth("900px");
+
+                Grid<DicomStudyResult> grid =
+                        new Grid<>(DicomStudyResult.class, false);
+
+                grid.setWidthFull();
+                grid.setAllRowsVisible(true);
+
+                grid.addColumn(DicomStudyResult::getPatientName)
+                        .setHeader("Patient Name")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomStudyResult::getPatientId)
+                        .setHeader("Patient ID")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomStudyResult::getStudyDate)
+                        .setHeader("Study Date")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomStudyResult::getAccessionNumber)
+                        .setHeader("Accession")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomStudyResult::getDescription)
+                        .setHeader("Description")
+                        .setAutoWidth(true);
+
+                grid.addComponentColumn(study -> {
+                        Button selectButton = new Button("Select", event -> {
+                        studyInstanceUid.setValue(
+                                study.getStudyInstanceUid() == null
+                                        ? ""
+                                        : study.getStudyInstanceUid()
+                        );
+
+                        accessionNumber.setValue(
+                                study.getAccessionNumber() == null
+                                        ? ""
+                                        : study.getAccessionNumber()
+                        );
+
+                        dialog.close();
+
+                        Notification.show(
+                                "Study selected. Click Save to link it to this patient.",
+                                3500,
+                                Notification.Position.MIDDLE
+                        );
+                });
+
+                return selectButton;
+        }).setHeader("Select").setAutoWidth(true);
+
+        grid.setItems(studies);
+
+        dialog.add(grid);
+        dialog.open();
+        }
 
 }
