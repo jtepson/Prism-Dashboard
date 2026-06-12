@@ -267,13 +267,36 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("700px", 2)
         );
 
+        Button queryArchiveButton = new Button("Query Archive", new Icon(VaadinIcon.SEARCH));
+        queryArchiveButton.addClickListener(event ->
+                Notification.show(
+                        "DICOM query workflow coming next.",
+                        3000,
+                        Notification.Position.MIDDLE
+                )
+        );
+
+        Button clearDicomLinkButton = new Button("Clear Link", new Icon(VaadinIcon.CLOSE));
+        clearDicomLinkButton.addClickListener(event -> {
+                studyInstanceUid.clear();
+                accessionNumber.clear();
+        });
+
+        VerticalLayout dicomActions = new VerticalLayout(
+                queryArchiveButton,
+                clearDicomLinkButton
+        );
+        dicomActions.setPadding(false);
+        dicomActions.setSpacing(true);
+
         dicomForm.add(
                 buildDisplayField(
                         "Study Linked",
                         Boolean.TRUE.equals(record.getDicomLinked()) ? "Yes" : "No"
                 ),
                 studyInstanceUid,
-                accessionNumber
+                accessionNumber,
+                dicomActions
         );
 
         Details dicomDetails = new Details("DICOM", dicomForm);
