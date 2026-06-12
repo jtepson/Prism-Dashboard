@@ -2,6 +2,7 @@ package com.bms.processing.service;
 
 import com.bms.processing.entity.DicomConfigEntity;
 import com.bms.processing.model.DicomStudyResult;
+import com.bms.processing.model.DicomReportResult;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -268,5 +269,19 @@ public class DicomService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private List<DicomReportResult> findReportsInternal(
+            DicomConfigEntity config,
+            String studyInstanceUid
+    ) {
+
+        List<DicomReportResult> results = new ArrayList<>();
+
+        if (isBlank(studyInstanceUid)) {
+            return results;
+        }
+
+        return results;
     }
 }

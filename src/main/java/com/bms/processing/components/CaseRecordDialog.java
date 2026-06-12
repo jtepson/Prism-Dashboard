@@ -305,10 +305,19 @@ public class CaseRecordDialog extends Dialog {
                                 queryPatientId
                         );
 
-                        Notification.show(
-                                "Found " + studies.size() + " study(s).",
-                                3000,
-                                Notification.Position.MIDDLE
+                        if (studies.isEmpty()) {
+                                Notification.show(
+                                        "No studies found.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+                                return;
+                        }
+
+                        openDicomStudyResultsDialog(
+                                studies,
+                                studyInstanceUid,
+                                accessionNumber
                         );
 
                 } catch (Exception ex) {
@@ -323,6 +332,31 @@ public class CaseRecordDialog extends Dialog {
                 }
         });
 
+        Button findReportsButton = new Button(
+                "Find Reports",
+                new Icon(VaadinIcon.FILE_TEXT)
+        );
+
+        findReportsButton.addClickListener(event -> {
+
+                if (studyInstanceUid.getValue().isBlank()) {
+
+                                Notification.show(
+                                        "Link a study first.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+
+                                return;
+                }
+
+                Notification.show(
+                        "Report query coming next.",
+                        3000,
+                        Notification.Position.MIDDLE
+                );
+        });
+
         Button clearDicomLinkButton = new Button("Clear Link", new Icon(VaadinIcon.CLOSE));
         clearDicomLinkButton.addClickListener(event -> {
                 studyInstanceUid.clear();
@@ -331,6 +365,7 @@ public class CaseRecordDialog extends Dialog {
 
         VerticalLayout dicomActions = new VerticalLayout(
                 queryArchiveButton,
+                findReportsButton,
                 clearDicomLinkButton
         );
         dicomActions.setPadding(false);
