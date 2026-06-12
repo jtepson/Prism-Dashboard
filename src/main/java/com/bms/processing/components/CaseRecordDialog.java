@@ -252,6 +252,14 @@ public class CaseRecordDialog extends Dialog {
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
         thirdPartyDetails.setOpened(false);
 
+        TextField studyInstanceUid = new TextField("Study Instance UID");
+        studyInstanceUid.setWidthFull();
+        studyInstanceUid.setValue(nullSafe(record.getStudyInstanceUid()));
+
+        TextField accessionNumber = new TextField("Accession Number");
+        accessionNumber.setWidthFull();
+        accessionNumber.setValue(nullSafe(record.getAccessionNumber()));
+
         FormLayout dicomForm = new FormLayout();
         dicomForm.setWidthFull();
         dicomForm.setResponsiveSteps(
@@ -264,14 +272,8 @@ public class CaseRecordDialog extends Dialog {
                         "Study Linked",
                         Boolean.TRUE.equals(record.getDicomLinked()) ? "Yes" : "No"
                 ),
-                buildDisplayField(
-                        "Study Instance UID",
-                        nullSafe(record.getStudyInstanceUid())
-                ),
-                buildDisplayField(
-                        "Accession Number",
-                        nullSafe(record.getAccessionNumber())
-                )
+                studyInstanceUid,
+                accessionNumber
         );
 
         Details dicomDetails = new Details("DICOM", dicomForm);
@@ -608,6 +610,12 @@ public class CaseRecordDialog extends Dialog {
                             neuroreaderSentDate.getValue()
                     );
                 }
+
+                caseRecordService.updateDicomLink(
+                        record,
+                        studyInstanceUid.getValue(),
+                        accessionNumber.getValue()
+                );
 
                 if (afterSave != null) {
                     if (mode == Mode.PROCESSING) {
