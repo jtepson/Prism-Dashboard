@@ -279,13 +279,48 @@ public class CaseRecordDialog extends Dialog {
         );
 
         Button queryArchiveButton = new Button("Query Archive", new Icon(VaadinIcon.SEARCH));
-        queryArchiveButton.addClickListener(event ->
-                Notification.show(
-                        "DICOM query workflow coming next.",
-                        3000,
-                        Notification.Position.MIDDLE
-                )
-        );
+
+        queryArchiveButton.addClickListener(event -> {
+
+                try {
+
+                        var config = dicomConfigService.getActiveConfiguration();
+
+                        if (config == null) {
+                                Notification.show(
+                                        "No DICOM configuration found.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+                        return;
+                        }
+
+                        String queryPatientId = record.getPatientId();
+                        String queryLastName = record.getPatientLastName();
+
+                        var studies = dicomService.queryStudies(
+                                config,
+                                queryLastName,
+                                queryPatientId
+                        );
+
+                        Notification.show(
+                                "Found " + studies.size() + " study(s).",
+                                3000,
+                                Notification.Position.MIDDLE
+                        );
+
+                } catch (Exception ex) {
+
+                        ex.printStackTrace();
+
+                        Notification.show(
+                                "Query failed: " + ex.getMessage(),
+                                5000,
+                                Notification.Position.MIDDLE
+                        );
+                }
+        });
 
         Button clearDicomLinkButton = new Button("Clear Link", new Icon(VaadinIcon.CLOSE));
         clearDicomLinkButton.addClickListener(event -> {

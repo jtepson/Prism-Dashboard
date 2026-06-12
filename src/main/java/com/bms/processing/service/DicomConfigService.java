@@ -37,6 +37,10 @@ public class DicomConfigService {
         repository.delete(config);
     }
 
+    public DicomConfigEntity getActiveConfiguration() {
+        return findDefaultEnabled().orElse(null);
+    }
+
     private void validate(DicomConfigEntity config) {
         if (config == null) {
             throw new IllegalArgumentException("DICOM config is required.");
