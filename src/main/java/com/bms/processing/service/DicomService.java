@@ -115,17 +115,52 @@ public class DicomService {
 
     public List<DicomStudyResult> queryStudies(
             DicomConfigEntity config,
-            String patientName,
+            String patientLastName,
             String patientId
     ) {
 
-        List<DicomStudyResult> results = new ArrayList<>();
+        if (config == null) {
+            return List.of();
+        }
 
+        if (!isBlank(patientId)) {
+            List<DicomStudyResult> results =
+                    queryStudiesInternal(config, null, patientId.trim());
+
+            if (!results.isEmpty()) {
+                return results;
+            }
+        }
+
+        String patientNameQuery = buildPatientNameQuery(patientLastName);
+
+        if (!isBlank(patientNameQuery)) {
+            return queryStudiesInternal(config, patientNameQuery, null);
+        }
+
+        return List.of();
+    }
+
+    private List<DicomStudyResult> queryStudiesInternal(
+            DicomConfigEntity config,
+            String patientNameQuery,
+            String patientId
+    ) {
         /*
         * Real C-FIND implementation next.
-        * Returning empty list for now.
         */
+        return new ArrayList<>();
+    }
 
-        return results;
+    private String buildPatientNameQuery(String lastName) {
+        if (lastName == null || lastName.isBlank()) {
+            return "";
+        }
+
+        return lastName.trim().toUpperCase() + "*";
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }
