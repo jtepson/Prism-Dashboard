@@ -95,6 +95,7 @@ public class CaseRecordEntity {
     @Column(name = "date_scanned")
     private LocalDate dateScanned;
 
+    //BMS related information
     @Column(name = "funder")
     private String funder;
 
@@ -109,6 +110,16 @@ public class CaseRecordEntity {
 
     @Column(name = "processed_date")
     private LocalDateTime processedDate;
+
+    //DICOM related stuff
+    @Column(name = "study_instance_uid")
+    private String studyInstanceUid;
+
+    @Column(name = "accession_number")
+    private String accessionNumber;
+
+    @Column(name = "dicom_linked")
+    private Boolean dicomLinked = false;
 
     public Long getId() {
         return id;
@@ -402,5 +413,30 @@ public class CaseRecordEntity {
 
     public void setFinalWorkflowNotes(String finalWorkflowNotes) {
         this.finalWorkflowNotes = finalWorkflowNotes;
+    }
+
+    //DICOM getters and setters yuh yuh
+    public String getStudyInstanceUid() {
+        return studyInstanceUid;
+    }
+
+    public void setStudyInstanceUid(String studyInstanceUid) {
+        this.studyInstanceUid = studyInstanceUid;
+    }
+
+    public String getAccessionNumber() {
+        return accessionNumber;
+    }
+
+    public void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
+    }
+
+    public Boolean getDicomLinked() {
+        return dicomLinked;
+    }
+
+    public void setDicomLinked(Boolean dicomLinked) {
+        this.dicomLinked = dicomLinked;
     }
 }
