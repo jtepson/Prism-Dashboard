@@ -282,6 +282,163 @@ public class DicomService {
             return results;
         }
 
+        List<String> seriesInstanceUids =
+                findSeriesInstanceUids(config, studyInstanceUid);
+
+        if (seriesInstanceUids.isEmpty()) {
+            return results;
+        }
+
+        for (String seriesInstanceUid : seriesInstanceUids) {
+
+            Association association = null;
+
+            ExecutorService executorService =
+                    Executors.newSingleThreadExecutor();
+
+            ScheduledExecutorService scheduledExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+
+            try {
+
+                Device device = new Device("prism-dashboard-report-query");
+
+                device.setExecutor(executorService);
+                device.setScheduledExecutor(scheduledExecutorService);
+
+                ApplicationEntity localAe =
+                        new ApplicationEntity(config.getLocalAeTitle());
+
+                Connection localConnection = new Connection();
+                Connection remoteConnection = new Connection();
+
+                remoteConnection.setHostname(config.getRemoteHost());
+                remoteConnection.setPort(config.getRemotePort());
+
+                device.addConnection(localConnection);
+                device.addApplicationEntity(localAe);
+                localAe.addConnection(localConnection);
+
+                AAssociateRQ request = new AAssociateRQ();
+
+                request.setCallingAET(config.getLocalAeTitle());
+                request.setCalledAET(config.getRemoteAeTitle());
+
+                request.addPresentationContext(
+                        new PresentationContext(
+                                1,
+                                UID.StudyRootQueryRetrieveInformationModelFind,
+                                UID.ImplicitVRLittleEndian
+                        )
+                );
+
+                association = localAe.connect(
+                        localConnection,
+                        remoteConnection,
+                        request
+                );
+
+                Attributes keys = new Attributes();
+
+                keys.setString(
+                        Tag.QueryRetrieveLevel,
+                        VR.CS,
+                        "IMAGE"
+                );
+
+                keys.setString(
+                        Tag.StudyInstanceUID,
+                        VR.UI,
+                        studyInstanceUid
+                );
+
+                // dcm4chee wants the real series UID here, not a wildcard.
+                keys.setString(
+                        Tag.SeriesInstanceUID,
+                        VR.UI,
+                        seriesInstanceUid
+                );
+
+                keys.setNull(Tag.SOPInstanceUID, VR.UI);
+                keys.setNull(Tag.SOPClassUID, VR.UI);
+                keys.setNull(Tag.SeriesDescription, VR.LO);
+                keys.setNull(Tag.InstanceNumber, VR.IS);
+                keys.setNull(Tag.ContentDate, VR.DA);
+
+                DimseRSP response = association.cfind(
+                        UID.StudyRootQueryRetrieveInformationModelFind,
+                        Priority.NORMAL,
+                        keys,
+                        UID.ImplicitVRLittleEndian,
+                        0
+                );
+
+                while (response.next()) {
+
+                    Attributes command = response.getCommand();
+                    int status = command.getInt(Tag.Status, -1);
+
+                    if (status == 0xFF00 || status == 0xFF01) {
+
+                        Attributes data = response.getDataset();
+
+                        if (data != null) {
+
+                            String sopClassUid =
+                                    data.getString(Tag.SOPClassUID);
+
+                            if (!UID.EncapsulatedPDFStorage.equals(sopClassUid)) {
+                                continue;
+                            }
+
+                            DicomReportResult report =
+                                    new DicomReportResult();
+
+                            report.setStudyInstanceUid(
+                                    data.getString(Tag.StudyInstanceUID));
+
+                            report.setSeriesInstanceUid(
+                                    data.getString(Tag.SeriesInstanceUID));
+
+                            report.setSopInstanceUid(
+                                    data.getString(Tag.SOPInstanceUID));
+
+                            report.setSopClassUid(sopClassUid);
+
+                            report.setSeriesDescription(
+                                    data.getString(Tag.SeriesDescription));
+
+                            report.setInstanceNumber(
+                                    data.getString(Tag.InstanceNumber));
+
+                            report.setContentDate(
+                                    data.getString(Tag.ContentDate));
+
+                            results.add(report);
+                        }
+                    }
+                }
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+
+            } finally {
+
+                if (association != null &&
+                        association.isReadyForDataTransfer()) {
+
+                    try {
+                        association.release();
+                    } catch (Exception ignored) {
+                    }
+                }
+
+                executorService.shutdown();
+                scheduledExecutorService.shutdown();
+            }
+        }
+
         return results;
     }
 
@@ -290,5 +447,105 @@ public class DicomService {
             String studyInstanceUid
     ) {
         return findReportsInternal(config, studyInstanceUid);
+    }
+
+    private List<String> findSeriesInstanceUids(
+            DicomConfigEntity config,
+            String studyInstanceUid
+    ) {
+        List<String> seriesUids = new ArrayList<>();
+
+        Association association = null;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ScheduledExecutorService scheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor();
+
+        try {
+            Device device = new Device("prism-dashboard-series-query");
+
+            device.setExecutor(executorService);
+            device.setScheduledExecutor(scheduledExecutorService);
+
+            ApplicationEntity localAe =
+                    new ApplicationEntity(config.getLocalAeTitle());
+
+            Connection localConnection = new Connection();
+            Connection remoteConnection = new Connection();
+
+            remoteConnection.setHostname(config.getRemoteHost());
+            remoteConnection.setPort(config.getRemotePort());
+
+            device.addConnection(localConnection);
+            device.addApplicationEntity(localAe);
+            localAe.addConnection(localConnection);
+
+            AAssociateRQ request = new AAssociateRQ();
+            request.setCallingAET(config.getLocalAeTitle());
+            request.setCalledAET(config.getRemoteAeTitle());
+
+            request.addPresentationContext(
+                    new PresentationContext(
+                            1,
+                            UID.StudyRootQueryRetrieveInformationModelFind,
+                            UID.ImplicitVRLittleEndian
+                    )
+            );
+
+            association = localAe.connect(
+                    localConnection,
+                    remoteConnection,
+                    request
+            );
+
+            Attributes keys = new Attributes();
+
+            keys.setString(Tag.QueryRetrieveLevel, VR.CS, "SERIES");
+            keys.setString(Tag.StudyInstanceUID, VR.UI, studyInstanceUid);
+
+            keys.setNull(Tag.SeriesInstanceUID, VR.UI);
+            keys.setNull(Tag.SeriesDescription, VR.LO);
+            keys.setNull(Tag.Modality, VR.CS);
+
+            DimseRSP response = association.cfind(
+                    UID.StudyRootQueryRetrieveInformationModelFind,
+                    Priority.NORMAL,
+                    keys,
+                    UID.ImplicitVRLittleEndian,
+                    0
+            );
+
+            while (response.next()) {
+                Attributes command = response.getCommand();
+                int status = command.getInt(Tag.Status, -1);
+
+                if (status == 0xFF00 || status == 0xFF01) {
+                    Attributes data = response.getDataset();
+
+                    if (data != null) {
+                        String seriesUid = data.getString(Tag.SeriesInstanceUID);
+
+                        if (!isBlank(seriesUid)) {
+                            seriesUids.add(seriesUid);
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+        } finally {
+            if (association != null && association.isReadyForDataTransfer()) {
+                try {
+                    association.release();
+                } catch (Exception ignored) {
+                }
+            }
+
+            executorService.shutdown();
+            scheduledExecutorService.shutdown();
+        }
+
+        return seriesUids;
     }
 }
