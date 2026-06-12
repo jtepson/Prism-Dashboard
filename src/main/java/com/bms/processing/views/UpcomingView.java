@@ -29,6 +29,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.combobox.ComboBox;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Value;
 
 @PageTitle("Upcoming")
 @PermitAll
@@ -41,17 +42,20 @@ public class UpcomingView extends VerticalLayout {
     private final Grid<CaseRecordEntity> grid = new Grid<>(CaseRecordEntity.class, false);
     private final TextField searchField = new TextField();
     private final PatientFileService patientFileService;
+    private final String baseStoragePath;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
                 SiteService siteService,
                 AuditEventService auditEventService,
-                PatientFileService patientFileService
+                PatientFileService patientFileService,
+                @Value("${prism.files.storage-path}") String baseStoragePath
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
         this.patientFileService = patientFileService;
+        this.baseStoragePath = baseStoragePath;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -85,7 +89,8 @@ public class UpcomingView extends VerticalLayout {
                         this::refreshUpcomingGrid,
                         siteService,
                         auditEventService,
-                        patientFileService
+                        patientFileService,
+                        baseStoragePath
                 ).open()
         );
 

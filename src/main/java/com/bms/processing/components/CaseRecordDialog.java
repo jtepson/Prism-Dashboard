@@ -27,6 +27,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,7 +51,9 @@ public class CaseRecordDialog extends Dialog {
     private final Mode mode;
     private final Runnable afterSave;
 
+    //updated 6122026 to include patient file upload constructors and parameters
     private final PatientFileService patientFileService;
+    private final String baseStoragePath;
 
     public CaseRecordDialog(
         CaseRecordEntity record,
@@ -59,7 +62,8 @@ public class CaseRecordDialog extends Dialog {
         Runnable afterSave,
         SiteService siteService,
         AuditEventService auditEventService,
-        PatientFileService patientFileService
+        PatientFileService patientFileService,
+        String baseStoragePath
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
@@ -68,6 +72,7 @@ public class CaseRecordDialog extends Dialog {
         this.mode = mode;
         this.afterSave = afterSave;
         this.patientFileService = patientFileService;
+        this.baseStoragePath = baseStoragePath;
 
         setHeaderTitle("Patient Summary");
         setWidth("900px");
@@ -356,7 +361,7 @@ public class CaseRecordDialog extends Dialog {
         }
 
         PatientFilesSection patientFilesSection =
-                new PatientFilesSection(record, patientFileService);
+                new PatientFilesSection(record, patientFileService, baseStoragePath);
 
         Details patientFilesDetails =
                 new Details("Patient Files", patientFilesSection);

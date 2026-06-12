@@ -41,8 +41,8 @@ import java.util.List;
 
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
-
 import com.vaadin.flow.component.notification.Notification;
+import org.springframework.beans.factory.annotation.Value;
 
 @PageTitle("Summary")
 @PermitAll
@@ -87,6 +87,7 @@ public class SummaryView extends VerticalLayout {
     private final Div dashboardGridContainer = new Div();
 
     private final PatientFileService patientFileService;
+    private final String baseStoragePath;
 
     private CaseRecordEntity selectedRecord;
 
@@ -115,12 +116,14 @@ public class SummaryView extends VerticalLayout {
                 CaseRecordService caseRecordService,
                 SiteService siteService,
                 AuditEventService auditEventService,
-                PatientFileService patientFileService
+                PatientFileService patientFileService,
+                @Value("${prism.files.storage-path}") String baseStoragePath
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
         this.patientFileService = patientFileService;
+        this.baseStoragePath = baseStoragePath;
 
         setSizeFull();
         setPadding(false);
@@ -794,7 +797,8 @@ public class SummaryView extends VerticalLayout {
                         this::rebuildDashboard,
                         null,
                         auditEventService,
-                        patientFileService
+                        patientFileService,
+                        baseStoragePath
                 ).open()
         );
         return grid;
@@ -1628,7 +1632,8 @@ public class SummaryView extends VerticalLayout {
                                         ? siteService
                                         : null,
                                 auditEventService,
-                                patientFileService
+                                patientFileService,
+                                baseStoragePath
                         );
 
                         dialog.addDetachListener(event -> {

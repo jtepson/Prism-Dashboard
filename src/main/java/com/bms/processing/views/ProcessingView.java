@@ -34,6 +34,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import java.util.function.Consumer;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -54,17 +55,20 @@ public class ProcessingView extends VerticalLayout {
 	private final TextField searchField = new TextField();
 	private final SiteService siteService;
 	private final PatientFileService patientFileService;
+	private final String baseStoragePath;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
             SiteService siteService,
             AuditEventService auditEventService,
-            PatientFileService patientFileService
+            PatientFileService patientFileService,
+			@Value("${prism.files.storage-path}") String baseStoragePath
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
         this.auditEventService = auditEventService;
         this.patientFileService = patientFileService;
+		this.baseStoragePath = baseStoragePath;
 		setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -88,7 +92,8 @@ public class ProcessingView extends VerticalLayout {
 						this::refreshProcessingGrid,
 						siteService,
 						auditEventService,
-                        patientFileService
+                        patientFileService,
+						baseStoragePath
 				).open()
 		);
 
