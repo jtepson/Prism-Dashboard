@@ -174,6 +174,7 @@ CREATE TABLE dicom_config (
     remote_port INTEGER NOT NULL,
     local_ae_title VARCHAR(64) NOT NULL,
     retrieve_ae_title VARCHAR(64),
+	retrieve_port integer DEFAULT 11113,
     storage_path VARCHAR(1000) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

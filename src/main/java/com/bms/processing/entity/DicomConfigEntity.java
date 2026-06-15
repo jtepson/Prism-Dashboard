@@ -30,6 +30,9 @@ public class DicomConfigEntity {
     @Column(name = "retrieve_ae_title")
     private String retrieveAeTitle;
 
+    @Column(name = "retrieve_port")
+    private Integer retrievePort = 11113;
+
     @Column(name = "storage_path")
     private String storagePath;
 
@@ -118,5 +121,13 @@ public class DicomConfigEntity {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Integer getRetrievePort() {
+        return retrievePort;
+    }
+
+    public void setRetrievePort(Integer retrievePort) {
+        this.retrievePort = retrievePort;
     }
 }
