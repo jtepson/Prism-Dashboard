@@ -12,6 +12,7 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.model.DicomStudyResult;
+import com.bms.processing.model.DicomReportResult;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -367,11 +368,16 @@ public class CaseRecordDialog extends Dialog {
                                 studyInstanceUid.getValue()
                         );
 
-                        Notification.show(
-                                "Found " + reports.size() + " report(s).",
-                                3000,
-                                Notification.Position.MIDDLE
-                        );
+                        //updated 6152026 for a different notif logic for reports found, rewired found framework to dicomreportresults
+                        if (reports.isEmpty()) {
+                                Notification.show(
+                                        "No reports found.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+                                return;
+                        }
+                        openDicomReportResultsDialog(reports);
 
                         } catch (Exception ex) {
                         ex.printStackTrace();
@@ -960,6 +966,53 @@ public class CaseRecordDialog extends Dialog {
 
         dialog.add(grid);
         dialog.open();
+        }
+
+        private void openDicomReportResultsDialog(
+                List<DicomReportResult> reports
+        ) {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("DICOM Reports");
+                dialog.setWidth("900px");
+
+                Grid<DicomReportResult> grid =
+                        new Grid<>(DicomReportResult.class, false);
+
+                grid.setWidthFull();
+                grid.setAllRowsVisible(true);
+
+                grid.addColumn(DicomReportResult::getSeriesDescription)
+                        .setHeader("Series")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomReportResult::getContentDate)
+                        .setHeader("Content Date")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomReportResult::getInstanceNumber)
+                        .setHeader("Instance")
+                        .setAutoWidth(true);
+
+                grid.addColumn(DicomReportResult::getSopInstanceUid)
+                        .setHeader("SOP Instance UID")
+                        .setAutoWidth(true);
+
+                grid.addComponentColumn(report -> {
+                        Button retrieveButton = new Button("Retrieve", event -> {
+                        Notification.show(
+                                "Retrieve coming next.",
+                                3000,
+                                Notification.Position.MIDDLE
+                        );
+                });
+
+                return retrieveButton;
+        }).setHeader("Action").setAutoWidth(true);
+
+                grid.setItems(reports);
+
+                dialog.add(grid);
+                dialog.open();
         }
 
 }
