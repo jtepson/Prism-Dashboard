@@ -7,8 +7,18 @@ import org.dcm4che3.net.DimseRQHandler;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicCStoreSCP;
 import org.dcm4che3.net.service.DicomServiceRegistry;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.service.BasicCStoreSCP;
+import org.dcm4che3.net.service.DicomServiceException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +60,7 @@ public class DicomStoreScpService {
             );
 
             serviceRegistry.addDicomService(
-                    new BasicCStoreSCP("*")
+                    createStoreScp()
             );
 
             applicationEntity.setDimseRQHandler(serviceRegistry);
@@ -84,6 +94,53 @@ public class DicomStoreScpService {
 
             return false;
         }
+    }
+
+    private BasicCStoreSCP createStoreScp() {
+
+        return new BasicCStoreSCP("*") {
+
+            @Override
+            protected void store(
+                    Association association,
+                    org.dcm4che3.net.pdu.PresentationContext pc,
+                    Attributes request,
+                    PDVInputStream data,
+                    Attributes response
+            ) throws IOException {
+
+                String sopInstanceUid =
+                        request.getString(Tag.AffectedSOPInstanceUID);
+
+                Path incomingDir =
+                        Path.of(storagePath, "incoming-dicom");
+
+                Files.createDirectories(incomingDir);
+
+                Path dicomFile =
+                        incomingDir.resolve(
+                                sopInstanceUid + ".dcm"
+                        );
+
+                Files.copy(
+                        data,
+                        dicomFile,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+
+                // successful rec lands here before future pdf extractions and wiring together with pt file records - updated 6152026
+                System.out.println(
+                        "Received DICOM object: " +
+                                dicomFile
+                );
+
+                response.setInt(
+                        Tag.Status,
+                        org.dcm4che3.data.VR.US,
+                        Status.Success
+                );
+            }
+        };
     }
 
     public boolean isRunning() {
