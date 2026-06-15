@@ -414,6 +414,16 @@ public class DicomService {
                             report.setContentDate(
                                     data.getString(Tag.ContentDate));
 
+                            // logging what we're finding before wiring retrieval - updated 6152026
+                            System.out.println(
+                                    "PDF Report Found | Study=" +
+                                            report.getStudyInstanceUid() +
+                                            " | Series=" +
+                                            report.getSeriesInstanceUid() +
+                                            " | SOP=" +
+                                            report.getSopInstanceUid()
+                            );
+
                             results.add(report);
                         }
                     }

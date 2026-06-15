@@ -286,7 +286,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("700px", 2)
         );
 
-        Button queryArchiveButton = new Button("Query Archive", new Icon(VaadinIcon.SEARCH));
+        Button queryArchiveButton = new Button("Link Study", new Icon(VaadinIcon.SEARCH));
 
         queryArchiveButton.addClickListener(event -> {
 
