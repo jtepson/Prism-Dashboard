@@ -41,8 +41,10 @@ public class ManageDicomView extends VerticalLayout {
     private final IntegerField remotePort = new IntegerField("Port");
     private final TextField localAeTitle = new TextField("Local AE");
     private final TextField retrieveAeTitle = new TextField("Retrieve AE");
+    private final IntegerField retrievePort = new IntegerField("Retrieve Port");
     private final TextField storagePath = new TextField("Storage Path");
     private final Checkbox enabled = new Checkbox("Enabled");
+
 
     public ManageDicomView(
             DicomConfigService dicomConfigService,
@@ -105,6 +107,7 @@ public class ManageDicomView extends VerticalLayout {
                 remotePort,
                 localAeTitle,
                 retrieveAeTitle,
+                retrievePort,
                 storagePath,
                 enabled
         );
@@ -170,6 +173,7 @@ public class ManageDicomView extends VerticalLayout {
         remotePort.setWidthFull();
         localAeTitle.setWidthFull();
         retrieveAeTitle.setWidthFull();
+        retrievePort.setWidthFull();
         storagePath.setWidthFull();
 
         configName.setPlaceholder("Archive Name");
@@ -178,6 +182,7 @@ public class ManageDicomView extends VerticalLayout {
         remotePort.setPlaceholder("11112");
         localAeTitle.setPlaceholder("PRISM_DASHBOARD");
         retrieveAeTitle.setPlaceholder("PRISM_DASHBOARD");
+        retrievePort.setPlaceholder("11113");
         storagePath.setPlaceholder("/data/prism/files");
 
         if (currentConfig != null) {
@@ -191,6 +196,7 @@ public class ManageDicomView extends VerticalLayout {
 
             localAeTitle.setValue(nullSafe(currentConfig.getLocalAeTitle()));
             retrieveAeTitle.setValue(nullSafe(currentConfig.getRetrieveAeTitle()));
+            retrievePort.setValue(currentConfig.getRetrievePort());
             storagePath.setValue(nullSafe(currentConfig.getStoragePath()));
             enabled.setValue(Boolean.TRUE.equals(currentConfig.getEnabled()));
         } else {
@@ -200,6 +206,7 @@ public class ManageDicomView extends VerticalLayout {
             remotePort.setValue(11112);
             localAeTitle.setValue("PRISM_DASHBOARD");
             retrieveAeTitle.setValue("PRISM_DASHBOARD");
+            retrievePort.setValue(11113);
             storagePath.setValue("/data/prism/files");
             enabled.setValue(true);
         }
@@ -280,6 +287,7 @@ public class ManageDicomView extends VerticalLayout {
         config.setRemotePort(remotePort.getValue());
         config.setLocalAeTitle(localAeTitle.getValue());
         config.setRetrieveAeTitle(retrieveAeTitle.getValue());
+        config.setRetrievePort(retrievePort.getValue());
         config.setStoragePath(storagePath.getValue());
         config.setEnabled(enabled.getValue());
 
