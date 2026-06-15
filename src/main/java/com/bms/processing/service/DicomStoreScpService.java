@@ -5,13 +5,32 @@ import org.springframework.stereotype.Service;
 @Service
 public class DicomStoreScpService {
 
+    private volatile boolean running = false;
+    private volatile int listeningPort = -1;
+    private volatile String listeningAeTitle;
+
     public boolean startListener(
             String aeTitle,
             int port,
             String storagePath
     ) {
-        // Updated 6/15/2026.
-        // This will be the temp listener BMS_CACHE sends retrieved PDFs to.
-        return false;
+        // stub listener for now so that workflow is shown before wiring dcm storescp into other stuff - 6152026
+        running = true;
+        listeningPort = port;
+        listeningAeTitle = aeTitle;
+
+        return true;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public int getListeningPort() {
+        return listeningPort;
+    }
+
+    public String getListeningAeTitle() {
+        return listeningAeTitle;
     }
 }
