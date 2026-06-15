@@ -8,6 +8,7 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
+import com.bms.processing.service.DicomRetrieveService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -40,6 +41,7 @@ public class ManagePatientsView extends VerticalLayout {
 
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
+    private final DicomRetrieveService dicomRetrieveService;
 
     public ManagePatientsView(
             CaseRecordService caseRecordService,
@@ -47,7 +49,8 @@ public class ManagePatientsView extends VerticalLayout {
             PatientFileService patientFileService,
             @Value("${prism.files.storage-path}") String baseStoragePath,
             DicomConfigService dicomConfigService,
-            DicomService dicomService
+            DicomService dicomService,
+            DicomRetrieveService dicomRetrieveService
     ) {
         this.caseRecordService = caseRecordService;
         this.auditEventService = auditEventService;
@@ -55,6 +58,7 @@ public class ManagePatientsView extends VerticalLayout {
         this.baseStoragePath = baseStoragePath;
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
+        this.dicomRetrieveService = dicomRetrieveService;
 
         setSizeFull();
         setPadding(true);
@@ -156,7 +160,8 @@ public class ManagePatientsView extends VerticalLayout {
                         patientFileService,
                         baseStoragePath,
                         dicomConfigService,
-                        dicomService
+                        dicomService,
+                        dicomRetrieveService
                 ).open()
         );
     }

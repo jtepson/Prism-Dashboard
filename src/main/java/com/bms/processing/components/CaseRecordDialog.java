@@ -13,6 +13,7 @@ import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.model.DicomStudyResult;
 import com.bms.processing.model.DicomReportResult;
+import com.bms.processing.service.DicomRetrieveService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -64,6 +65,9 @@ public class CaseRecordDialog extends Dialog {
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
 
+    //updated 6152026 to gear towards retrievals for DICOM
+    private final DicomRetrieveService dicomRetrieveService;
+
     public CaseRecordDialog(
         CaseRecordEntity record,
         CaseRecordService caseRecordService,
@@ -74,7 +78,8 @@ public class CaseRecordDialog extends Dialog {
         PatientFileService patientFileService,
         String baseStoragePath,
         DicomConfigService dicomConfigService,
-        DicomService dicomService
+        DicomService dicomService,
+        DicomRetrieveService dicomRetrieveService
     ) {
         this.record = record;
         this.caseRecordService = caseRecordService;
@@ -86,6 +91,7 @@ public class CaseRecordDialog extends Dialog {
         this.baseStoragePath = baseStoragePath;
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
+        this.dicomRetrieveService = dicomRetrieveService;
 
         setHeaderTitle("Patient Summary");
         setWidth("900px");

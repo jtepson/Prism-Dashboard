@@ -14,6 +14,7 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
+import com.bms.processing.service.DicomRetrieveService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -47,6 +48,7 @@ public class UpcomingView extends VerticalLayout {
     private final String baseStoragePath;
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
+    private final DicomRetrieveService dicomRetrieveService;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
@@ -55,7 +57,8 @@ public class UpcomingView extends VerticalLayout {
                 PatientFileService patientFileService,
                 @Value("${prism.files.storage-path}") String baseStoragePath,
                 DicomConfigService dicomConfigService,
-                DicomService dicomService
+                DicomService dicomService,
+                DicomRetrieveService dicomRetrieveService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -64,6 +67,7 @@ public class UpcomingView extends VerticalLayout {
         this.baseStoragePath = baseStoragePath;
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
+        this.dicomRetrieveService = dicomRetrieveService;
 
         setSizeFull();
         setPadding(true);
@@ -101,7 +105,8 @@ public class UpcomingView extends VerticalLayout {
                         patientFileService,
                         baseStoragePath,
                         dicomConfigService,
-                        dicomService
+                        dicomService,
+                        dicomRetrieveService
                 ).open()
         );
 

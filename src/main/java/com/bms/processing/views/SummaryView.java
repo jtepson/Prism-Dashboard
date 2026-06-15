@@ -14,6 +14,7 @@ import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
+import com.bms.processing.service.DicomRetrieveService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -91,8 +92,10 @@ public class SummaryView extends VerticalLayout {
     private final PatientFileService patientFileService;
     private final String baseStoragePath;
 
+    //dicom stuff
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
+    private final DicomRetrieveService dicomRetrieveService;
 
     private CaseRecordEntity selectedRecord;
 
@@ -124,7 +127,8 @@ public class SummaryView extends VerticalLayout {
                 PatientFileService patientFileService,
                 @Value("${prism.files.storage-path}") String baseStoragePath,
                 DicomConfigService dicomConfigService,
-                DicomService dicomService
+                DicomService dicomService,
+                DicomRetrieveService dicomRetrieveService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -133,6 +137,7 @@ public class SummaryView extends VerticalLayout {
         this.baseStoragePath = baseStoragePath;
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
+        this.dicomRetrieveService = dicomRetrieveService;
 
         setSizeFull();
         setPadding(false);
@@ -809,7 +814,8 @@ public class SummaryView extends VerticalLayout {
                         patientFileService,
                         baseStoragePath,
                         dicomConfigService,
-                        dicomService
+                        dicomService,
+                        dicomRetrieveService
                 ).open()
         );
         return grid;
@@ -1646,7 +1652,8 @@ public class SummaryView extends VerticalLayout {
                                 patientFileService,
                                 baseStoragePath,
                                 dicomConfigService,
-                                dicomService
+                                dicomService,
+                                dicomRetrieveService
                         );
 
                         dialog.addDetachListener(event -> {
