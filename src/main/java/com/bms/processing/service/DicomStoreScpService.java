@@ -27,6 +27,7 @@ public class DicomStoreScpService {
     private Connection connection;
     private ExecutorService executorService;
     private ScheduledExecutorService scheduledExecutorService;
+    private String storagePath;
 
     public boolean startListener(
             String aeTitle,
@@ -35,6 +36,7 @@ public class DicomStoreScpService {
     ) {
         try {
             Files.createDirectories(Path.of(storagePath));
+            this.storagePath = storagePath;
 
             // listener state is real now, but C-STORE handling comes next - 6152026
             device = new Device("prism-dashboard-store-scp");
@@ -52,7 +54,7 @@ public class DicomStoreScpService {
             );
 
             applicationEntity.setDimseRQHandler(serviceRegistry);
-            
+
             connection = new Connection();
 
             connection.setPort(port);
