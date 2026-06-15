@@ -5,6 +5,7 @@ public class DicomRetrieveResult {
     private boolean success;
     private String filePath;
     private String message;
+    private String sopInstanceUid;
 
     public boolean isSuccess() {
         return success;
@@ -28,5 +29,13 @@ public class DicomRetrieveResult {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getSopInstanceUid() {
+        return sopInstanceUid;
+    }
+
+    public void setSopInstanceUid(String sopInstanceUid) {
+        this.sopInstanceUid = sopInstanceUid;
     }
 }
