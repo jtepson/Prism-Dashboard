@@ -78,6 +78,8 @@ public class DicomStoreScpService {
             device.addConnection(connection);
             device.addApplicationEntity(applicationEntity);
             applicationEntity.addConnection(connection);
+            // actually opens the listener port so that the bms archive can try to send stuff back - 6152026
+            device.bindConnections();
 
             running = true;
             listeningPort = port;
