@@ -58,13 +58,26 @@ public class DicomRetrieveService {
                         config.getRetrievePort(),
                         storagePath
                 );
+        
+        if (!listenerStarted) {
 
-        result.setSuccess(listenerStarted);
+                result.setSuccess(false);
+                result.setMessage("Failed to start DICOM listener.");
+
+                return result;
+        }
+
+        // once listener is up it now tells archive to send the pdf - 6162026
+        boolean moveStarted =
+                        moveReport(config, report);
+
+        result.setSuccess(moveStarted);
         result.setSopInstanceUid(report.getSopInstanceUid());
+
         result.setMessage(
-                listenerStarted
-                        ? "Listener started."
-                        : "Listener failed to start."
+                moveStarted
+                        ? "Retrieve request sent."
+                        : "Retrieve request failed."
         );
 
         return result;

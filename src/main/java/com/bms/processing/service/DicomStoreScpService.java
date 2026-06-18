@@ -16,6 +16,9 @@ import org.dcm4che3.net.Status;
 import org.dcm4che3.net.service.BasicCStoreSCP;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.springframework.stereotype.Service;
+import org.dcm4che3.data.UID;
+//very very important
+import org.dcm4che3.net.TransferCapability;
 
 import java.io.IOException;
 import java.nio.file.StandardCopyOption;
@@ -44,6 +47,13 @@ public class DicomStoreScpService {
             int port,
             String storagePath
     ) {
+        // adding this in because listener would block other retrieval attempts by default because listener
+        // would not turn off until there would be a successfull retrieval (port already in use, always by java)
+        // 6162026
+        if (running) {
+                return true;
+        }
+
         try {
             Files.createDirectories(Path.of(storagePath));
             this.storagePath = storagePath;
@@ -78,6 +88,18 @@ public class DicomStoreScpService {
             device.addConnection(connection);
             device.addApplicationEntity(applicationEntity);
             applicationEntity.addConnection(connection);
+
+            // transfer capabilities for the dashboard, so that it can talk to archives - updated 6182026
+            applicationEntity.addTransferCapability(
+                new TransferCapability(
+                        null,
+                        UID.EncapsulatedPDFStorage,
+                        TransferCapability.Role.SCP,
+                        UID.ImplicitVRLittleEndian,
+                        UID.ExplicitVRLittleEndian,
+                        UID.ExplicitVRBigEndian
+                )
+            );
             // actually opens the listener port so that the bms archive can try to send stuff back - 6152026
             device.bindConnections();
 
