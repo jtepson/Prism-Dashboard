@@ -4,6 +4,7 @@ import com.bms.processing.entity.DicomConfigEntity;
 import com.bms.processing.model.DicomReportResult;
 import com.bms.processing.model.DicomRetrieveResult;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -24,161 +25,167 @@ import java.util.concurrent.ScheduledExecutorService;
 @Service
 public class DicomRetrieveService {
 
-    private final DicomStoreScpService dicomStoreScpService;
-    private final DicomConfigService dicomConfigService;
-    private final DicomPdfExtractorService dicomPdfExtractorService;
+        private final DicomStoreScpService dicomStoreScpService;
+        private final DicomConfigService dicomConfigService;
+        private final DicomPdfExtractorService dicomPdfExtractorService;
+        private final PatientFileService patientFileService;
+        private final String baseStoragePath;
 
-    public DicomRetrieveService(
-        DicomStoreScpService dicomStoreScpService,
-        DicomConfigService dicomConfigService,
-        DicomPdfExtractorService dicomPdfExtractorService
-    ) {
-        this.dicomStoreScpService = dicomStoreScpService;
-        this.dicomConfigService = dicomConfigService;
-        this.dicomPdfExtractorService = dicomPdfExtractorService;
-    }
-
-    // retrieve flow starts here, storescp gets started before the archive is asked to send anything - updated 6152026
-    public DicomRetrieveResult retrieveReport(
-            DicomReportResult report,
-            String storagePath
-    ) {
-        DicomRetrieveResult result = new DicomRetrieveResult();
-
-        DicomConfigEntity config =
-                dicomConfigService.getActiveConfiguration();
-
-        if (config == null) {
-            result.setSuccess(false);
-            result.setMessage("No active DICOM configuration found.");
-            return result;
+        public DicomRetrieveService(
+                DicomStoreScpService dicomStoreScpService,
+                DicomConfigService dicomConfigService,
+                DicomPdfExtractorService dicomPdfExtractorService,
+                PatientFileService patientFileService,
+                @Value("${prism.files.storage-path}") String baseStoragePath
+        ) {
+                this.dicomStoreScpService = dicomStoreScpService;
+                this.dicomConfigService = dicomConfigService;
+                this.dicomPdfExtractorService = dicomPdfExtractorService;
+                this.patientFileService = patientFileService;
+                this.baseStoragePath = baseStoragePath;
         }
 
-        // reworked to use a configured port rather than have it hard coded - updated 6152026
-        boolean listenerStarted =
-                dicomStoreScpService.startListener(
-                        config.getRetrieveAeTitle(),
-                        config.getRetrievePort(),
-                        storagePath
-                );
-        
-        if (!listenerStarted) {
+        // retrieve flow starts here, storescp gets started before the archive is asked to send anything - updated 6152026
+        public DicomRetrieveResult retrieveReport(
+                DicomReportResult report,
+                String storagePath
+        ) {
+                DicomRetrieveResult result = new DicomRetrieveResult();
 
+                DicomConfigEntity config =
+                        dicomConfigService.getActiveConfiguration();
+
+                if (config == null) {
                 result.setSuccess(false);
-                result.setMessage("Failed to start DICOM listener.");
+                result.setMessage("No active DICOM configuration found.");
+                return result;
+                }
+
+                // reworked to use a configured port rather than have it hard coded - updated 6152026
+                boolean listenerStarted =
+                        dicomStoreScpService.startListener(
+                                config.getRetrieveAeTitle(),
+                                config.getRetrievePort(),
+                                storagePath
+                        );
+                
+                if (!listenerStarted) {
+
+                        result.setSuccess(false);
+                        result.setMessage("Failed to start DICOM listener.");
+
+                        return result;
+                }
+
+                // once listener is up it now tells archive to send the pdf - 6162026
+                boolean moveStarted =
+                                moveReport(config, report);
+
+                result.setSuccess(moveStarted);
+                result.setSopInstanceUid(report.getSopInstanceUid());
+
+                result.setMessage(
+                        moveStarted
+                                ? "Retrieve request sent."
+                                : "Retrieve request failed."
+                );
 
                 return result;
         }
 
-        // once listener is up it now tells archive to send the pdf - 6162026
-        boolean moveStarted =
-                        moveReport(config, report);
+        private boolean moveReport(
+                        DicomConfigEntity config,
+                        DicomReportResult report
+                ) {
+                Association association = null;
 
-        result.setSuccess(moveStarted);
-        result.setSopInstanceUid(report.getSopInstanceUid());
+                ExecutorService executorService =
+                        Executors.newSingleThreadExecutor();
 
-        result.setMessage(
-                moveStarted
-                        ? "Retrieve request sent."
-                        : "Retrieve request failed."
-        );
+                ScheduledExecutorService scheduledExecutorService =
+                        Executors.newSingleThreadScheduledExecutor();
 
-        return result;
-    }
+                try {
+                        Device device = new Device("prism-dashboard-move-scu");
 
-    private boolean moveReport(
-                DicomConfigEntity config,
-                DicomReportResult report
-        ) {
-        Association association = null;
+                        device.setExecutor(executorService);
+                        device.setScheduledExecutor(scheduledExecutorService);
 
-        ExecutorService executorService =
-                Executors.newSingleThreadExecutor();
+                        ApplicationEntity localAe =
+                                new ApplicationEntity(config.getLocalAeTitle());
 
-        ScheduledExecutorService scheduledExecutorService =
-                Executors.newSingleThreadScheduledExecutor();
+                        Connection localConnection = new Connection();
+                        Connection remoteConnection = new Connection();
 
-        try {
-                Device device = new Device("prism-dashboard-move-scu");
+                        remoteConnection.setHostname(config.getRemoteHost());
+                        remoteConnection.setPort(config.getRemotePort());
 
-                device.setExecutor(executorService);
-                device.setScheduledExecutor(scheduledExecutorService);
+                        device.addConnection(localConnection);
+                        device.addApplicationEntity(localAe);
+                        localAe.addConnection(localConnection);
 
-                ApplicationEntity localAe =
-                        new ApplicationEntity(config.getLocalAeTitle());
+                        AAssociateRQ request = new AAssociateRQ();
+                        request.setCallingAET(config.getLocalAeTitle());
+                        request.setCalledAET(config.getRemoteAeTitle());
 
-                Connection localConnection = new Connection();
-                Connection remoteConnection = new Connection();
+                        request.addPresentationContext(
+                                new PresentationContext(
+                                        1,
+                                        UID.StudyRootQueryRetrieveInformationModelMove,
+                                        UID.ImplicitVRLittleEndian
+                                )
+                        );
 
-                remoteConnection.setHostname(config.getRemoteHost());
-                remoteConnection.setPort(config.getRemotePort());
+                        association = localAe.connect(
+                                localConnection,
+                                remoteConnection,
+                                request
+                        );
 
-                device.addConnection(localConnection);
-                device.addApplicationEntity(localAe);
-                localAe.addConnection(localConnection);
+                        Attributes keys = new Attributes();
 
-                AAssociateRQ request = new AAssociateRQ();
-                request.setCallingAET(config.getLocalAeTitle());
-                request.setCalledAET(config.getRemoteAeTitle());
+                        keys.setString(Tag.QueryRetrieveLevel, VR.CS, "IMAGE");
+                        keys.setString(Tag.StudyInstanceUID, VR.UI, report.getStudyInstanceUid());
+                        keys.setString(Tag.SeriesInstanceUID, VR.UI, report.getSeriesInstanceUid());
+                        keys.setString(Tag.SOPInstanceUID, VR.UI, report.getSopInstanceUid());
 
-                request.addPresentationContext(
-                        new PresentationContext(
-                                1,
+                        // archive will send the pdf back to the configured AE for this - updated 6162026
+                        // this cmove only supports cuid, priority, keys, transfersyntax, and desinationae, tried to build
+                        // it around blocking response by accident like in cfind using 0 but that failed along with 1.
+                        // Those were messageID and responseMode for the other method whoops.
+                        DimseRSP response = association.cmove(
                                 UID.StudyRootQueryRetrieveInformationModelMove,
-                                UID.ImplicitVRLittleEndian
-                        )
-                );
+                                Priority.NORMAL,
+                                keys,
+                                UID.ImplicitVRLittleEndian,
+                                config.getRetrieveAeTitle()
+                        );
 
-                association = localAe.connect(
-                        localConnection,
-                        remoteConnection,
-                        request
-                );
+                        while (response.next()) {
+                                Attributes command = response.getCommand();
+                                int status = command.getInt(Tag.Status, -1);
 
-                Attributes keys = new Attributes();
-
-                keys.setString(Tag.QueryRetrieveLevel, VR.CS, "IMAGE");
-                keys.setString(Tag.StudyInstanceUID, VR.UI, report.getStudyInstanceUid());
-                keys.setString(Tag.SeriesInstanceUID, VR.UI, report.getSeriesInstanceUid());
-                keys.setString(Tag.SOPInstanceUID, VR.UI, report.getSopInstanceUid());
-
-                // archive will send the pdf back to the configured AE for this - updated 6162026
-                // this cmove only supports cuid, priority, keys, transfersyntax, and desinationae, tried to build
-                // it around blocking response by accident like in cfind using 0 but that failed along with 1.
-                // Those were messageID and responseMode for the other method whoops.
-                DimseRSP response = association.cmove(
-                        UID.StudyRootQueryRetrieveInformationModelMove,
-                        Priority.NORMAL,
-                        keys,
-                        UID.ImplicitVRLittleEndian,
-                        config.getRetrieveAeTitle()
-                );
-
-                while (response.next()) {
-                        Attributes command = response.getCommand();
-                        int status = command.getInt(Tag.Status, -1);
-
-                        if (status == 0) {
-                                return true;
+                                if (status == 0) {
+                                        return true;
+                                }
                         }
-                }
 
-                return false;
+                        return false;
 
-        } catch (Exception ex) {
-                ex.printStackTrace();
-                return false;
+                } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return false;
 
-        } finally {
-                if (association != null && association.isReadyForDataTransfer()) {
-                        try {
-                                association.release();
-                        } catch (Exception ignored) {
+                } finally {
+                        if (association != null && association.isReadyForDataTransfer()) {
+                                try {
+                                        association.release();
+                                } catch (Exception ignored) {
+                                }
                         }
-                }
 
-                executorService.shutdown();
-                scheduledExecutorService.shutdown();
+                        executorService.shutdown();
+                        scheduledExecutorService.shutdown();
+                }
         }
-    }
 }
