@@ -26,13 +26,16 @@ public class DicomRetrieveService {
 
     private final DicomStoreScpService dicomStoreScpService;
     private final DicomConfigService dicomConfigService;
+    private final DicomPdfExtractorService dicomPdfExtractorService;
 
     public DicomRetrieveService(
-            DicomStoreScpService dicomStoreScpService,
-            DicomConfigService dicomConfigService
+        DicomStoreScpService dicomStoreScpService,
+        DicomConfigService dicomConfigService,
+        DicomPdfExtractorService dicomPdfExtractorService
     ) {
         this.dicomStoreScpService = dicomStoreScpService;
         this.dicomConfigService = dicomConfigService;
+        this.dicomPdfExtractorService = dicomPdfExtractorService;
     }
 
     // retrieve flow starts here, storescp gets started before the archive is asked to send anything - updated 6152026
