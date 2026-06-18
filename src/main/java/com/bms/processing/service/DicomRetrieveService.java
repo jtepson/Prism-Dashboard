@@ -47,6 +47,7 @@ public class DicomRetrieveService {
 
         // retrieve flow starts here, storescp gets started before the archive is asked to send anything - updated 6152026
         public DicomRetrieveResult retrieveReport(
+                Long caseRecordId,
                 DicomReportResult report,
                 String storagePath
         ) {

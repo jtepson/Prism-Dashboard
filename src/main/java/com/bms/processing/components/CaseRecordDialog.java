@@ -1006,6 +1006,7 @@ public class CaseRecordDialog extends Dialog {
                 grid.addComponentColumn(report -> {
                         Button retrieveButton = new Button("Retrieve", event -> {
                         var retrieveResult = dicomRetrieveService.retrieveReport(
+                                record.getId(),
                                 report,
                                 baseStoragePath
                         );
