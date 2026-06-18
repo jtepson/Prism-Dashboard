@@ -82,16 +82,56 @@ public class DicomRetrieveService {
                 boolean moveStarted =
                                 moveReport(config, report);
 
-                result.setSuccess(moveStarted);
                 result.setSopInstanceUid(report.getSopInstanceUid());
 
-                result.setMessage(
-                        moveStarted
-                                ? "Retrieve request sent."
-                                : "Retrieve request failed."
+        if (!moveStarted) {
+                result.setSuccess(false);
+                result.setMessage("Retrieve request failed.");
+                return result;
+        }
+
+        var receivedDicomFile = dicomStoreScpService.getLastReceivedFile();
+
+        if (receivedDicomFile == null) {
+                result.setSuccess(false);
+                result.setMessage("Retrieve completed, but no received DICOM file was found.");
+                return result;
+        }
+
+        try {
+                var targetPdf = java.nio.file.Path.of(
+                        baseStoragePath,
+                        "patient-files",
+                        caseRecordId.toString(),
+                        "imeka-report-" + report.getSopInstanceUid() + ".pdf"
                 );
 
+                var extractedPdf = dicomPdfExtractorService.extractPdf(
+                        receivedDicomFile,
+                        targetPdf
+                );
+
+                patientFileService.registerRetrievedReport(
+                        caseRecordId,
+                        extractedPdf,
+                        "IMEKA Report.pdf",
+                        "IMEKA"
+                );
+
+                result.setSuccess(true);
+                result.setFilePath(extractedPdf.toString());
+                result.setMessage("Report retrieved and saved to Patient Files.");
+
                 return result;
+
+        } catch (Exception ex) {
+                ex.printStackTrace();
+
+                result.setSuccess(false);
+                result.setMessage("Report retrieved, but PDF conversion failed: " + ex.getMessage());
+
+                return result;
+        }
         }
 
         private boolean moveReport(
