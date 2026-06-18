@@ -20,6 +20,7 @@ import org.dcm4che3.data.UID;
 //very very important
 import org.dcm4che3.net.TransferCapability;
 
+
 import java.io.IOException;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
@@ -34,6 +35,8 @@ public class DicomStoreScpService {
     private volatile boolean running = false;
     private volatile int listeningPort = -1;
     private volatile String listeningAeTitle;
+    private volatile Path lastReceivedFile;
+    private volatile String lastReceivedSopInstanceUid;
 
     private Device device;
     private ApplicationEntity applicationEntity;
@@ -100,6 +103,7 @@ public class DicomStoreScpService {
                         UID.ExplicitVRBigEndian
                 )
             );
+
             // actually opens the listener port so that the bms archive can try to send stuff back - 6152026
             device.bindConnections();
 
@@ -152,6 +156,10 @@ public class DicomStoreScpService {
                         StandardCopyOption.REPLACE_EXISTING
                 );
 
+                // tracking the object we received so retrieval can turn it into a patient file - updated 6182026
+                lastReceivedFile = dicomFile;
+                lastReceivedSopInstanceUid = sopInstanceUid;
+
                 // successful rec lands here before future pdf extractions and wiring together with pt file records - updated 6152026
                 System.out.println(
                         "Received DICOM object: " +
@@ -177,5 +185,13 @@ public class DicomStoreScpService {
 
     public String getListeningAeTitle() {
         return listeningAeTitle;
+    }
+
+    public Path getLastReceivedFile() {
+        return lastReceivedFile;
+    }
+
+    public String getLastReceivedSopInstanceUid() {
+        return lastReceivedSopInstanceUid;
     }
 }
