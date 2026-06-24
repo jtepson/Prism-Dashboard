@@ -63,11 +63,13 @@ public class DicomRetrieveService {
                 }
 
                 // reworked to use a configured port rather than have it hard coded - updated 6152026
+                // eh, so i was calling storagepath but I think because retrievereport() has it injected via
+                // spring, that it needs to be baseStoragePath - updated 6242026
                 boolean listenerStarted =
                         dicomStoreScpService.startListener(
                                 config.getRetrieveAeTitle(),
                                 config.getRetrievePort(),
-                                storagePath
+                                baseStoragePath
                         );
                 
                 if (!listenerStarted) {
@@ -105,6 +107,7 @@ public class DicomRetrieveService {
                         caseRecordId.toString(),
                         "imeka-report-" + report.getSopInstanceUid() + ".pdf"
                 );
+
 
                 var extractedPdf = dicomPdfExtractorService.extractPdf(
                         receivedDicomFile,
