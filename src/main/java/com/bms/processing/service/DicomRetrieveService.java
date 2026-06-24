@@ -30,18 +30,21 @@ public class DicomRetrieveService {
         private final DicomPdfExtractorService dicomPdfExtractorService;
         private final PatientFileService patientFileService;
         private final String baseStoragePath;
+        private final CaseRecordService caseRecordService;
 
         public DicomRetrieveService(
                 DicomStoreScpService dicomStoreScpService,
                 DicomConfigService dicomConfigService,
                 DicomPdfExtractorService dicomPdfExtractorService,
                 PatientFileService patientFileService,
+                CaseRecordService caseRecordService,
                 @Value("${prism.files.storage-path}") String baseStoragePath
         ) {
                 this.dicomStoreScpService = dicomStoreScpService;
                 this.dicomConfigService = dicomConfigService;
                 this.dicomPdfExtractorService = dicomPdfExtractorService;
                 this.patientFileService = patientFileService;
+                this.caseRecordService = caseRecordService;
                 this.baseStoragePath = baseStoragePath;
         }
 
@@ -120,6 +123,8 @@ public class DicomRetrieveService {
                         "IMEKA Report.pdf",
                         "IMEKA"
                 );
+
+                caseRecordService.markImekaUploadedFromReport(caseRecordId);
 
                 result.setSuccess(true);
                 result.setFilePath(extractedPdf.toString());

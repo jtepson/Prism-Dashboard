@@ -232,6 +232,28 @@ public class CaseRecordService {
         return repository.save(record);
     }
 
+    public CaseRecordEntity markImekaUploadedFromReport(Long caseRecordId) {
+        if (caseRecordId == null) {
+            throw new InvalidWorkflowTransitionException("Case record ID is required.");
+        }
+
+        CaseRecordEntity record = repository.findById(caseRecordId)
+                .orElseThrow(() -> new InvalidWorkflowTransitionException("Case record not found."));
+
+        if (record.isMinorAtScan()) {
+            return record;
+        }
+
+        // if the IMEKA PDF lands in Patient Files, IMEKA should show uploaded too - updated 6242026
+        record.setImekaStatus(ThirdPartyStatus.UPLOADED);
+
+        if (record.getImekaUploadedDate() == null) {
+            record.setImekaUploadedDate(LocalDateTime.now());
+        }
+
+        return repository.save(record);
+    }
+
     public CaseRecordEntity updateDuramapStatus(
             CaseRecordEntity record,
             ThirdPartyStatus status,
