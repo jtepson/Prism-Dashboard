@@ -124,7 +124,12 @@ public class DicomRetrieveService {
                         "IMEKA"
                 );
 
+                //debuggint to see where the hell imeka update goes from dcm retr - 6252026
+                System.out.println("About to mark IMEKA uploaded for caseRecordId=" + caseRecordId);
+
                 caseRecordService.markImekaUploadedFromReport(caseRecordId);
+
+                System.out.println("Finished marking IMEKA uploaded for caseRecordId=" + caseRecordId);
 
                 result.setSuccess(true);
                 result.setFilePath(extractedPdf.toString());

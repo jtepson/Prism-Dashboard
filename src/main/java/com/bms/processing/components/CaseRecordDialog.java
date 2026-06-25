@@ -383,7 +383,13 @@ public class CaseRecordDialog extends Dialog {
                                 );
                                 return;
                         }
-                        openDicomReportResultsDialog(reports);
+                        
+                        // changed to pass imekastatus into the helper here - updated 6252026
+                        openDicomReportResultsDialog(
+                                reports,
+                                imekaStatus,
+                                imekaSentDate
+                        );
 
                         } catch (Exception ex) {
                         ex.printStackTrace();
@@ -975,7 +981,9 @@ public class CaseRecordDialog extends Dialog {
         }
 
         private void openDicomReportResultsDialog(
-                List<DicomReportResult> reports
+                List<DicomReportResult> reports,
+                ComboBox<String> imekaStatus,
+                DatePicker imekaSentDate
         ) {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("DICOM Reports");
@@ -1010,6 +1018,26 @@ public class CaseRecordDialog extends Dialog {
                                 report,
                                 baseStoragePath
                         );
+
+                        // changing this to take into account for dcm retrieves and uploads to automatically change status.
+                        if (retrieveResult.isSuccess()) {
+                                LocalDate today = LocalDate.now();
+
+                                record.setImekaStatus(ThirdPartyStatus.UPLOADED);
+                                record.setImekaUploadedDate(LocalDateTime.now());
+
+                                if (record.getImekaSentDate() == null) {
+                                        record.setImekaSentDate(today);
+                                }
+
+                                if (imekaStatus != null) {
+                                        imekaStatus.setValue(ThirdPartyStatus.UPLOADED.name());
+                                }
+
+                                if (imekaSentDate != null && imekaSentDate.getValue() == null) {
+                                        imekaSentDate.setValue(today);
+                                }
+                        }
 
                         Notification.show(
                                 retrieveResult.getMessage(),

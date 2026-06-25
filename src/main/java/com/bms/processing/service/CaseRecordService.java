@@ -5,6 +5,7 @@ import com.bms.processing.model.PatientStatus;
 import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.repository.CaseRecordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -232,6 +233,7 @@ public class CaseRecordService {
         return repository.save(record);
     }
 
+    @Transactional
     public CaseRecordEntity markImekaUploadedFromReport(Long caseRecordId) {
         if (caseRecordId == null) {
             throw new InvalidWorkflowTransitionException("Case record ID is required.");
@@ -244,14 +246,25 @@ public class CaseRecordService {
             return record;
         }
 
-        // if the IMEKA PDF lands in Patient Files, IMEKA should show uploaded too - updated 6242026
-        record.setImekaStatus(ThirdPartyStatus.UPLOADED);
+        LocalDate sentDate = record.getImekaSentDate();
 
-        if (record.getImekaUploadedDate() == null) {
-            record.setImekaUploadedDate(LocalDateTime.now());
+        if (sentDate == null) {
+            // report came back, so if nobody marked sent yet just use today - updated 6252026
+            sentDate = LocalDate.now();
         }
 
-        return repository.save(record);
+        // if the IMEKA PDF lands in Patient Files, IMEKA should show uploaded too regardless of send/not sent - updated 6252026
+        int rowsUpdated = repository.markImekaUploadedFromReport(
+                caseRecordId,
+                ThirdPartyStatus.UPLOADED,
+                sentDate,
+                LocalDateTime.now()
+        );
+
+        System.out.println("IMEKA uploaded rows updated = " + rowsUpdated);
+
+        return repository.findById(caseRecordId)
+                .orElseThrow(() -> new InvalidWorkflowTransitionException("Case record not found."));
     }
 
     public CaseRecordEntity updateDuramapStatus(
