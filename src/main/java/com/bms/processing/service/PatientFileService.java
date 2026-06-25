@@ -17,9 +17,14 @@ import java.util.UUID;
 public class PatientFileService {
 
     private final PatientFileRepository repository;
+    private final CaseRecordService caseRecordService;
 
-    public PatientFileService(PatientFileRepository repository) {
+    public PatientFileService(
+            PatientFileRepository repository,
+            CaseRecordService caseRecordService
+    ) {
         this.repository = repository;
+        this.caseRecordService = caseRecordService;
     }
 
     public List<PatientFileEntity> findFilesForCase(Long caseRecordId) {
@@ -137,6 +142,21 @@ public class PatientFileService {
         entity.setFileSize(Files.size(pdfPath));
         entity.setStoragePath(pdfPath.toString());
 
-        return repository.save(entity);
+        PatientFileEntity savedFile = repository.save(entity);
+        autoUpdateThirdPartyStatus(savedFile);
+        return savedFile;
+    }
+
+    private void autoUpdateThirdPartyStatus(PatientFileEntity file) {
+        if (file == null) {
+            return;
+        }
+
+        if ("IMEKA".equalsIgnoreCase(file.getSource())
+                && "Report".equalsIgnoreCase(file.getFileType())) {
+
+            // IMEKA report landed in Patient Files so status should follow it and get updated - updated 6252026
+            caseRecordService.markImekaUploadedFromReport(file.getCaseRecordId());
+        }
     }
 }
