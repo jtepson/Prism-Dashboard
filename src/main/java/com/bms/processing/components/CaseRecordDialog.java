@@ -324,7 +324,12 @@ public class CaseRecordDialog extends Dialog {
                         openDicomStudyResultsDialog(
                                 studies,
                                 studyInstanceUid,
-                                accessionNumber
+                                accessionNumber,
+                                lastName,
+                                firstName,
+                                sex,
+                                dateOfBirth,
+                                dateScanned
                         );
 
                 } catch (Exception ex) {
@@ -916,8 +921,13 @@ public class CaseRecordDialog extends Dialog {
     private void openDicomStudyResultsDialog(
                 List<DicomStudyResult> studies,
                 TextField studyInstanceUid,
-                TextField accessionNumber
-        ) {
+                TextField accessionNumber,
+                TextField lastName,
+                TextField firstName,
+                TextField sex,
+                DatePicker dateOfBirth,
+                DatePicker dateScanned
+    ) {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("Select DICOM Study");
                 dialog.setWidth("900px");
@@ -950,27 +960,45 @@ public class CaseRecordDialog extends Dialog {
 
                 grid.addComponentColumn(study -> {
                         Button selectButton = new Button("Select", event -> {
-                        studyInstanceUid.setValue(
-                                study.getStudyInstanceUid() == null
-                                        ? ""
-                                        : study.getStudyInstanceUid()
-                        );
+                                studyInstanceUid.setValue(nullSafe(study.getStudyInstanceUid()));
+                                accessionNumber.setValue(nullSafe(study.getAccessionNumber()));
 
-                        accessionNumber.setValue(
-                                study.getAccessionNumber() == null
-                                        ? ""
-                                        : study.getAccessionNumber()
-                        );
+                                if (study.getParsedLastName() != null) {
+                                        lastName.setValue(study.getParsedLastName());
+                                        record.setPatientLastName(study.getParsedLastName());
+                                }
 
-                        dialog.close();
+                                if (study.getParsedFirstName() != null) {
+                                        firstName.setValue(study.getParsedFirstName());
+                                        record.setPatientFirstName(study.getParsedFirstName());
+                                }
 
-                        Notification.show(
-                                "Study selected. Click Save to link it to this patient.",
-                                3500,
-                                Notification.Position.MIDDLE
-                        );
+                                if (study.getPatientSex() != null) {
+                                        sex.setValue(study.getPatientSex());
+                                        record.setSex(study.getPatientSex());
+                                }
+
+                                if (study.getPatientBirthDate() != null && study.getPatientBirthDate().length() == 8) {
+                                        LocalDate dob = parseDicomDate(study.getPatientBirthDate());
+                                        dateOfBirth.setValue(dob);
+                                        record.setDateOfBirth(dob);
+                                }
+
+                                if (study.getStudyDate() != null && study.getStudyDate().length() == 8) {
+                                        LocalDate scannedDate = parseDicomDate(study.getStudyDate());
+                                        dateScanned.setValue(scannedDate);
+                                        record.setDateScanned(scannedDate);
+                                }
+
+                                // linking a study should pull core demographics too so we avoid dashboard/cache mismatch- updated 6252026
+                                dialog.close();
+
+                                Notification.show(
+                                        "Study selected. Review fields, then click Save.",
+                                        3500,
+                                        Notification.Position.MIDDLE
+                                );
                 });
-
                 return selectButton;
         }).setHeader("Select").setAutoWidth(true);
 
@@ -1053,6 +1081,18 @@ public class CaseRecordDialog extends Dialog {
 
                 dialog.add(grid);
                 dialog.open();
+        }
+
+        private LocalDate parseDicomDate(String value) {
+        if (value == null || value.length() != 8) {
+                return null;
+        }
+
+        return LocalDate.of(
+                        Integer.parseInt(value.substring(0, 4)),
+                        Integer.parseInt(value.substring(4, 6)),
+                        Integer.parseInt(value.substring(6, 8))
+                );
         }
 
 }

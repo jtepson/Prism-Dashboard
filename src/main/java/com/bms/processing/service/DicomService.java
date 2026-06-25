@@ -202,6 +202,8 @@ public class DicomService {
             keys.setNull(Tag.AccessionNumber, VR.SH);
             keys.setNull(Tag.StudyDate, VR.DA);
             keys.setNull(Tag.StudyDescription, VR.LO);
+            keys.setNull(Tag.PatientBirthDate, VR.DA);
+            keys.setNull(Tag.PatientSex, VR.CS);
 
             if (!isBlank(patientId)) {
                 keys.setString(Tag.PatientID, VR.LO, patientId);
@@ -229,8 +231,15 @@ public class DicomService {
 
                     if (data != null) {
                         DicomStudyResult result = new DicomStudyResult();
-                        result.setPatientName(data.getString(Tag.PatientName));
+
+                        String dicomPatientName = data.getString(Tag.PatientName);
+
+                        result.setPatientName(dicomPatientName);
+                        result.setParsedLastName(parseDicomLastName(dicomPatientName));
+                        result.setParsedFirstName(parseDicomFirstName(dicomPatientName));
                         result.setPatientId(data.getString(Tag.PatientID));
+                        result.setPatientBirthDate(data.getString(Tag.PatientBirthDate));
+                        result.setPatientSex(data.getString(Tag.PatientSex));
                         result.setStudyInstanceUid(data.getString(Tag.StudyInstanceUID));
                         result.setAccessionNumber(data.getString(Tag.AccessionNumber));
                         result.setStudyDate(data.getString(Tag.StudyDate));
@@ -557,5 +566,35 @@ public class DicomService {
         }
 
         return seriesUids;
+    }
+
+    private String parseDicomLastName(String patientName) {
+        if (isBlank(patientName)) {
+            return null;
+        }
+
+        String[] parts = patientName.split("\\^");
+
+        return normalizeNamePart(parts.length > 0 ? parts[0] : null);
+    }
+
+    private String parseDicomFirstName(String patientName) {
+        if (isBlank(patientName)) {
+            return null;
+        }
+
+        String[] parts = patientName.split("\\^");
+
+        return normalizeNamePart(parts.length > 1 ? parts[1] : null);
+    }
+
+    private String normalizeNamePart(String value) {
+        if (isBlank(value)) {
+            return null;
+        }
+
+        String lower = value.trim().toLowerCase();
+
+        return lower.substring(0, 1).toUpperCase() + lower.substring(1);
     }
 }
