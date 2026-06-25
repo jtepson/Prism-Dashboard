@@ -88,7 +88,7 @@ public class PatientFilesSection extends VerticalLayout {
                 }).setHeader("Download").setAutoWidth(true);
         }
 
-        private void refresh() {
+        public void refresh() {
                 if (record == null || record.getId() == null) {
                         grid.setItems(java.util.List.of());
                         return;
