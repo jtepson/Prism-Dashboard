@@ -8,6 +8,10 @@ public class DicomStudyResult {
     private String accessionNumber;
     private String studyDate;
     private String description;
+    private String patientBirthDate;
+    private String patientSex;
+    private String parsedFirstName;
+    private String parsedLastName;
 
     public String getPatientName() {
         return patientName;
@@ -55,5 +59,37 @@ public class DicomStudyResult {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getPatientBirthDate() {
+        return patientBirthDate;
+    }
+
+    public void setPatientBirthDate(String patientBirthDate) {
+        this.patientBirthDate = patientBirthDate;
+    }
+
+    public String getPatientSex() {
+        return patientSex;
+    }
+
+    public void setPatientSex(String patientSex) {
+        this.patientSex = patientSex;
+    }
+
+    public String getParsedFirstName() {
+        return parsedFirstName;
+    }
+
+    public void setParsedFirstName(String parsedFirstName) {
+        this.parsedFirstName = parsedFirstName;
+    }
+
+    public String getParsedLastName() {
+        return parsedLastName;
+    }
+
+    public void setParsedLastName(String parsedLastName) {
+        this.parsedLastName = parsedLastName;
     }
 }
