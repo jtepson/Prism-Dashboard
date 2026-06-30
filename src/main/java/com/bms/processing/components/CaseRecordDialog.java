@@ -67,6 +67,8 @@ public class CaseRecordDialog extends Dialog {
 
     //updated 6152026 to gear towards retrievals for DICOM
     private final DicomRetrieveService dicomRetrieveService;
+    
+    private PatientFilesSection patientFilesSection;
 
     public CaseRecordDialog(
         CaseRecordEntity record,
@@ -542,7 +544,7 @@ public class CaseRecordDialog extends Dialog {
         });
         }
 
-        PatientFilesSection patientFilesSection =
+        patientFilesSection =
                 new PatientFilesSection(record, patientFileService, baseStoragePath);
 
         Details patientFilesDetails =
@@ -1065,6 +1067,8 @@ public class CaseRecordDialog extends Dialog {
                                 if (imekaSentDate != null && imekaSentDate.getValue() == null) {
                                         imekaSentDate.setValue(today);
                                 }
+
+                                patientFilesSection.refresh();
                         }
 
                         Notification.show(
