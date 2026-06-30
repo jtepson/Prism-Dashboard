@@ -31,6 +31,7 @@ public class DicomRetrieveService {
         private final PatientFileService patientFileService;
         private final String baseStoragePath;
         private final CaseRecordService caseRecordService;
+        private final AuditEventService auditEventService;
 
         public DicomRetrieveService(
                 DicomStoreScpService dicomStoreScpService,
@@ -38,6 +39,7 @@ public class DicomRetrieveService {
                 DicomPdfExtractorService dicomPdfExtractorService,
                 PatientFileService patientFileService,
                 CaseRecordService caseRecordService,
+                AuditEventService auditEventService,
                 @Value("${prism.files.storage-path}") String baseStoragePath
         ) {
                 this.dicomStoreScpService = dicomStoreScpService;
@@ -46,6 +48,7 @@ public class DicomRetrieveService {
                 this.patientFileService = patientFileService;
                 this.caseRecordService = caseRecordService;
                 this.baseStoragePath = baseStoragePath;
+                this.auditEventService = auditEventService;
         }
 
         // retrieve flow starts here, storescp gets started before the archive is asked to send anything - updated 6152026
@@ -128,6 +131,16 @@ public class DicomRetrieveService {
                 System.out.println("About to mark IMEKA uploaded for caseRecordId=" + caseRecordId);
 
                 caseRecordService.markImekaUploadedFromReport(caseRecordId);
+
+                // audit event here - 6302026
+                auditEventService.logEvent(
+                        caseRecordId,
+                        "DICOM",
+                        "REPORT_RETRIEVED",
+                        "DICOM report retrieved and imported into Patient Files.",
+                        null,
+                        null
+                );
 
                 System.out.println("Finished marking IMEKA uploaded for caseRecordId=" + caseRecordId);
 
