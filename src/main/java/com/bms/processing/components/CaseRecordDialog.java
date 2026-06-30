@@ -69,6 +69,7 @@ public class CaseRecordDialog extends Dialog {
     private final DicomRetrieveService dicomRetrieveService;
     
     private PatientFilesSection patientFilesSection;
+    private DatePicker imekaUploadedDate;
 
     public CaseRecordDialog(
         CaseRecordEntity record,
@@ -222,6 +223,14 @@ public class CaseRecordDialog extends Dialog {
         imekaSentDate.setValue(record.getImekaSentDate());
         imekaSentDate.setReadOnly(record.getImekaStatus() == ThirdPartyStatus.UPLOADED);
 
+        imekaUploadedDate = new DatePicker("IMEKA Uploaded Date");
+        imekaUploadedDate.setValue(
+                record.getImekaUploadedDate() != null
+                        ? record.getImekaUploadedDate().toLocalDate()
+                        : null
+        );
+        imekaUploadedDate.setReadOnly(true);
+
         ComboBox<String> duramapStatus = new ComboBox<>("DuraMap Status");
         duramapStatus.setItems("NOT_SENT", "SENT", "ERROR");
         duramapStatus.setValue(
@@ -248,7 +257,8 @@ public class CaseRecordDialog extends Dialog {
             if (!record.isMinorAtScan()) {
                 thirdPartyForm.add(
                         imekaStatus,
-                        imekaSentDate
+                        imekaSentDate,
+                        imekaUploadedDate
                 );
 
                 if ("ERROR".equals(imekaStatus.getValue())) {
@@ -1049,12 +1059,15 @@ public class CaseRecordDialog extends Dialog {
                                 baseStoragePath
                         );
 
-                        // changing this to take into account for dcm retrieves and uploads to automatically change status.
+                        // changing this to take into account for dcm retrieves and uploads to automatically change status - updated 6302026
                         if (retrieveResult.isSuccess()) {
                                 LocalDate today = LocalDate.now();
 
                                 record.setImekaStatus(ThirdPartyStatus.UPLOADED);
                                 record.setImekaUploadedDate(LocalDateTime.now());
+                                imekaUploadedDate.setValue(
+                                        record.getImekaUploadedDate().toLocalDate()
+                                );
 
                                 if (record.getImekaSentDate() == null) {
                                         record.setImekaSentDate(today);
