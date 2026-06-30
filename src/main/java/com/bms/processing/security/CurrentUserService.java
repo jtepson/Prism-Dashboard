@@ -59,10 +59,7 @@ public class CurrentUserService {
         if (authentication == null) {
             return false;
         }
-
-        authentication.getAuthorities()
-            .forEach(a -> System.out.println("AUTHORITY: " + a.getAuthority()));
-
+        
         return authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority ->
                         authority.equals(grantedAuthority.getAuthority())

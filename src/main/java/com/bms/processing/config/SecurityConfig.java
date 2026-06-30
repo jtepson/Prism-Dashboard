@@ -73,10 +73,6 @@ public class SecurityConfig {
                     );
                 }
 
-                authorities.forEach(authority ->
-                        System.out.println("MAPPED AUTHORITY: " + authority.getAuthority())
-                );
-
                 return new DefaultOidcUser(
                         authorities,
                         oidcUser.getIdToken(),
