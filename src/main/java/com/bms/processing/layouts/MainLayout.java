@@ -10,6 +10,7 @@ import com.bms.processing.views.manage.ManagePatientsView;
 import com.bms.processing.views.manage.ManageSitesView;
 import com.bms.processing.views.manage.ManageNotificationsView;
 import com.bms.processing.views.manage.ManageDicomView;
+import com.bms.processing.security.CurrentUserService;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -44,11 +45,17 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 public class MainLayout extends AppLayout {
 
     private final AuthenticationContext authenticationContext;
+    private final CurrentUserService currentUserService;
 
-    public MainLayout(AuthenticationContext authenticationContext) {
-        this.authenticationContext = authenticationContext;
-        setPrimarySection(Section.DRAWER);
-        addDrawerContent();
+    public MainLayout(
+                AuthenticationContext authenticationContext,
+                CurrentUserService currentUserService
+        ) {
+                this.authenticationContext = authenticationContext;
+                this.currentUserService = currentUserService;
+
+                setPrimarySection(Section.DRAWER);
+                addDrawerContent();
         //commenting below out since it is kind of redudant, can do something with it later
         //addHeaderContent();
     }
@@ -187,6 +194,9 @@ public class MainLayout extends AppLayout {
                         initials = "??";
                 }
         }
+
+        //temp add 6302026
+        currentUserService.isPrism();
 
         //User card design and formatting - updated 6092026 with dark glass style
         Div userCard = new Div();
