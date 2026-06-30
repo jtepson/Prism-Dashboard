@@ -125,10 +125,14 @@ public class MainLayout extends AppLayout {
         styleManageChild(notifications);
         styleManageChild(dicomConfiguration);
 
+        //updated for use of auth via oauth2 grouping - 6302026
         manage.addItem(patients);
         manage.addItem(sites);
-        manage.addItem(notifications);
-        manage.addItem(dicomConfiguration);
+
+        if (currentUserService.isPrism()) {
+                manage.addItem(notifications);
+                manage.addItem(dicomConfiguration);
+        }
 
         manage.getStyle()
                 .set("border-radius", "12px")
@@ -141,14 +145,7 @@ public class MainLayout extends AppLayout {
 
         //all things keycloak user card
         Authentication authentication =
-                        SecurityContextHolder.getContext().getAuthentication();
-                        //role check
-                        if (authentication != null) {
-                                authentication.getAuthorities()
-                                        .forEach(authority ->
-                                                System.out.println("ROLE FOUND: " + authority.getAuthority())
-                                        );
-                                }
+                SecurityContextHolder.getContext().getAuthentication();
 
                 String displayName = "Unknown User";
                 String email = "";
@@ -194,9 +191,6 @@ public class MainLayout extends AppLayout {
                         initials = "??";
                 }
         }
-
-        //temp add 6302026
-        currentUserService.isPrism();
 
         //User card design and formatting - updated 6092026 with dark glass style
         Div userCard = new Div();
