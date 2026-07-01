@@ -2,6 +2,7 @@ package com.bms.processing.service;
 
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.repository.AuditEventRepository;
+import com.bms.processing.entity.CaseRecordEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -39,19 +40,20 @@ public class AuditEventService {
         event.setCreatedBy(createdBy);
         event.setCreatedAt(LocalDateTime.now());
 
-        auditEventRepository.save(event);
-
         event.setTimelineEvent(timelineEvent);
+
+        auditEventRepository.save(event);
     }
 
     //db backed auditing for user activity for patient sensitive stuff - 7012026
     public void logCaseAction(
             String eventType,
-            com.bms.processing.entity.CaseRecordEntity caseRecord,
+            CaseRecordEntity caseRecord,
             String targetName,
             String oldValue,
             String newValue,
-            String createdBy
+            String createdBy,
+            Boolean timelineEvent
     ) {
         if (caseRecord == null) {
             return;
@@ -85,7 +87,47 @@ public class AuditEventService {
                 oldValue,
                 newValue,
                 createdBy,
+                timelineEvent
+        );
+    }
+
+    //admin specific auditing for review - 7012026
+    public void logAdminAuditEvent(
+            String eventType,
+            CaseRecordEntity caseRecord,
+            String targetName,
+            String oldValue,
+            String newValue,
+            String createdBy
+    ) {
+        logCaseAction(
+                eventType,
+                caseRecord,
+                targetName,
+                oldValue,
+                newValue,
+                createdBy,
                 false
+        );
+    }
+
+    //general timeline - 7012026
+    public void logTimelineEvent(
+            String eventType,
+            CaseRecordEntity caseRecord,
+            String targetName,
+            String oldValue,
+            String newValue,
+            String createdBy
+    ) {
+        logCaseAction(
+                eventType,
+                caseRecord,
+                targetName,
+                oldValue,
+                newValue,
+                createdBy,
+                true
         );
     }
 
