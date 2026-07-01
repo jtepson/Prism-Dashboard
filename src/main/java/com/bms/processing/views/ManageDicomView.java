@@ -4,6 +4,8 @@ import com.bms.processing.entity.DicomConfigEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
+import com.bms.processing.security.CurrentUserService;
+import com.bms.processing.views.SummaryView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -24,6 +26,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.component.UI;
 
 @PageTitle("DICOM Configuration")
 @PermitAll
@@ -45,13 +48,23 @@ public class ManageDicomView extends VerticalLayout {
     private final TextField storagePath = new TextField("Storage Path");
     private final Checkbox enabled = new Checkbox("Enabled");
 
+    //use for security with group auth 7012026
+    private final CurrentUserService currentUserService;
+
 
     public ManageDicomView(
             DicomConfigService dicomConfigService,
-            DicomService dicomService
+            DicomService dicomService,
+            CurrentUserService currentUserService
     ) {
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
+        this.currentUserService = currentUserService;
+
+    if (!currentUserService.isPrism()) {
+        UI.getCurrent().navigate(SummaryView.class);
+        return;
+    }
 
         setSizeFull();
         setPadding(true);
