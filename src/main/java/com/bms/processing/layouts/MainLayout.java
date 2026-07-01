@@ -9,6 +9,7 @@ import com.bms.processing.views.UpcomingView;
 import com.bms.processing.views.manage.ManagePatientsView;
 import com.bms.processing.views.manage.ManageSitesView;
 import com.bms.processing.views.manage.ManageNotificationsView;
+import com.bms.processing.views.manage.ManageAuditLogView;
 import com.bms.processing.views.manage.ManageDicomView;
 import com.bms.processing.security.CurrentUserService;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -119,6 +120,7 @@ public class MainLayout extends AppLayout {
         SideNavItem sites = new SideNavItem("Sites", ManageSitesView.class);
         SideNavItem notifications = new SideNavItem("Notifications", ManageNotificationsView.class);
         SideNavItem dicomConfiguration = new SideNavItem("DICOM Configuration", ManageDicomView.class);
+        SideNavItem auditLog = new SideNavItem("Audit Log", ManageAuditLogView.class);
 
         styleManageChild(patients);
         styleManageChild(sites);
@@ -132,6 +134,11 @@ public class MainLayout extends AppLayout {
         if (currentUserService.isPrism()) {
                 manage.addItem(notifications);
                 manage.addItem(dicomConfiguration);
+
+                //adding this in for admin only audit review page
+                if (currentUserService.isAdmin()) {
+                        manage.addItem(auditLog);
+                }
         }
 
         manage.getStyle()
