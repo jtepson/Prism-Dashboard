@@ -95,14 +95,6 @@ public class CaseRecordDialog extends Dialog {
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
         this.dicomRetrieveService = dicomRetrieveService;
-        this.auditEventService.logCaseAction(
-                "VIEW_CASE",
-                record,
-                null,
-                null,
-                null,
-                "system"
-        );
 
         setHeaderTitle("Patient Summary");
         setWidth("900px");
