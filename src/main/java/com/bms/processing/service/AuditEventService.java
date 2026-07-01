@@ -40,6 +40,66 @@ public class AuditEventService {
         auditEventRepository.save(event);
     }
 
+    //db backed auditing for user activity for patient sensitive stuff - 7012026
+    public void logCaseAction(
+            String eventType,
+            com.bms.processing.entity.CaseRecordEntity caseRecord,
+            String targetName,
+            String oldValue,
+            String newValue,
+            String createdBy
+    ) {
+        if (caseRecord == null) {
+            return;
+        }
+
+        String patientInitials = buildPatientInitials(caseRecord);
+        String patientId = caseRecord.getPatientId() == null
+                ? "UNKNOWN"
+                : caseRecord.getPatientId();
+
+        String message = createdBy
+                + " - "
+                + eventType
+                + " - "
+                + patientInitials
+                + " "
+                + patientId;
+
+        if (targetName != null && !targetName.isBlank()) {
+            message += " - " + targetName;
+        }
+
+        if (oldValue != null && newValue != null) {
+            message += " - " + oldValue + " to " + newValue;
+        }
+
+        logEvent(
+                caseRecord.getId(),
+                eventType,
+                message,
+                oldValue,
+                newValue,
+                createdBy
+        );
+    }
+
+    private String buildPatientInitials(
+            com.bms.processing.entity.CaseRecordEntity caseRecord
+    ) {
+        String firstInitial = caseRecord.getPatientFirstName() != null
+                && !caseRecord.getPatientFirstName().isBlank()
+                ? caseRecord.getPatientFirstName().substring(0, 1).toUpperCase()
+                : "?";
+
+        String lastInitial = caseRecord.getPatientLastName() != null
+                && !caseRecord.getPatientLastName().isBlank()
+                ? caseRecord.getPatientLastName().substring(0, 1).toUpperCase()
+                : "?";
+
+        return firstInitial + "." + lastInitial + ".";
+    }
+
     public List<AuditEventEntity> getRecentEvents() {
         return auditEventRepository.findTop50ByOrderByCreatedAtDesc();
     }
