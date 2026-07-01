@@ -4,7 +4,7 @@ import com.bms.processing.entity.DicomConfigEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
-import com.bms.processing.security.CurrentUserService;
+import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.views.SummaryView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

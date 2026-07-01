@@ -5,7 +5,7 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.NotificationRecipientService;
 import com.bms.processing.entity.EmailTemplateEntity;
 import com.bms.processing.service.EmailTemplateService;
-import com.bms.processing.security.CurrentUserService;
+import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.views.SummaryView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;

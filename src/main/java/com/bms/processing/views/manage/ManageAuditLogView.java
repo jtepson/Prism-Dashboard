@@ -2,6 +2,7 @@ package com.bms.processing.views.manage;
 
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.AuditEventService;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -11,36 +12,45 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Audit Log")
 public class ManageAuditLogView extends VerticalLayout {
 
-    public ManageAuditLogView(
-            AuditEventService auditEventService
-    ) {
+        private final CurrentUserService currentUserService;
 
-        setSizeFull();
+        public ManageAuditLogView(
+                AuditEventService auditEventService,
+                CurrentUserService currentUserService
+        ) {
+                this.currentUserService = currentUserService;
 
-        Grid<AuditEventEntity> grid = new Grid<>(AuditEventEntity.class, false);
+                if (!currentUserService.isPrism() || !currentUserService.isAdmin()) {
+                        getUI().ifPresent(ui -> ui.navigate(""));
+                        return;
+                }
 
-        grid.addColumn(AuditEventEntity::getCreatedAt)
-                .setHeader("Timestamp")
-                .setAutoWidth(true);
+                setSizeFull();
 
-        grid.addColumn(AuditEventEntity::getCreatedBy)
-                .setHeader("User")
-                .setAutoWidth(true);
+                Grid<AuditEventEntity> grid = new Grid<>(AuditEventEntity.class, false);
 
-        grid.addColumn(AuditEventEntity::getEventType)
-                .setHeader("Event")
-                .setAutoWidth(true);
+                grid.addColumn(AuditEventEntity::getCreatedAt)
+                        .setHeader("Timestamp")
+                        .setAutoWidth(true);
 
-        grid.addColumn(AuditEventEntity::getMessage)
-                .setHeader("Details")
-                .setFlexGrow(1);
+                grid.addColumn(AuditEventEntity::getCreatedBy)
+                        .setHeader("User")
+                        .setAutoWidth(true);
 
-        grid.setItems(
-                auditEventService.getRecentAuditEvents()
-        );
+                grid.addColumn(AuditEventEntity::getEventType)
+                        .setHeader("Event")
+                        .setAutoWidth(true);
 
-        grid.setSizeFull();
+                grid.addColumn(AuditEventEntity::getMessage)
+                        .setHeader("Details")
+                        .setFlexGrow(1);
 
-        add(grid);
-    }
+                grid.setItems(
+                        auditEventService.getRecentAuditEvents()
+                );
+
+                grid.setSizeFull();
+
+                add(grid);
+        }
 }

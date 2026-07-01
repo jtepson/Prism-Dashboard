@@ -11,7 +11,7 @@ import com.bms.processing.views.manage.ManageSitesView;
 import com.bms.processing.views.manage.ManageNotificationsView;
 import com.bms.processing.views.manage.ManageAuditLogView;
 import com.bms.processing.views.manage.ManageDicomView;
-import com.bms.processing.security.CurrentUserService;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
