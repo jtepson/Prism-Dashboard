@@ -29,6 +29,10 @@ public class AuditEventEntity {
 
     private LocalDateTime createdAt;
 
+    //audit type 
+    @Column(name = "timeline_event")
+    private Boolean timelineEvent = false;
+
     public Long getId() {
         return id;
     }
@@ -87,5 +91,14 @@ public class AuditEventEntity {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    //audit type helpers 7012026
+    public Boolean getTimelineEvent() {
+        return timelineEvent;
+    }
+
+    public void setTimelineEvent(Boolean timelineEvent) {
+        this.timelineEvent = timelineEvent;
     }
 }

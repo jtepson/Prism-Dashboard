@@ -18,13 +18,15 @@ public class AuditEventService {
         this.auditEventRepository = auditEventRepository;
     }
 
+    //updated 7012026 with timeline event for audit types
     public void logEvent(
             Long caseRecordId,
             String eventType,
             String message,
             String oldValue,
             String newValue,
-            String createdBy
+            String createdBy,
+            Boolean timelineEvent
     ) {
 
         AuditEventEntity event = new AuditEventEntity();
@@ -38,6 +40,8 @@ public class AuditEventService {
         event.setCreatedAt(LocalDateTime.now());
 
         auditEventRepository.save(event);
+
+        event.setTimelineEvent(timelineEvent);
     }
 
     //db backed auditing for user activity for patient sensitive stuff - 7012026
@@ -80,7 +84,8 @@ public class AuditEventService {
                 message,
                 oldValue,
                 newValue,
-                createdBy
+                createdBy,
+                false
         );
     }
 

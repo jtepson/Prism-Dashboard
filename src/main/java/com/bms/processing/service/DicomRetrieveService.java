@@ -139,7 +139,8 @@ public class DicomRetrieveService {
                         "REPORT_RETRIEVED",
                         "DICOM report retrieved and imported into Patient Files.",
                         null,
-                        null
+                        null,
+                        true
                 );
 
                 System.out.println("Finished marking IMEKA uploaded for caseRecordId=" + caseRecordId);

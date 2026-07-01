@@ -122,7 +122,8 @@ public class CaseRecordService {
                 "Case completed for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         //email trigger
@@ -167,7 +168,8 @@ public class CaseRecordService {
                 "Error reported for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus != null ? oldStatus.name() : null,
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         //email trigger
@@ -563,7 +565,8 @@ public class CaseRecordService {
                 "Images received for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         return savedRecord;
@@ -590,7 +593,8 @@ public class CaseRecordService {
                 "Processing started for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         return savedRecord;
@@ -631,7 +635,8 @@ public class CaseRecordService {
                 "Case completed for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
         
         //trigger to send email
@@ -682,7 +687,8 @@ public class CaseRecordService {
                 "Error resolved for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName() + ", returned to Processing",
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         return savedRecord;
@@ -748,7 +754,8 @@ public class CaseRecordService {
                 null,
                 savedRecord.getPatientLastName() + ", "
                         + savedRecord.getPatientFirstName(),
-                "SYSTEM"
+                "SYSTEM",
+                true
         );
 
         //email trigger
