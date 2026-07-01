@@ -110,8 +110,12 @@ public class AuditEventService {
     }
 
     public List<AuditEventEntity> getCaseEvents(Long caseRecordId) {
-        return auditEventRepository.findByCaseRecordIdOrderByCreatedAtDesc(
-                caseRecordId
-        );
+        return auditEventRepository
+                .findByCaseRecordIdAndTimelineEventTrueOrderByCreatedAtDesc(caseRecordId);
+    }
+
+    public List<AuditEventEntity> getRecentAuditEvents() {
+        return auditEventRepository
+                .findTop200ByTimelineEventFalseOrderByCreatedAtDesc();
     }
 }
