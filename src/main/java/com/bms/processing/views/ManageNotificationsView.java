@@ -5,6 +5,8 @@ import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.NotificationRecipientService;
 import com.bms.processing.entity.EmailTemplateEntity;
 import com.bms.processing.service.EmailTemplateService;
+import com.bms.processing.security.CurrentUserService;
+import com.bms.processing.views.SummaryView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -25,6 +27,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -41,6 +44,7 @@ public class ManageNotificationsView extends VerticalLayout {
 
     private final NotificationRecipientService notificationRecipientService;
     private final EmailTemplateService emailTemplateService;
+    private final CurrentUserService currentUserService;
 
     private final Grid<NotificationRuleRow> grid =
             new Grid<>(NotificationRuleRow.class, false);
@@ -48,11 +52,18 @@ public class ManageNotificationsView extends VerticalLayout {
     private final TextField searchField = new TextField();
 
     public ManageNotificationsView(
-            NotificationRecipientService notificationRecipientService,
-            EmailTemplateService emailTemplateService
-    ) {
+                NotificationRecipientService notificationRecipientService,
+                EmailTemplateService emailTemplateService,
+                CurrentUserService currentUserService
+    ){
         this.notificationRecipientService = notificationRecipientService;
         this.emailTemplateService = emailTemplateService;
+        this.currentUserService = currentUserService;
+
+        if (!currentUserService.isPrism()) {
+                UI.getCurrent().navigate(SummaryView.class);
+                return;
+        }
 
         setSizeFull();
         setPadding(true);
