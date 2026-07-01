@@ -9,6 +9,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
+import java.util.List;
 
 @Route(value = "manage/audit", layout = MainLayout.class)
 @PageTitle("Audit Log")
@@ -48,12 +51,41 @@ public class ManageAuditLogView extends VerticalLayout {
                         .setHeader("Details")
                         .setFlexGrow(1);
 
-                grid.setItems(
-                        auditEventService.getRecentAuditEvents()
-                );
+                List<AuditEventEntity> events = auditEventService.getRecentAuditEvents();
+
+                ListDataProvider<AuditEventEntity> dataProvider =
+                        new ListDataProvider<>(events);
+
+                TextField searchField = new TextField();
+                searchField.setPlaceholder("Search audit log...");
+                searchField.setClearButtonVisible(true);
+                searchField.setWidth("350px");
+
+                searchField.addValueChangeListener(event -> {
+                String searchTerm = event.getValue() == null
+                        ? ""
+                        : event.getValue().trim().toLowerCase();
+
+                dataProvider.setFilter(auditEvent -> {
+                        if (searchTerm.isBlank()) {
+                        return true;
+                        }
+
+                        return contains(auditEvent.getCreatedBy(), searchTerm)
+                                || contains(auditEvent.getEventType(), searchTerm)
+                                || contains(auditEvent.getMessage(), searchTerm);
+                });
+        });
+
+        grid.setItems(dataProvider);
 
                 grid.setSizeFull();
 
-                add(grid);
+                add(searchField, grid);
+        }
+
+        private boolean contains(String value, String searchTerm) {
+                return value != null
+                        && value.toLowerCase().contains(searchTerm);
         }
 }
