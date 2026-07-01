@@ -3,13 +3,16 @@ package com.bms.processing.views.manage;
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.layouts.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
-@Route(value = "manage/audit")
+@Route(value = "manage/audit", layout = MainLayout.class)
 @PageTitle("Audit Log")
+@PermitAll
 public class ManageAuditLogView extends VerticalLayout {
 
         private final CurrentUserService currentUserService;
