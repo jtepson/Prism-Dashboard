@@ -118,18 +118,34 @@ public class ManageSitesView extends VerticalLayout {
                 .set("font-size", "0.85rem")
                 .set("color", "#1e293b");
 
+        // added some styling to allow for scroll after the massive amounts of sites that have been added - updated 7022026
         VerticalLayout leftPanel = new VerticalLayout(searchField, allSitesLabel, siteList);
         leftPanel.setWidth("320px");
         leftPanel.setMinWidth("300px");
         leftPanel.setMaxWidth("360px");
+
+        siteList.setWidthFull();
+        siteList.setHeightFull();
+        siteList.setPadding(false);
+        siteList.setSpacing(true);
+
+        siteList.getStyle()
+                .set("overflow-y", "auto")
+                .set("overflow-x", "hidden")
+                .set("padding-right", "0.75rem");
+
         leftPanel.getStyle()
                 .set("background", "#ffffff")
                 .set("border", "1px solid #dbe3ee")
                 .set("border-radius", "14px")
                 .set("padding", "1rem")
+                .set("padding-right", "0.5rem")
                 .set("box-shadow", "0 2px 8px rgba(15, 23, 42, 0.04)");
+
         leftPanel.setPadding(true);
         leftPanel.setSpacing(true);
+        leftPanel.setHeightFull();
+        leftPanel.expand(siteList);
 
         siteDetails.setWidthFull();
         siteDetails.setPadding(true);

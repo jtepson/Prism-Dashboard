@@ -229,8 +229,11 @@ public class ProcessedView extends VerticalLayout {
         return value == null ? "" : value.name().replace("_", " ");
     }
 
+    //changing date format to yyyy-mm-dd - updated 7022026
     private String formatDateTime(java.time.LocalDateTime value) {
-        return value == null ? "" : value.toString().replace("T", " ");
+        return value == null
+                ? ""
+                : value.toLocalDate().toString();
     }
 
     private String nullSafe(String value) {

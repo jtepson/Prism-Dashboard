@@ -126,6 +126,7 @@ public class MainLayout extends AppLayout {
         styleManageChild(sites);
         styleManageChild(notifications);
         styleManageChild(dicomConfiguration);
+        styleManageChild(auditLog);
 
         //updated for use of auth via oauth2 grouping - 6302026
         manage.addItem(patients);
