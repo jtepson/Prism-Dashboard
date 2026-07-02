@@ -153,10 +153,6 @@ public class UpcomingView extends VerticalLayout {
                 .setHeader("Intake Sheet Done")
                 .setAutoWidth(true);
     
-        grid.addColumn(row -> Boolean.TRUE.equals(row.getIntakeSheetSent()) ? "Yes" : "No")
-                .setHeader("Intake Sheet Sent")
-                .setAutoWidth(true);        
-
         grid.addComponentColumn(record -> {
             Button markReceivedButton = new Button("Mark Received");
             markReceivedButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
