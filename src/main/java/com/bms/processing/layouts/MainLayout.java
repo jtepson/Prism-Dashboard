@@ -33,11 +33,15 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.PermitAll;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.security.core.GrantedAuthority;
 
 //user imports for keycloak
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.core.GrantedAuthority;
 //vaadin auth context for logging out
 import com.vaadin.flow.spring.security.AuthenticationContext;
 
@@ -161,6 +165,9 @@ public class MainLayout extends AppLayout {
                 String userRoleDisplay = "USER";
 
                 if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser) {
+                        authentication.getAuthorities().forEach(a ->
+                                System.out.println("ROLE FOUND: " + a.getAuthority())
+                        );
                         displayName = oidcUser.getFullName() != null
                                 ? oidcUser.getFullName()
                                 : oidcUser.getPreferredUsername();
@@ -169,21 +176,16 @@ public class MainLayout extends AppLayout {
                                 ? oidcUser.getEmail()
                                 : "";
 
-                //debug chain just so i can see if it is pulling role - please delete once verified PLEASE
-                Object realmAccess = oidcUser.getClaims().get("realm_access");
+                Set<String> authorities = authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(java.util.stream.Collectors.toSet());
 
-                if (realmAccess instanceof java.util.Map<?, ?> accessMap) {
-                        Object rolesObject = accessMap.get("roles");
-
-                        if (rolesObject instanceof java.util.List<?> roles) {
-                                if (roles.contains("ADMIN")) {
-                                        userRoleDisplay = "ADMIN";
-                                } else if (roles.contains("PRISM_USER")) {
-                                        userRoleDisplay = "PRISM USER";
-                                } else if (roles.contains("BMS_USER")) {
-                                        userRoleDisplay = "BMS USER";
-                                }
-                        }
+                if (authorities.contains("ROLE_ADMIN")) {
+                        userRoleDisplay = "ADMIN";
+                } else if (authorities.contains("ROLE_USER")) {
+                        userRoleDisplay = "USER";
+                } else if (authorities.contains("ROLE_VIEWER")) {
+                        userRoleDisplay = "VIEWER";
                 }
 
                 String[] nameParts = displayName.trim().split("\\s+");
