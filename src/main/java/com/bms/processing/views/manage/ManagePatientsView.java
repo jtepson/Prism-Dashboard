@@ -64,22 +64,6 @@ public class ManagePatientsView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        H2 title = new H2("Patient Management");
-        title.getStyle()
-                .set("margin", "0")
-                .set("font-size", "2rem")
-                .set("font-weight", "700")
-                .set("color", "#1e293b");
-
-        Span subtitle = new Span("View, search, and manage all patients in the system.");
-        subtitle.getStyle()
-                .set("color", "#64748b")
-                .set("font-size", "0.98rem");
-
-        VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
-        titleBlock.setPadding(false);
-        titleBlock.setSpacing(false);
-
         Button addPatientButton = new Button("+ Add Patient");
         addPatientButton.getStyle()
                 .set("background", "#2563eb")
@@ -87,7 +71,10 @@ public class ManagePatientsView extends VerticalLayout {
                 .set("border-radius", "10px")
                 .set("font-weight", "700");
 
-        HorizontalLayout header = new HorizontalLayout(titleBlock, addPatientButton);
+        HorizontalLayout header = new HorizontalLayout(
+                MainLayout.pageTitle("Patient Manager"),
+                addPatientButton
+        );
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);

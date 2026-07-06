@@ -73,22 +73,20 @@ public class UpcomingView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        H2 title = new H2("Upcoming");
-        Span subtitle = new Span("Upcoming patients for the BMS team.");
-
         searchField.setPlaceholder("Search last name, ID, or site");
-		searchField.setClearButtonVisible(true);
-		searchField.setWidth("420px");
-		searchField.addValueChangeListener(event -> refreshUpcomingGrid());
+        searchField.setClearButtonVisible(true);
+        searchField.setWidth("420px");
+        searchField.addValueChangeListener(event -> refreshUpcomingGrid());
 
         Button addPatientButton = new Button("Add Patient");
         addPatientButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         addPatientButton.addClickListener(event -> openAddPatientDialog());
+
+        H2 title = MainLayout.pageTitle("Upcoming");
 
         HorizontalLayout headerRow = new HorizontalLayout(title, addPatientButton);
         headerRow.setWidthFull();
-        headerRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        headerRow.setJustifyContentMode(com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN);
         headerRow.setAlignItems(com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER);
 
         configureGrid();
@@ -110,7 +108,7 @@ public class UpcomingView extends VerticalLayout {
                 ).open()
         );
 
-        add(headerRow, subtitle, searchField, grid);
+        add(headerRow, searchField, grid);
         expand(grid);
     }
 

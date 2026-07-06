@@ -64,15 +64,12 @@ public class ErrorsView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        H2 title = new H2("Errors");
-        Span subtitle = new Span("Studies that Prism could not move forward and were submitted to Errors.");
-
         searchField.setPlaceholder("Search last name, ID, or site");
 		searchField.setClearButtonVisible(true);
 		searchField.setWidth("420px");
 		searchField.addValueChangeListener(event -> refreshErrorsGrid());
 
-        HorizontalLayout header = new HorizontalLayout(title);
+        HorizontalLayout header = new HorizontalLayout(MainLayout.pageTitle("Errors"));
         header.setWidthFull();
 
         configureGrid();
@@ -94,7 +91,7 @@ public class ErrorsView extends VerticalLayout {
                 ).open()
         );
 
-        add(header, subtitle, searchField, grid);
+        add(header, searchField, grid);
         expand(grid);
     }
 

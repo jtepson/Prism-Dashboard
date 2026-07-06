@@ -86,8 +86,7 @@ public class ProcessingView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        add(new H2("Processing"));
-        add(new Span("Prism team workflow page for IMEKA, DuraMap, Neuroreader, notes, and completion handling."));
+        add(MainLayout.pageTitle("Processing"));
 
 		searchField.setPlaceholder("Search last name, ID, or site");
 		searchField.setClearButtonVisible(true);

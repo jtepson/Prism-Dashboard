@@ -63,15 +63,12 @@ public class CompletedView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        H2 title = new H2("Completed");
-        Span subtitle = new Span("BMS-completed cases.");
-
         searchField.setPlaceholder("Search last name, ID, or site");
 		searchField.setClearButtonVisible(true);
 		searchField.setWidth("420px");
 		searchField.addValueChangeListener(event -> refreshCompletedGrid());
 
-        HorizontalLayout header = new HorizontalLayout(title);
+        HorizontalLayout header = new HorizontalLayout(MainLayout.pageTitle("Completed"));
         header.setWidthFull();
 
         configureGrid();
@@ -93,7 +90,7 @@ public class CompletedView extends VerticalLayout {
                 ).open()
         );
 
-        add(header, subtitle, searchField, grid);
+        add(header, searchField, grid);
         expand(grid);
     }
 

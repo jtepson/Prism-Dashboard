@@ -106,31 +106,134 @@ vaadin-side-nav-item[current] vaadin-icon {
   color: #ffffff;
 }
 
-/* Manage submenu */
-vaadin-side-nav-item vaadin-side-nav-item::part(link) {
-  margin-left: 1.6rem;
-  min-height: 42px;
-  font-size: 0.94rem;
-  color: #d7fffb;
+/* =========================
+   Manage dropdown
+   ========================= */
+
+vaadin-side-nav-item.manage-parent::part(link) {
   background: transparent;
+  border: none;
+  border-radius: 14px;
+  position: relative;
+  min-height: 40px;
 }
 
-vaadin-side-nav-item vaadin-side-nav-item::part(link):hover {
-  background: rgba(255, 255, 255, 0.08);
+vaadin-side-nav-item.manage-parent[expanded]::part(link) {
+  background: transparent;
+  border: none;
 }
 
-vaadin-side-nav-item vaadin-side-nav-item[current]::part(link) {
-  background: rgba(20, 184, 166, 0.22);
-  color: #ffffff;
+vaadin-side-nav-item.manage-parent::part(toggle) {
+  display: none !important;
 }
 
-vaadin-side-nav-item::part(toggle) {
-  color: #d7fffb;
+vaadin-side-nav-item.manage-parent::part(link)::before {
+  display: none !important;
+}
+
+vaadin-side-nav-item.manage-parent::part(link)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  margin-right: -0.25rem;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #7dfff5;
+  border-bottom: 2px solid #7dfff5;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+vaadin-side-nav-item.manage-parent[expanded]::part(link)::after {
+  transform: translateY(-20%) rotate(-135deg);
+}
+
+vaadin-side-nav-item.manage-parent[expanded] {
+  position: relative;
+}
+
+vaadin-side-nav-item.manage-parent[expanded]::before {
+  content: "";
+  position: absolute;
+  left: 1.5rem;
+  top: 48px; 
+  bottom: 24px; 
+  width: 1px;
+  background: rgba(125, 255, 245, 0.25);
+  z-index: 1;
+}
+
+vaadin-side-nav-item.manage-child {
+  margin-left: 2.5rem; 
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  position: relative;
+}
+
+vaadin-side-nav-item.manage-child:first-of-type {
+  margin-top: 0.4rem;
+}
+
+vaadin-side-nav-item.manage-child::part(link) {
+  min-height: 36px;
+  padding-left: 1.25rem;
+  border-radius: 8px;
+  background: rgba(0, 48, 55, 0.42);
+  color: #e6fffb;
+  font-size: 0.85rem;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+vaadin-side-nav-item.manage-child::after {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7dfff5;
+  opacity: 0.4;
+  transition: opacity 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+vaadin-side-nav-item.manage-child[current]::after {
+  background: #5eead4;
   opacity: 1;
+  box-shadow: 0 0 6px #5eead4;
 }
 
-vaadin-side-nav-item[expanded]::part(toggle) {
+vaadin-side-nav-item.manage-child[current]::part(link) {
+  background: rgba(20, 184, 166, 0.25);
   color: #ffffff;
+  font-weight: 700;
+}
+
+vaadin-side-nav-item.manage-child[current]::part(link)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15%;
+  height: 70%;
+  width: 4px;
+  background-color: #5eead4;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 8px #5eead4;
+}
+
+vaadin-side-nav-item.manage-child::part(link)::after {
+  display: none !important;
+}
+
+vaadin-side-nav-item.manage-child::part(link):hover {
+  background: rgba(125, 255, 245, 0.08);
 }
 
 /* Headers */
@@ -339,4 +442,10 @@ vaadin-grid.interactive-grid::part(summary-selected-row-cell) {
 
 .workflow-grid::part(body-cell) {
     border-bottom: 1px solid #eef2f7;
+}
+
+vaadin-side-nav-item::part(link) {
+  line-height: 1.4;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }

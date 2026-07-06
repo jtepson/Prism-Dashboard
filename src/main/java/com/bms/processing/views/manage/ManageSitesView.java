@@ -61,22 +61,6 @@ public class ManageSitesView extends VerticalLayout {
         getStyle()
                 .set("background", "#f5f7fb");
 
-        H2 title = new H2("Site Management");
-        title.getStyle()
-                .set("margin", "0")
-                .set("font-size", "2rem")
-                .set("font-weight", "700")
-                .set("color", "#1e293b");
-
-        Span subtitle = new Span("Manage and maintain all imaging sites in the system.");
-        subtitle.getStyle()
-                .set("color", "#64748b")
-                .set("font-size", "0.98rem");
-
-        VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
-        titleBlock.setPadding(false);
-        titleBlock.setSpacing(false);
-
         Button addSiteButton = new Button("+ Add Site");
         addSiteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         addSiteButton.addClickListener(event ->
@@ -90,7 +74,10 @@ public class ManageSitesView extends VerticalLayout {
                 ).open()
         );
 
-        HorizontalLayout header = new HorizontalLayout(titleBlock, addSiteButton);
+        HorizontalLayout header = new HorizontalLayout(
+                MainLayout.pageTitle("Site Manager"),
+                addSiteButton
+        );
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);

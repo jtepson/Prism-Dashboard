@@ -81,18 +81,7 @@ public class ManageDicomView extends VerticalLayout {
     }
 
     private Component buildHeader() {
-        H2 title = new H2("DICOM Configuration");
-        title.getStyle()
-                .set("margin", "0")
-                .set("font-size", "2rem")
-                .set("font-weight", "800")
-                .set("color", "#0f172a");
-
-        VerticalLayout header = new VerticalLayout(title);
-        header.setPadding(false);
-        header.setSpacing(false);
-
-        return header;
+        return MainLayout.pageTitle("DICOM Configuration");
     }
 
     private Component buildCard() {

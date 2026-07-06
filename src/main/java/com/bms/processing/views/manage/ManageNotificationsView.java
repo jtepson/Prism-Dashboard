@@ -81,30 +81,21 @@ public class ManageNotificationsView extends VerticalLayout {
     }
 
     private Component buildHeader() {
-        H2 title = new H2("Notification Management");
-        title.getStyle()
-                .set("margin", "0")
-                .set("font-size", "2rem")
-                .set("font-weight", "700")
-                .set("color", "#0f172a");
-
-        Span subtitle = new Span("Configure email recipients for workflow statuses and events.");
-        subtitle.getStyle()
-                .set("color", "#64748b")
-                .set("font-size", "0.95rem");
-
-        VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
-        titleBlock.setPadding(false);
-        titleBlock.setSpacing(false);
 
         Button addButton = new Button("+ Add Recipient");
         addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         addButton.addClickListener(event -> openRecipientDialog(null, null));
 
-        HorizontalLayout header = new HorizontalLayout(titleBlock, addButton);
+        HorizontalLayout header = new HorizontalLayout(
+                MainLayout.pageTitle("Notification Manager"),
+                addButton
+        );
+
         header.setWidthFull();
-        header.setAlignItems(FlexComponent.Alignment.START);
-        header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        header.setAlignItems(FlexComponent.Alignment.CENTER);
+        header.setJustifyContentMode(
+                FlexComponent.JustifyContentMode.BETWEEN
+        );
 
         return header;
     }

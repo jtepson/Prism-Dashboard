@@ -63,15 +63,12 @@ public class ProcessedView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        H2 title = new H2("Processed");
-        Span subtitle = new Span("Prism-completed cases awaiting BMS completion.");
-
         searchField.setPlaceholder("Search last name, ID, or site");
 		searchField.setClearButtonVisible(true);
 		searchField.setWidth("420px");
 		searchField.addValueChangeListener(event -> refreshProcessedGrid());
 
-        HorizontalLayout header = new HorizontalLayout(title);
+        HorizontalLayout header = new HorizontalLayout(MainLayout.pageTitle("Processed"));
         header.setWidthFull();
 
         configureGrid();
@@ -93,7 +90,7 @@ public class ProcessedView extends VerticalLayout {
                 ).open()
         );
 
-        add(header, subtitle, searchField, grid);
+        add(header, searchField, grid);
         expand(grid);
     }
 

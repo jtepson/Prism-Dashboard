@@ -65,6 +65,17 @@ public class MainLayout extends AppLayout {
         //addHeaderContent();
     }
 
+    //universal formatting for H2, didnt like vaadin default 7062026
+    public static H2 pageTitle(String text) {
+        H2 title = new H2(text);
+        title.getStyle()
+                .set("margin-bottom", "0")
+                .set("font-size", "2rem")
+                .set("font-weight", "700")
+                .set("color", "#1e293b");
+        return title;
+    }
+
     private void addHeaderContent() {
         Header header = new Header();
         header.addClassNames(
@@ -103,7 +114,7 @@ public class MainLayout extends AppLayout {
             branding.setSpacing(true);
             branding.getStyle()
                     .set("padding", "1rem")
-                    .set("border-bottom", "1px solid #e2e8f0");
+                    .set("border-bottom", "1px solid rgba(125, 255, 245, 0.45)");
 
         SideNav nav = new SideNav();
         nav.addItem(new SideNavItem("Summary", SummaryView.class, new Icon(VaadinIcon.DASHBOARD)));
@@ -113,12 +124,14 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Completed", CompletedView.class, new Icon(VaadinIcon.CHECK_CIRCLE)));
         nav.addItem(new SideNavItem("Errors", ErrorsView.class, new Icon(VaadinIcon.WARNING)));
         
-        //updated sidebar for dropdown - updated 6092026
+        //updated sidebar for dropdown - updated 6092026 -- scratch that, trying to figure out this dang dropdown arrow 7062026
         SideNavItem manage = new SideNavItem(
                 "Manage",
                 (Class<? extends Component>) null,
                 new Icon(VaadinIcon.TOOLS)
         );
+
+        manage.addClassName("manage-parent");
 
         SideNavItem patients = new SideNavItem("Patients", ManagePatientsView.class);
         SideNavItem sites = new SideNavItem("Sites", ManageSitesView.class);
@@ -308,10 +321,6 @@ public class MainLayout extends AppLayout {
     }
 
     private void styleManageChild(SideNavItem item) {
-        item.getStyle()
-                .set("margin-left", "1rem")
-                .set("border-radius", "12px")
-                .set("font-weight", "500")
-                .set("padding", "0.15rem 0.25rem");
+        item.addClassName("manage-child");
+        }
     }
-}

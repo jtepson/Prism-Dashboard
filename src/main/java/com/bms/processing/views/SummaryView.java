@@ -143,18 +143,12 @@ public class SummaryView extends VerticalLayout {
         setPadding(false);
         setSpacing(true);
 
-        H2 title = new H2("BMS Dashboard");
+        H2 title = new H2("Summary");
                 title.getStyle()
                         .set("margin-bottom", "0")
                         .set("font-size", "2rem")
                         .set("font-weight", "700")
                         .set("color", "#1e293b");
-
-                Span subtitle = new Span("Operations dashboard for workflow status, active queues, exceptions, and recent completions.");
-                subtitle.getStyle()
-                        .set("color", "#64748b")
-                        .set("margin-top", "0")
-                        .set("font-size", "0.98rem");
 
         searchField.setPlaceholder("Search last name, ID, or site");
         searchField.setClearButtonVisible(true);
@@ -199,7 +193,7 @@ public class SummaryView extends VerticalLayout {
         quickViewBackdrop.addClickListener(event -> hideQuickView());
 
         add(
-                buildDashboardPage(title, subtitle),
+                buildDashboardPage(title),
                 quickViewBackdrop,
                 quickViewPanel
         );
@@ -236,7 +230,8 @@ public class SummaryView extends VerticalLayout {
     }
 
     //adding this in order to connect widgets and metrics together for alignment - updated 6092026
-    private Component buildDashboardPage(H2 title, Span subtitle) {
+    //updated again on 7062026 to take out the subtitle
+    private Component buildDashboardPage(H2 title) {
         VerticalLayout shell = new VerticalLayout();
         shell.setPadding(true);
         shell.setSpacing(true);
@@ -250,7 +245,7 @@ public class SummaryView extends VerticalLayout {
                 .set("box-sizing", "border-box");
 
         shell.add(
-                buildDashboardHeader(title, subtitle),
+                buildDashboardHeader(title),
                 buildTopDashboardGrid(),
                 buildLowerDashboardLayout()
         );
@@ -1226,8 +1221,8 @@ public class SummaryView extends VerticalLayout {
         return metrics;
     }
 
-    private HorizontalLayout buildDashboardHeader(H2 title, Span subtitle) {
-        VerticalLayout titleBlock = new VerticalLayout(title, subtitle);
+    private HorizontalLayout buildDashboardHeader(H2 title) {
+        VerticalLayout titleBlock = new VerticalLayout(title);
         titleBlock.setPadding(false);
         titleBlock.setSpacing(false);
 
@@ -1706,13 +1701,12 @@ public class SummaryView extends VerticalLayout {
     private void refreshDashboardGrid() {
         removeAll();
 
+        H2 title = MainLayout.pageTitle("Summary");
+
         add(
-                        buildDashboardPage(
-                                new H2("BMS Dashboard"),
-                                new Span("Operational overview of workflow status and patient queues.")
-                        ),
-                        quickViewBackdrop,
-                        quickViewPanel
+                buildDashboardPage(title),
+                quickViewBackdrop,
+                quickViewPanel
         );
     }
     
