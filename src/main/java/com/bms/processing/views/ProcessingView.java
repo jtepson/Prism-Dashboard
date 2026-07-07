@@ -816,18 +816,11 @@ public class ProcessingView extends VerticalLayout {
 	        record.setFinalOutcome(finalOutcome.getValue());
 
 	        if (finalOutcome.getValue() == FinalOutcome.PROCESSED
-	                || finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_ERRORS
-	                || finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
-	            record.setProcessedDate(LocalDateTime.now());
-
-	            if (finalOutcome.getValue() == FinalOutcome.PROCESSED) {
-	                record.setPatientStatus(PatientStatus.PROCESSED);
-	            } else if (finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_ERRORS) {
-	                record.setPatientStatus(PatientStatus.PROCESSED_WITH_ERRORS);
-	            } else {
-	                record.setPatientStatus(PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS);
-	            }
-	        }
+					|| finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_ERRORS
+					|| finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
+				record.setProcessedDate(LocalDateTime.now());
+				record.setPatientStatus(PatientStatus.PROCESSED);
+			}
 
 	        try {
 				caseRecordService.saveEditedCase(record);

@@ -249,13 +249,13 @@ public class PatientQuickView extends VerticalLayout {
                 return;
             }
 
-            switch (record.getPatientStatus()) {
-                case UPCOMING, VERIFYING -> UI.getCurrent().navigate("upcoming");
-                case ACQUIRED, PROCESSING -> UI.getCurrent().navigate("processing");
-                case PROCESSED, PROCESSED_WITH_ERRORS, PROCESSED_WITH_THIRD_PARTY_ERRORS -> UI.getCurrent().navigate("processed");
-                case COMPLETED -> UI.getCurrent().navigate("completed");
-                case ERROR -> UI.getCurrent().navigate("errors");
-            }
+                switch (record.getPatientStatus()) {
+                        case UPCOMING, VERIFYING -> UI.getCurrent().navigate("upcoming");
+                        case ACQUIRED, PROCESSING -> UI.getCurrent().navigate("processing");
+                        case PROCESSED -> UI.getCurrent().navigate("processed");
+                        case COMPLETED -> UI.getCurrent().navigate("completed");
+                        case ON_HOLD, MISSING_DATA, RESCAN_REQUIRED, REPORT_CORRECTION_REQUIRED, CANCELLED -> UI.getCurrent().navigate("errors");
+                }
         });
 
         Button openPatientPage = new Button("Open Full Record");

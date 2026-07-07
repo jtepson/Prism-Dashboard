@@ -172,18 +172,19 @@ public class ProcessedView extends VerticalLayout {
     }
 
     private void refreshProcessedGrid() {
-        String filter = searchField.getValue() == null ? "" : searchField.getValue().trim().toLowerCase();
-    
+        String filter = searchField.getValue() == null
+                ? ""
+                : searchField.getValue().trim().toLowerCase();
+
         grid.setItems(
                 caseRecordService.findAll().stream()
-                        .filter(record ->
-                                record.getPatientStatus() == PatientStatus.PROCESSED
-                                        || record.getPatientStatus() == PatientStatus.PROCESSED_WITH_ERRORS
-                                        || record.getPatientStatus() == PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS)
+                        .filter(record -> record.getPatientStatus() == PatientStatus.PROCESSED)
                         .filter(record -> filter.isEmpty()
                                 || containsIgnoreCase(record.getPatientLastName(), filter)
+                                || containsIgnoreCase(record.getPatientFirstName(), filter)
                                 || containsIgnoreCase(record.getPatientId(), filter)
-                                || containsIgnoreCase(record.getSiteName(), filter))
+                                || containsIgnoreCase(record.getSiteName(), filter)
+                                || containsIgnoreCase(record.getFunder(), filter))
                         .toList()
         );
     }

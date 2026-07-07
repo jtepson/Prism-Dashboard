@@ -103,13 +103,8 @@ public class CaseRecordService {
 
         PatientStatus oldStatus = record.getPatientStatus();
 
-        if (hasThirdPartyErrors) {
-            record.setPatientStatus(PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS);
-        } else if (hasInternalErrors) {
-            record.setPatientStatus(PatientStatus.PROCESSED_WITH_ERRORS);
-        } else {
-            record.setPatientStatus(PatientStatus.PROCESSED);
-        }
+        //replacing previous processed with error statuses with just processed to make room for new errors system 7062026
+        record.setPatientStatus(PatientStatus.PROCESSED);
 
         record.setProcessedDate(LocalDateTime.now());
 
@@ -142,30 +137,31 @@ public class CaseRecordService {
         }
 
         if (errorExplanation == null || errorExplanation.trim().isEmpty()) {
-            throw new InvalidWorkflowTransitionException(
-                    "An explanation is required before sending a study to Errors."
-            );
+            throw new InvalidWorkflowTransitionException("An explanation is required.");
         }
 
         PatientStatus oldStatus = record.getPatientStatus();
 
-        record.setNotes(errorExplanation.trim());
-        record.setPatientStatus(PatientStatus.ERROR);
-
-        if (record.getPatientStatus() != PatientStatus.ACQUIRED
-                && record.getPatientStatus() != PatientStatus.PROCESSING) {
+        if (oldStatus != PatientStatus.UPCOMING
+                && oldStatus != PatientStatus.VERIFYING
+                && oldStatus != PatientStatus.ACQUIRED
+                && oldStatus != PatientStatus.PROCESSING
+                && oldStatus != PatientStatus.PROCESSED) {
             throw new InvalidWorkflowTransitionException(
-                    "Only ACQUIRED or PROCESSING cases can be moved to Errors."
+                    "Only active workflow cases can be moved to a blocked status."
             );
         }
 
+        record.setNotes(errorExplanation.trim());
+        record.setPatientStatus(PatientStatus.ON_HOLD);
+
         CaseRecordEntity savedRecord = repository.save(record);
 
-        //audit event
+        //audit trigger
         auditEventService.logEvent(
                 savedRecord.getId(),
-                "CASE_ERROR",
-                "Error reported for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
+                "CASE_BLOCKED",
+                "Blocked issue reported for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName(),
                 oldStatus != null ? oldStatus.name() : null,
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM",
@@ -449,26 +445,7 @@ public class CaseRecordService {
             }
         }
 
-        if (record.getPatientStatus() == PatientStatus.ERROR) {
-            if (record.getNotes() == null || record.getNotes().trim().isEmpty()) {
-                throw new InvalidWorkflowTransitionException(
-                        "Notes are required when saving a case in ERROR status."
-                );
-            }
-        }
-
-        if (record.getPatientStatus() == PatientStatus.PROCESSED_WITH_ERRORS
-                || record.getPatientStatus() == PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
-            if (record.getNotes() == null || record.getNotes().trim().isEmpty()) {
-                throw new InvalidWorkflowTransitionException(
-                        "Notes are required for processed cases with errors."
-                );
-            }
-        }
-
-        if (record.getPatientStatus() == PatientStatus.PROCESSED
-                || record.getPatientStatus() == PatientStatus.PROCESSED_WITH_ERRORS
-                || record.getPatientStatus() == PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
+        if (record.getPatientStatus() == PatientStatus.PROCESSED) {
 
             if (!isReadyToFinalize(record)) {
                 throw new InvalidWorkflowTransitionException("Case cannot be saved as processed because it is not ready to finalize.");
@@ -603,10 +580,9 @@ public class CaseRecordService {
     public CaseRecordEntity markCompleted(CaseRecordEntity record) {
         validateRecord(record);
 
+        //updated for linear errors 7072026
         PatientStatus status = record.getPatientStatus();
-        if (status != PatientStatus.PROCESSED
-                && status != PatientStatus.PROCESSED_WITH_ERRORS
-                && status != PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
+        if (status != PatientStatus.PROCESSED) {
             throw new InvalidWorkflowTransitionException(
                     "Only processed cases can be marked completed."
             );
@@ -652,11 +628,10 @@ public class CaseRecordService {
     public CaseRecordEntity updateInvoiceSent(CaseRecordEntity record, boolean invoiceSent) {
         validateRecord(record);
 
+        //updated for linear errors workflow 7072026
         PatientStatus status = record.getPatientStatus();
         if (status != PatientStatus.PROCESSED
-                && status != PatientStatus.PROCESSED_WITH_ERRORS
-                && status != PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS
-                && status != PatientStatus.COMPLETED) {
+            && status != PatientStatus.COMPLETED) {
             throw new InvalidWorkflowTransitionException(
                     "Invoice status can only be updated for processed or completed cases."
             );
@@ -669,13 +644,16 @@ public class CaseRecordService {
     public CaseRecordEntity returnToProcessing(CaseRecordEntity record) {
         validateRecord(record);
 
-        if (record.getPatientStatus() != PatientStatus.ERROR) {
+        PatientStatus oldStatus = record.getPatientStatus();
+
+        if (record.getPatientStatus() != PatientStatus.ON_HOLD
+                && record.getPatientStatus() != PatientStatus.MISSING_DATA
+                && record.getPatientStatus() != PatientStatus.RESCAN_REQUIRED
+                && record.getPatientStatus() != PatientStatus.REPORT_CORRECTION_REQUIRED) {
             throw new InvalidWorkflowTransitionException(
-                    "Only ERROR cases can be returned to processing."
+                    "Only blocked cases can be returned to processing."
             );
         }
-
-        PatientStatus oldStatus = record.getPatientStatus();
 
         record.setPatientStatus(PatientStatus.PROCESSING);
 
@@ -684,7 +662,7 @@ public class CaseRecordService {
         auditEventService.logEvent(
                 savedRecord.getId(),
                 "RETURNED_TO_PROCESSING",
-                "Error resolved for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName() + ", returned to Processing",
+                "Blocked case resolved for " + savedRecord.getPatientLastName() + ", " + savedRecord.getPatientFirstName() + ", returned to Processing",
                 oldStatus.name(),
                 savedRecord.getPatientStatus().name(),
                 "SYSTEM",

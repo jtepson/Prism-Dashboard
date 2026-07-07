@@ -172,7 +172,12 @@ public class ErrorsView extends VerticalLayout {
     private void refreshErrorsGrid() {
         grid.setItems(
                 caseRecordService.findAll().stream()
-                        .filter(record -> record.getPatientStatus() == PatientStatus.ERROR)
+                        .filter(record ->
+                                record.getPatientStatus() == PatientStatus.ON_HOLD
+                                        || record.getPatientStatus() == PatientStatus.MISSING_DATA
+                                        || record.getPatientStatus() == PatientStatus.RESCAN_REQUIRED
+                                        || record.getPatientStatus() == PatientStatus.REPORT_CORRECTION_REQUIRED
+                        )
                         .toList()
         );
     }
