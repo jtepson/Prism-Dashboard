@@ -1,6 +1,5 @@
 package com.bms.processing.model;
 
-
 //Second part here, redesigning error allocation 70702026
 public enum CaseIssueType {
     MISSING_DATA,
