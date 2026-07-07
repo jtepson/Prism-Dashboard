@@ -40,4 +40,8 @@ public class CaseIssueService {
                 CaseIssueStatus.ACTIVE
         );
     }
+
+    public List<CaseIssueEntity> findByStatus(CaseIssueStatus status) {
+        return caseIssueRepository.findByStatus(status);
+    }
 }

@@ -12,6 +12,8 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
+import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.model.CaseIssueStatus;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -42,6 +44,7 @@ public class ErrorsView extends VerticalLayout {
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
+    private final CaseIssueService caseIssueService;
 
     public ErrorsView(
             CaseRecordService caseRecordService,
@@ -50,7 +53,8 @@ public class ErrorsView extends VerticalLayout {
             @Value("${prism.files.storage-path}") String baseStoragePath,
             DicomConfigService dicomConfigService,
             DicomService dicomService,
-            DicomRetrieveService dicomRetrieveService
+            DicomRetrieveService dicomRetrieveService,
+            CaseIssueService caseIssueService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -59,6 +63,7 @@ public class ErrorsView extends VerticalLayout {
             this.dicomConfigService = dicomConfigService;
             this.dicomService = dicomService;
             this.dicomRetrieveService = dicomRetrieveService;
+            this.caseIssueService = caseIssueService;
 
         setSizeFull();
         setPadding(true);
