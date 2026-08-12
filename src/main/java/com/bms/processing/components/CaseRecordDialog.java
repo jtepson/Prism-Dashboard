@@ -379,6 +379,7 @@ public class CaseRecordDialog extends Dialog {
                                 accessionNumber,
                                 lastName,
                                 firstName,
+                                patientId,
                                 sex,
                                 dateOfBirth,
                                 dateScanned
@@ -991,6 +992,7 @@ public class CaseRecordDialog extends Dialog {
                 TextField accessionNumber,
                 TextField lastName,
                 TextField firstName,
+                TextField patientId,
                 TextField sex,
                 DatePicker dateOfBirth,
                 DatePicker dateScanned
@@ -1027,13 +1029,19 @@ public class CaseRecordDialog extends Dialog {
 
                 grid.addComponentColumn(study -> {
                         Button selectButton = new Button("Select", event -> {
-                                //removed previous linking block updated 8122026
+                                //removed previous linking block, now accounts for manual selection of pt data choice updated 8122026
                                 openStudyLinkConfirmationDialog(
                                         study,
                                         studyInstanceUid,
                                         accessionNumber,
+                                        lastName,
+                                        firstName,
+                                        patientId,
+                                        sex,
+                                        dateOfBirth,
+                                        dateScanned,
                                         dialog
-                                );    
+                                );
                 });
                 return selectButton;
         }).setHeader("Select").setAutoWidth(true);
@@ -1131,11 +1139,31 @@ public class CaseRecordDialog extends Dialog {
                 DicomStudyResult study,
                 TextField studyInstanceUid,
                 TextField accessionNumber,
+                TextField lastName,
+                TextField firstName,
+                TextField patientId,
+                TextField sex,
+                DatePicker dateOfBirth,
+                DatePicker dateScanned,
                 Dialog studyResultsDialog
         ) {
                 Dialog confirmDialog = new Dialog();
                 confirmDialog.setHeaderTitle("Verify Study Link");
                 confirmDialog.setWidth("760px");
+
+                //blocks updating patient info to db if duplicate exists - updated 08122026
+                if (caseRecordService.isStudyLinkedToAnotherCase(
+                                record,
+                                study.getStudyInstanceUid()
+                        )) {
+                                Notification.show(
+                                        "This DICOM study is already linked to another patient case.",
+                                        4000,
+                                        Notification.Position.MIDDLE
+                                );
+
+                        return;
+                }
 
                 LocalDate dicomDob = parseDicomDate(study.getPatientBirthDate());
                 LocalDate dicomStudyDate = parseDicomDate(study.getStudyDate());
@@ -1315,6 +1343,74 @@ public class CaseRecordDialog extends Dialog {
                                 keepCurrentButton,
                                 updateFromDicomButton
                         );
+
+                        keepCurrentButton.addClickListener(event -> {
+
+                                studyInstanceUid.setValue(
+                                        nullSafe(study.getStudyInstanceUid())
+                                );
+
+                                accessionNumber.setValue(
+                                        nullSafe(study.getAccessionNumber())
+                                );
+
+                                confirmDialog.close();
+                                studyResultsDialog.close();
+
+                                Notification.show(
+                                        "Study selected. Current patient information was retained.",
+                                        3500,
+                                        Notification.Position.MIDDLE
+                                );
+                        });
+
+                        updateFromDicomButton.addClickListener(event -> {
+
+                                studyInstanceUid.setValue(
+                                        nullSafe(study.getStudyInstanceUid())
+                                );
+
+                                accessionNumber.setValue(
+                                        nullSafe(study.getAccessionNumber())
+                                );
+
+                                if (study.getParsedLastName() != null
+                                        && !study.getParsedLastName().isBlank()) {
+                                        lastName.setValue(study.getParsedLastName().trim());
+                                }
+
+                                if (study.getParsedFirstName() != null
+                                        && !study.getParsedFirstName().isBlank()) {
+                                        firstName.setValue(study.getParsedFirstName().trim());
+                                }
+
+                                if (study.getPatientId() != null
+                                        && !study.getPatientId().isBlank()) {
+                                        patientId.setValue(study.getPatientId().trim());
+                                }
+
+                                if (study.getPatientSex() != null
+                                        && !study.getPatientSex().isBlank()) {
+                                        sex.setValue(study.getPatientSex().trim());
+                                }
+
+                                if (dicomDob != null) {
+                                        dateOfBirth.setValue(dicomDob);
+                                }
+
+                                if (dicomStudyDate != null) {
+                                        dateScanned.setValue(dicomStudyDate);
+                                }
+
+                                confirmDialog.close();
+                                studyResultsDialog.close();
+
+                                Notification.show(
+                                        "Study selected and patient information updated from DICOM.",
+                                        3500,
+                                        Notification.Position.MIDDLE
+                                );
+                        });
                 }
 
                         VerticalLayout content = new VerticalLayout(

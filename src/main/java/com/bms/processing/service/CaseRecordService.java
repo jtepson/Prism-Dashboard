@@ -803,6 +803,25 @@ public class CaseRecordService {
         }
     }
 
+    //prevents updating when duplicate exists - updated 08122026
+    public boolean isStudyLinkedToAnotherCase(
+            CaseRecordEntity record,
+            String studyInstanceUid
+    ) {
+        validateRecord(record);
+
+        String normalizedStudyUid = trimToNull(studyInstanceUid);
+
+        if (normalizedStudyUid == null) {
+            return false;
+        }
+
+        return repository.existsByStudyInstanceUidAndIdNot(
+                normalizedStudyUid,
+                record.getId()
+        );
+    }
+
     //updated 8122026 for issue 22, regarding dicom redundancy for studyuid linking
     public CaseRecordEntity updateDicomLink(
             CaseRecordEntity record,
