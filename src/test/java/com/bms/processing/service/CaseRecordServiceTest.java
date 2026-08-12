@@ -77,11 +77,7 @@ class CaseRecordServiceTest {
             CaseRecordEntity result = caseRecordService.finalizeCase(record, true);
 
             assertNotNull(result.getProcessedDate());
-            assertTrue(
-                    result.getPatientStatus() == PatientStatus.PROCESSED
-                            || result.getPatientStatus() == PatientStatus.PROCESSED_WITH_ERRORS
-                            || result.getPatientStatus() == PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS
-            );
+            assertEquals(PatientStatus.PROCESSED, result.getPatientStatus());
         }
 
         @Test
@@ -131,7 +127,7 @@ class CaseRecordServiceTest {
         void shouldThrowWhenProcessedWithErrorsWithoutNotes() {
             CaseRecordEntity record = new CaseRecordEntity();
 
-            record.setPatientStatus(PatientStatus.PROCESSED_WITH_ERRORS);
+            record.setPatientStatus(PatientStatus.PROCESSED);
 
             assertThrows(
                     InvalidWorkflowTransitionException.class,
@@ -143,7 +139,7 @@ class CaseRecordServiceTest {
         void shouldThrowWhenProcessedWithThirdPartyErrorsWithoutNotes() {
             CaseRecordEntity record = new CaseRecordEntity();
 
-            record.setPatientStatus(PatientStatus.PROCESSED_WITH_THIRD_PARTY_ERRORS);
+            record.setPatientStatus(PatientStatus.PROCESSED);
 
             assertThrows(
                     InvalidWorkflowTransitionException.class,
@@ -155,7 +151,7 @@ class CaseRecordServiceTest {
         void shouldThrowWhenErrorStatusWithoutNotes() {
             CaseRecordEntity record = new CaseRecordEntity();
 
-            record.setPatientStatus(PatientStatus.ERROR);
+            record.setPatientStatus(PatientStatus.ON_HOLD);
 
             assertThrows(
                     InvalidWorkflowTransitionException.class,

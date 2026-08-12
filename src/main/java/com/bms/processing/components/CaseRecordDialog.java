@@ -253,31 +253,71 @@ public class CaseRecordDialog extends Dialog {
         DatePicker neuroreaderSentDate = new DatePicker("Neuroreader Sent Date");
         neuroreaderSentDate.setValue(record.getNeuroreaderSentDate());
 
+        //updated 8122026, reworked in order to correct issue #23 with the pt management dialog
+        //not showing the third party details.
+        //Third party processing details remain visible now in all workflow modes, along with
+        //processing edits, all other modes provide a read only vendor status summary. 
         if (mode == Mode.PROCESSING) {
-            if (!record.isMinorAtScan()) {
-                thirdPartyForm.add(
-                        imekaStatus,
-                        imekaSentDate,
-                        imekaUploadedDate
-                );
 
-                if ("ERROR".equals(imekaStatus.getValue())) {
-                    thirdPartyForm.add(
-                            duramapStatus,
-                            duramapSentDate
-                    );
+                if (!record.isMinorAtScan()) {
+                        thirdPartyForm.add(
+                                imekaStatus,
+                                imekaSentDate,
+                                imekaUploadedDate
+                        );
+
+                        if ("ERROR".equals(imekaStatus.getValue())) {
+                        thirdPartyForm.add(
+                                duramapStatus,
+                                duramapSentDate
+                        );
+                        }
+                } else {
+                        thirdPartyForm.add(
+                                duramapStatus,
+                                duramapSentDate
+                        );
                 }
-            } else {
-                thirdPartyForm.add(
-                        duramapStatus,
-                        duramapSentDate
-                );
-            }
 
-            thirdPartyForm.add(
-                    neuroreaderStatus,
-                    neuroreaderSentDate
-            );
+                thirdPartyForm.add(
+                        neuroreaderStatus,
+                        neuroreaderSentDate
+                );
+
+                } else {
+
+                thirdPartyForm.add(
+                        buildDisplayField(
+                                "IMEKA Status",
+                                formatEnum(record.getImekaStatus())
+                        ),
+                        buildDisplayField(
+                                "IMEKA Sent Date",
+                                formatDate(record.getImekaSentDate())
+                        ),
+                        buildDisplayField(
+                                "IMEKA Uploaded Date",
+                                formatDateTimeCompact(record.getImekaUploadedDate())
+                        ),
+
+                        buildDisplayField(
+                                "Neuroreader Status",
+                                formatEnum(record.getNeuroreaderStatus())
+                        ),
+                        buildDisplayField(
+                                "Neuroreader Sent Date",
+                                formatDate(record.getNeuroreaderSentDate())
+                        ),
+
+                        buildDisplayField(
+                                "DuraMap Status",
+                                formatEnum(record.getDuramapStatus())
+                        ),
+                        buildDisplayField(
+                                "DuraMap Sent Date",
+                                formatDate(record.getDuramapSentDate())
+                        )
+                );
         }
         
         Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
