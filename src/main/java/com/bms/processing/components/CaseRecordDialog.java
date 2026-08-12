@@ -1012,44 +1012,13 @@ public class CaseRecordDialog extends Dialog {
 
                 grid.addComponentColumn(study -> {
                         Button selectButton = new Button("Select", event -> {
-                                studyInstanceUid.setValue(nullSafe(study.getStudyInstanceUid()));
-                                accessionNumber.setValue(nullSafe(study.getAccessionNumber()));
-
-                                if (study.getParsedLastName() != null) {
-                                        lastName.setValue(study.getParsedLastName());
-                                        record.setPatientLastName(study.getParsedLastName());
-                                }
-
-                                if (study.getParsedFirstName() != null) {
-                                        firstName.setValue(study.getParsedFirstName());
-                                        record.setPatientFirstName(study.getParsedFirstName());
-                                }
-
-                                if (study.getPatientSex() != null) {
-                                        sex.setValue(study.getPatientSex());
-                                        record.setSex(study.getPatientSex());
-                                }
-
-                                if (study.getPatientBirthDate() != null && study.getPatientBirthDate().length() == 8) {
-                                        LocalDate dob = parseDicomDate(study.getPatientBirthDate());
-                                        dateOfBirth.setValue(dob);
-                                        record.setDateOfBirth(dob);
-                                }
-
-                                if (study.getStudyDate() != null && study.getStudyDate().length() == 8) {
-                                        LocalDate scannedDate = parseDicomDate(study.getStudyDate());
-                                        dateScanned.setValue(scannedDate);
-                                        record.setDateScanned(scannedDate);
-                                }
-
-                                // linking a study should pull core demographics too so we avoid dashboard/cache mismatch- updated 6252026
-                                dialog.close();
-
-                                Notification.show(
-                                        "Study selected. Review fields, then click Save.",
-                                        3500,
-                                        Notification.Position.MIDDLE
-                                );
+                                //removed previous linking block updated 8122026
+                                openStudyLinkConfirmationDialog(
+                                        study,
+                                        studyInstanceUid,
+                                        accessionNumber,
+                                        dialog
+                                );    
                 });
                 return selectButton;
         }).setHeader("Select").setAutoWidth(true);
@@ -1138,6 +1107,274 @@ public class CaseRecordDialog extends Dialog {
 
                 dialog.add(grid);
                 dialog.open();
+        }
+
+        //validates DICOM demographics before linking a study.
+        // A selected study may be linked despite a mismatch, but DICOM demographics
+        // must never overwrite the existing Prism patient record updated 8122026
+        private void openStudyLinkConfirmationDialog(
+                DicomStudyResult study,
+                TextField studyInstanceUid,
+                TextField accessionNumber,
+                Dialog studyResultsDialog
+        ) {
+                Dialog confirmDialog = new Dialog();
+                confirmDialog.setHeaderTitle("Verify Study Link");
+                confirmDialog.setWidth("760px");
+
+                LocalDate dicomDob = parseDicomDate(study.getPatientBirthDate());
+                LocalDate dicomStudyDate = parseDicomDate(study.getStudyDate());
+
+                boolean patientIdMatches = valuesMatch(
+                        record.getPatientId(),
+                        study.getPatientId()
+                );
+
+                boolean lastNameMatches = valuesMatch(
+                        record.getPatientLastName(),
+                        study.getParsedLastName()
+                );
+
+                boolean firstNameMatches = valuesMatch(
+                        record.getPatientFirstName(),
+                        study.getParsedFirstName()
+                );
+
+                boolean dobMatches = datesMatch(
+                        record.getDateOfBirth(),
+                        dicomDob
+                );
+
+                boolean sexMatches = valuesMatch(
+                        record.getSex(),
+                        study.getPatientSex()
+                );
+
+                boolean studyDateMatches = datesMatch(
+                        record.getDateScanned(),
+                        dicomStudyDate
+                );
+
+                boolean demographicsMatch =
+                        patientIdMatches
+                                && lastNameMatches
+                                && firstNameMatches
+                                && dobMatches
+                                && sexMatches
+                                && studyDateMatches;
+
+                Span message = new Span(
+                        demographicsMatch
+                                ? "Patient information matches the selected DICOM study."
+                                : "Warning: The selected DICOM study does not fully match this patient record."
+                );
+
+                if (!demographicsMatch) {
+                        message.getStyle()
+                                .set("color", "var(--lumo-error-text-color)")
+                                .set("font-weight", "700");
+                } else {
+                        message.getStyle()
+                                .set("color", "var(--lumo-success-text-color)")
+                                .set("font-weight", "700");
+                }
+
+                FormLayout comparisonForm = new FormLayout();
+                comparisonForm.setWidthFull();
+                comparisonForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                comparisonForm.add(
+                        buildComparisonField(
+                                "Prism Patient ID",
+                                record.getPatientId(),
+                                patientIdMatches
+                        ),
+                        buildComparisonField(
+                                "DICOM Patient ID",
+                                study.getPatientId(),
+                                patientIdMatches
+                        ),
+
+                        buildComparisonField(
+                                "Prism Name",
+                                buildPatientName(
+                                        record.getPatientFirstName(),
+                                        record.getPatientLastName()
+                                ),
+                                firstNameMatches && lastNameMatches
+                        ),
+                        buildComparisonField(
+                                "DICOM Name",
+                                buildPatientName(
+                                        study.getParsedFirstName(),
+                                        study.getParsedLastName()
+                                ),
+                                firstNameMatches && lastNameMatches
+                        ),
+
+                        buildComparisonField(
+                                "Prism DOB",
+                                formatDate(record.getDateOfBirth()),
+                                dobMatches
+                        ),
+                        buildComparisonField(
+                                "DICOM DOB",
+                                formatDate(dicomDob),
+                                dobMatches
+                        ),
+
+                        buildComparisonField(
+                                "Prism Sex",
+                                record.getSex(),
+                                sexMatches
+                        ),
+                        buildComparisonField(
+                                "DICOM Sex",
+                                study.getPatientSex(),
+                                sexMatches
+                        ),
+
+                        buildComparisonField(
+                                "Prism Scan Date",
+                                formatDate(record.getDateScanned()),
+                                studyDateMatches
+                        ),
+                        buildComparisonField(
+                                "DICOM Study Date",
+                                formatDate(dicomStudyDate),
+                                studyDateMatches
+                        )
+                );
+
+                Button cancelButton = new Button(
+                        "Cancel",
+                        event -> confirmDialog.close()
+                );
+
+                Button linkButton = new Button(
+                        demographicsMatch ? "Confirm Link" : "Link Anyway"
+                );
+
+                linkButton.addThemeVariants(
+                        demographicsMatch
+                                ? new ButtonVariant[]{
+                                        ButtonVariant.LUMO_PRIMARY,
+                                        ButtonVariant.LUMO_SUCCESS
+                                }
+                                : new ButtonVariant[]{
+                                        ButtonVariant.LUMO_PRIMARY,
+                                        ButtonVariant.LUMO_ERROR
+                                }
+                );
+
+                linkButton.addClickListener(event -> {
+
+                        studyInstanceUid.setValue(
+                                nullSafe(study.getStudyInstanceUid())
+                        );
+
+                        accessionNumber.setValue(
+                                nullSafe(study.getAccessionNumber())
+                        );
+
+                        confirmDialog.close();
+                        studyResultsDialog.close();
+
+                        Notification.show(
+                                demographicsMatch
+                                        ? "Study selected. Click Save to complete the link."
+                                        : "Study selected with demographic differences. Click Save to complete the link.",
+                                4000,
+                                Notification.Position.MIDDLE
+                        );
+                });
+
+                VerticalLayout content = new VerticalLayout(
+                        message,
+                        comparisonForm
+                );
+
+                content.setPadding(false);
+                content.setSpacing(true);
+                content.setWidthFull();
+
+                confirmDialog.add(content);
+                confirmDialog.getFooter().add(cancelButton, linkButton);
+                confirmDialog.open();
+        }
+
+        private Component buildComparisonField(
+        String label,
+        String value,
+        boolean matches
+) {
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setPadding(false);
+        wrapper.setSpacing(false);
+        wrapper.getStyle().set("gap", "0.25rem");
+
+        Span labelSpan = new Span(label);
+        labelSpan.getStyle()
+                .set("font-size", "0.82rem")
+                .set("font-weight", "600")
+                .set("color", "#64748b");
+
+        Div valueBox = new Div();
+        valueBox.setText(
+                value == null || value.isBlank()
+                        ? "-"
+                        : value
+        );
+
+        valueBox.getStyle()
+                .set("padding", "0.65rem 0.75rem")
+                .set("border-radius", "10px")
+                .set("min-height", "42px")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("box-sizing", "border-box");
+
+        if (matches) {
+                valueBox.getStyle()
+                        .set("border", "1px solid var(--lumo-success-color-50pct)")
+                        .set("background", "var(--lumo-success-color-10pct)");
+        } else {
+                valueBox.getStyle()
+                        .set("border", "1px solid var(--lumo-error-color-50pct)")
+                        .set("background", "var(--lumo-error-color-10pct)");
+        }
+
+        wrapper.add(labelSpan, valueBox);
+
+        return wrapper;
+        }
+
+        private boolean valuesMatch(String prismValue, String dicomValue) {
+                if ((prismValue == null || prismValue.isBlank())
+                        && (dicomValue == null || dicomValue.isBlank())) {
+                        return true;
+                }
+
+                if (prismValue == null || dicomValue == null) {
+                        return false;
+                }
+
+                return prismValue.trim().equalsIgnoreCase(dicomValue.trim());
+        }
+
+        private boolean datesMatch(LocalDate prismDate, LocalDate dicomDate) {
+                if (prismDate == null && dicomDate == null) {
+                        return true;
+                }
+
+                if (prismDate == null || dicomDate == null) {
+                        return false;
+                }
+
+                return prismDate.equals(dicomDate);
         }
 
         private LocalDate parseDicomDate(String value) {
