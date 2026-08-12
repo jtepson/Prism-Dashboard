@@ -1269,56 +1269,64 @@ public class CaseRecordDialog extends Dialog {
                         event -> confirmDialog.close()
                 );
 
-                Button linkButton = new Button(
-                        demographicsMatch ? "Confirm Link" : "Link Anyway"
-                );
+                //allows for manual selection of updating patient info instead of doing it automatically - updated 8122026
+                if (demographicsMatch) {
 
-                linkButton.addThemeVariants(
-                        demographicsMatch
-                                ? new ButtonVariant[]{
-                                        ButtonVariant.LUMO_PRIMARY,
-                                        ButtonVariant.LUMO_SUCCESS
-                                }
-                                : new ButtonVariant[]{
-                                        ButtonVariant.LUMO_PRIMARY,
-                                        ButtonVariant.LUMO_ERROR
-                                }
-                );
+                        Button confirmLinkButton = new Button("Confirm Link");
+                        confirmLinkButton.addThemeVariants(
+                                ButtonVariant.LUMO_PRIMARY,
+                                ButtonVariant.LUMO_SUCCESS
+                        );
+                        confirmLinkButton.addClickListener(event -> {
 
-                linkButton.addClickListener(event -> {
+                                studyInstanceUid.setValue(
+                                        nullSafe(study.getStudyInstanceUid())
+                                );
 
-                        studyInstanceUid.setValue(
-                                nullSafe(study.getStudyInstanceUid())
+                                accessionNumber.setValue(
+                                        nullSafe(study.getAccessionNumber())
+                                );
+
+                                confirmDialog.close();
+                                studyResultsDialog.close();
+
+                                Notification.show(
+                                        "Study selected. Click Save to complete the link.",
+                                        3500,
+                                        Notification.Position.MIDDLE
+                                );
+                        });
+                        confirmDialog.getFooter().add(
+                                cancelButton,
+                                confirmLinkButton
                         );
 
-                        accessionNumber.setValue(
-                                nullSafe(study.getAccessionNumber())
+                } else {
+
+                        Button keepCurrentButton =
+                                new Button("Keep Current Patient Info");
+                        Button updateFromDicomButton =
+                                new Button("Update from DICOM Study");
+                        updateFromDicomButton.addThemeVariants(
+                                ButtonVariant.LUMO_PRIMARY
                         );
-
-                        confirmDialog.close();
-                        studyResultsDialog.close();
-
-                        Notification.show(
-                                demographicsMatch
-                                        ? "Study selected. Click Save to complete the link."
-                                        : "Study selected with demographic differences. Click Save to complete the link.",
-                                4000,
-                                Notification.Position.MIDDLE
+                        confirmDialog.getFooter().add(
+                                cancelButton,
+                                keepCurrentButton,
+                                updateFromDicomButton
                         );
-                });
+                }
 
-                VerticalLayout content = new VerticalLayout(
-                        message,
-                        comparisonForm
-                );
+                        VerticalLayout content = new VerticalLayout(
+                                message,
+                                comparisonForm
+                        );
+                        content.setPadding(false);
+                        content.setSpacing(true);
+                        content.setWidthFull();
 
-                content.setPadding(false);
-                content.setSpacing(true);
-                content.setWidthFull();
-
-                confirmDialog.add(content);
-                confirmDialog.getFooter().add(cancelButton, linkButton);
-                confirmDialog.open();
+                        confirmDialog.add(content);
+                        confirmDialog.open();
         }
 
         private Component buildComparisonField(
