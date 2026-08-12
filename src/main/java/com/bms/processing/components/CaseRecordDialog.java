@@ -917,6 +917,21 @@ public class CaseRecordDialog extends Dialog {
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 
+    private String buildPatientName(String firstName, String lastName) {
+        String first = firstName == null ? "" : firstName.trim();
+        String last = lastName == null ? "" : lastName.trim();
+
+        if (first.isEmpty()) {
+                return last;
+        }
+
+        if (last.isEmpty()) {
+                return first;
+        }
+
+        return last + ", " + first;
+    }
+
     private String nullSafe(String value) {
         return value == null ? "" : value;
     }
