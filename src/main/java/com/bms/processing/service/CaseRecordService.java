@@ -803,6 +803,7 @@ public class CaseRecordService {
         }
     }
 
+    //updated 8122026 for issue 22, regarding dicom redundancy for studyuid linking
     public CaseRecordEntity updateDicomLink(
             CaseRecordEntity record,
             String studyInstanceUid,
@@ -810,9 +811,21 @@ public class CaseRecordService {
     ) {
         validateRecord(record);
 
-        record.setStudyInstanceUid(trimToNull(studyInstanceUid));
+        String normalizedStudyUid = trimToNull(studyInstanceUid);
+
+        if (normalizedStudyUid != null
+                && repository.existsByStudyInstanceUidAndIdNot(
+                        normalizedStudyUid,
+                        record.getId()
+                )) {
+            throw new InvalidWorkflowTransitionException(
+                    "This DICOM study is already linked to another patient case."
+            );
+        }
+
+        record.setStudyInstanceUid(normalizedStudyUid);
         record.setAccessionNumber(trimToNull(accessionNumber));
-        record.setDicomLinked(record.getStudyInstanceUid() != null);
+        record.setDicomLinked(normalizedStudyUid != null);
 
         return repository.save(record);
     }

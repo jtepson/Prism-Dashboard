@@ -12,6 +12,12 @@ import java.time.LocalDateTime;
 
 public interface CaseRecordRepository extends JpaRepository<CaseRecordEntity, Long> {
 
+    //adding in for issue 22 fix, for redundant studyuid checking and blocking repeated connections.
+    boolean existsByStudyInstanceUidAndIdNot(
+            String studyInstanceUid,
+            Long id
+    );
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update CaseRecordEntity c
@@ -20,6 +26,7 @@ public interface CaseRecordRepository extends JpaRepository<CaseRecordEntity, Lo
                 c.imekaUploadedDate = :uploadedDate
             where c.id = :caseRecordId
             """)
+
     int markImekaUploadedFromReport(
             @Param("caseRecordId") Long caseRecordId,
             @Param("status") ThirdPartyStatus status,
