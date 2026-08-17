@@ -830,6 +830,21 @@ public class CaseRecordDialog extends Dialog {
                         accessionNumber.getValue()
                 );
 
+                if (!pendingDicomDemographicChanges.isEmpty()) {
+                        pendingDicomDemographicChanges.forEach((fieldName, values) ->
+                                auditEventService.logTimelineEvent(
+                                        "DICOM_DEMOGRAPHIC_UPDATE",
+                                        record,
+                                        fieldName,
+                                        values[0],
+                                        values[1],
+                                        "SYSTEM"
+                                )
+                        );
+
+                        pendingDicomDemographicChanges.clear();
+                }
+
                 if (afterSave != null) {
                     if (mode == Mode.PROCESSING) {
 
@@ -1438,71 +1453,59 @@ public class CaseRecordDialog extends Dialog {
                                         dateScanned.setValue(dicomStudyDate);
                                 }
 
+                                pendingDicomDemographicChanges.clear();
+
                                 if (!oldPatientId.equals(patientId.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
+                                        pendingDicomDemographicChanges.put(
                                                 "Patient ID",
-                                                oldPatientId,
-                                                patientId.getValue(),
-                                                "SYSTEM"
+                                                new String[]{oldPatientId, patientId.getValue()}
                                         );
                                 }
 
                                 if (!oldLastName.equals(lastName.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
+                                        pendingDicomDemographicChanges.put(
                                                 "Last Name",
-                                                oldLastName,
-                                                lastName.getValue(),
-                                                "SYSTEM"
+                                                new String[]{oldLastName, lastName.getValue()}
                                         );
                                 }
 
                                 if (!oldFirstName.equals(firstName.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
+                                        pendingDicomDemographicChanges.put(
                                                 "First Name",
-                                                oldFirstName,
-                                                firstName.getValue(),
-                                                "SYSTEM"
+                                                new String[]{oldFirstName, firstName.getValue()}
                                         );
                                 }
 
                                 if (!oldSex.equals(sex.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
+                                        pendingDicomDemographicChanges.put(
                                                 "Sex",
-                                                oldSex,
-                                                sex.getValue(),
-                                                "SYSTEM"
+                                                new String[]{oldSex, sex.getValue()}
                                         );
                                 }
 
                                 if (!java.util.Objects.equals(oldDob, dateOfBirth.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
+                                        pendingDicomDemographicChanges.put(
                                                 "Date of Birth",
-                                                oldDob != null ? oldDob.toString() : "",
-                                                dateOfBirth.getValue() != null ? dateOfBirth.getValue().toString() : "",
-                                                "SYSTEM"
+                                                new String[]{
+                                                        oldDob != null ? oldDob.toString() : "",
+                                                        dateOfBirth.getValue() != null
+                                                                ? dateOfBirth.getValue().toString()
+                                                                : ""
+                                                }
                                         );
                                 }
 
-                                if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
-                                        auditEventService.logTimelineEvent(
-                                                "DICOM_DEMOGRAPHIC_UPDATE",
-                                                record,
-                                                "Date Scanned",
-                                                oldScanDate != null ? oldScanDate.toString() : "",
-                                                dateScanned.getValue() != null ? dateScanned.getValue().toString() : "",
-                                                "SYSTEM"
-                                        );
-                                }
+if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
+        pendingDicomDemographicChanges.put(
+                "Date Scanned",
+                new String[]{
+                        oldScanDate != null ? oldScanDate.toString() : "",
+                        dateScanned.getValue() != null
+                                ? dateScanned.getValue().toString()
+                                : ""
+                }
+        );
+}
 
                                 confirmDialog.close();
                                 studyResultsDialog.close();
