@@ -81,5 +81,9 @@ public class CaseIssueService {
     public List<CaseIssueEntity> findByStatus(CaseIssueStatus status) {
         return caseIssueRepository.findByStatus(status);
     }
+
+    public List<CaseIssueEntity> findByStatusWithCaseRecord(CaseIssueStatus status) {
+        return caseIssueRepository.findByStatusWithCaseRecord(status);
+    }
     
 }

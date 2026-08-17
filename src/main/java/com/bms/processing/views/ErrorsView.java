@@ -175,13 +175,21 @@ public class ErrorsView extends VerticalLayout {
     }
 
     private void refreshErrorsGrid() {
+        String filter = searchField.getValue() == null
+                ? ""
+                : searchField.getValue().trim().toLowerCase();
+
         grid.setItems(
-                caseRecordService.findAll().stream()
+                caseIssueService.findByStatusWithCaseRecord(CaseIssueStatus.ACTIVE).stream()
+                        .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+                        .map(issue -> issue.getCaseRecord())
+                        .distinct()
                         .filter(record ->
-                                record.getPatientStatus() == PatientStatus.ON_HOLD
-                                        || record.getPatientStatus() == PatientStatus.MISSING_DATA
-                                        || record.getPatientStatus() == PatientStatus.RESCAN_REQUIRED
-                                        || record.getPatientStatus() == PatientStatus.REPORT_CORRECTION_REQUIRED
+                                filter.isEmpty()
+                                        || containsIgnoreCase(record.getPatientLastName(), filter)
+                                        || containsIgnoreCase(record.getPatientFirstName(), filter)
+                                        || containsIgnoreCase(record.getPatientId(), filter)
+                                        || containsIgnoreCase(record.getSiteName(), filter)
                         )
                         .toList()
         );
