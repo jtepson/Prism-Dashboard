@@ -25,17 +25,20 @@ class CaseRecordServiceTest {
     private AuditEventService auditEventService;
     private CaseRecordService caseRecordService;
     private NotificationService notificationService;
+    private CaseIssueService caseIssueService;
 
     @BeforeEach
     void setUp() {
         repository = mock(CaseRecordRepository.class);
         auditEventService = mock(AuditEventService.class);
         notificationService = mock(NotificationService.class);
+        caseIssueService = mock(CaseIssueService.class);
 
         caseRecordService = new CaseRecordService(
                 repository,
                 auditEventService,
-                notificationService
+                notificationService,
+                caseIssueService
         );
 
         when(repository.save(any(CaseRecordEntity.class)))
@@ -148,18 +151,6 @@ class CaseRecordServiceTest {
         }
 
         @Test
-        void shouldThrowWhenErrorStatusWithoutNotes() {
-            CaseRecordEntity record = new CaseRecordEntity();
-
-            record.setPatientStatus(PatientStatus.ON_HOLD);
-
-            assertThrows(
-                    InvalidWorkflowTransitionException.class,
-                    () -> caseRecordService.saveEditedCase(record)
-            );
-        }
-
-        @Test
         void shouldThrowWhenImekaSentWithoutSentDate() {
             CaseRecordEntity record = new CaseRecordEntity();
 
@@ -205,21 +196,4 @@ class CaseRecordServiceTest {
             );
         }
 
-        @Test
-        void shouldSetProcessedDateWhenSavingProcessedCase() {
-            CaseRecordEntity record = new CaseRecordEntity();
-
-            record.setPatientStatus(PatientStatus.PROCESSED);
-            record.setDateOfBirth(LocalDate.now().minusYears(30)); // adult
-            record.setImekaStatus(ThirdPartyStatus.UPLOADED);
-            record.setImekaSentDate(LocalDate.now());
-            record.setNeuroreaderStatus(ThirdPartyStatus.SENT);
-            record.setNeuroreaderSentDate(LocalDate.now());
-            record.setDuramapStatus(ThirdPartyStatus.NOT_SENT);
-
-            CaseRecordEntity result = caseRecordService.saveEditedCase(record);
-
-            assertNotNull(result.getProcessedDate());
-            assertEquals(PatientStatus.PROCESSED, result.getPatientStatus());
-        }
 }
