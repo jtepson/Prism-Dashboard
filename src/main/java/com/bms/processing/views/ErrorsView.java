@@ -158,6 +158,24 @@ public class ErrorsView extends VerticalLayout {
         }).setHeader("Notes").setAutoWidth(true);
 
         grid.addComponentColumn(record -> {
+
+        if (record.getPatientStatus() == PatientStatus.UPCOMING
+                || record.getPatientStatus() == PatientStatus.VERIFYING) {
+
+            Span waiting = new Span("Resolve from Upcoming");
+            waiting.getStyle()
+                    .set("font-size", "0.8rem")
+                    .set("font-weight", "600")
+                    .set("color", "var(--lumo-secondary-text-color)");
+
+            return waiting;
+        }
+
+        if (record.getPatientStatus() == PatientStatus.ON_HOLD
+                || record.getPatientStatus() == PatientStatus.MISSING_DATA
+                || record.getPatientStatus() == PatientStatus.RESCAN_REQUIRED
+                || record.getPatientStatus() == PatientStatus.REPORT_CORRECTION_REQUIRED) {
+
             Button reopenButton = new Button("Return to Processing");
 
             reopenButton.addClickListener(event -> {
@@ -165,13 +183,15 @@ public class ErrorsView extends VerticalLayout {
                     caseRecordService.returnToProcessing(record);
                     refreshErrorsGrid();
                 } catch (InvalidWorkflowTransitionException ex) {
-                    Span message = new Span(ex.getMessage());
-                    add(message);
+                    showError(ex.getMessage());
                 }
             });
 
             return reopenButton;
-        }).setHeader("Action").setAutoWidth(true);
+        }
+
+        return new Span("-");
+    }).setHeader("Action").setAutoWidth(true);
     }
 
     private void refreshErrorsGrid() {
@@ -281,6 +301,14 @@ public class ErrorsView extends VerticalLayout {
         }
 
         return chip;
+    }
+
+    private void showError(String message) {
+        com.vaadin.flow.component.notification.Notification.show(
+                message,
+                3500,
+                com.vaadin.flow.component.notification.Notification.Position.MIDDLE
+        );
     }
 
 }
