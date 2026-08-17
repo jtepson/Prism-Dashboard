@@ -15,6 +15,11 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
+import com.bms.processing.entity.CaseIssueEntity;
+import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.service.CurrentUserService;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -49,6 +54,8 @@ public class UpcomingView extends VerticalLayout {
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
+    private final CaseIssueService caseIssueService;
+    private final CurrentUserService currentUserService;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
@@ -58,7 +65,9 @@ public class UpcomingView extends VerticalLayout {
                 @Value("${prism.files.storage-path}") String baseStoragePath,
                 DicomConfigService dicomConfigService,
                 DicomService dicomService,
-                DicomRetrieveService dicomRetrieveService
+                DicomRetrieveService dicomRetrieveService,
+                CaseIssueService caseIssueService,
+                CurrentUserService currentUserService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -68,6 +77,8 @@ public class UpcomingView extends VerticalLayout {
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
         this.dicomRetrieveService = dicomRetrieveService;
+        this.caseIssueService = caseIssueService;
+        this.currentUserService = currentUserService;
 
         setSizeFull();
         setPadding(true);
@@ -151,26 +162,42 @@ public class UpcomingView extends VerticalLayout {
                 .setHeader("Intake Sheet Done")
                 .setAutoWidth(true);
     
+        // updated 08172026 to account for marked received and mark issue
         grid.addComponentColumn(record -> {
-            Button markReceivedButton = new Button("Mark Received");
-            markReceivedButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
-                
-            //Updated listener, audit logging will now be found in caserecordservice 6012026
-            markReceivedButton.addClickListener(event -> {
-                try {
+                HorizontalLayout actions = new HorizontalLayout();
+                actions.setPadding(false);
+                actions.setSpacing(true);
 
-                        PatientStatus oldStatus = record.getPatientStatus();
+                Button markReceivedButton = new Button("Mark Received");
+                markReceivedButton.addThemeVariants(
+                        ButtonVariant.LUMO_SMALL,
+                        ButtonVariant.LUMO_PRIMARY,
+                        ButtonVariant.LUMO_SUCCESS
+                );
 
+                markReceivedButton.addClickListener(event -> {
+                        try {
                         caseRecordService.markImagesReceived(record);
                         refreshUpcomingGrid();
-
-                } catch (InvalidWorkflowTransitionException ex) {
+                        } catch (InvalidWorkflowTransitionException ex) {
                         showError(ex.getMessage());
-                }
-            });
-                
-            return markReceivedButton;
-        }).setHeader("").setAutoWidth(true);     
+                        }
+                });
+
+                Button addIssueButton = new Button("Add Issue");
+                addIssueButton.addThemeVariants(
+                        ButtonVariant.LUMO_SMALL,
+                        ButtonVariant.LUMO_ERROR
+                );
+
+                addIssueButton.addClickListener(event ->
+                        openAddIssueDialog(record)
+                );
+
+                actions.add(markReceivedButton, addIssueButton);
+
+                return actions;
+                }).setHeader("").setAutoWidth(true);   
     }
 
     private void refreshUpcomingGrid() {
@@ -407,5 +434,71 @@ public class UpcomingView extends VerticalLayout {
 
     private boolean containsIgnoreCase(String value, String filter) {
         return value != null && value.toLowerCase().contains(filter);
+    }
+
+    private void openAddIssueDialog(CaseRecordEntity record) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Add Upcoming Issue");
+        dialog.setWidth("600px");
+
+        ComboBox<CaseIssueType> issueType = new ComboBox<>("Issue Type");
+        issueType.setItems(
+                CaseIssueType.MISSING_DATA,
+                CaseIssueType.INADEQUATE_SCAN_DATA,
+                CaseIssueType.ACQUISITION,
+                CaseIssueType.OTHER
+        );
+        issueType.setWidthFull();
+        issueType.setItemLabelGenerator(value ->
+                value.name().replace("_", " ")
+        );
+
+        TextArea description = new TextArea("Issue Note");
+        description.setWidthFull();
+        description.setMinHeight("160px");
+
+        Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+        Button submitButton = new Button("Add Issue");
+        submitButton.addThemeVariants(
+                ButtonVariant.LUMO_PRIMARY,
+                ButtonVariant.LUMO_ERROR
+        );
+
+        submitButton.addClickListener(event -> {
+                if (issueType.getValue() == null) {
+                showError("Issue type is required.");
+                return;
+                }
+
+                if (description.getValue() == null
+                        || description.getValue().trim().isEmpty()) {
+                showError("Issue note is required.");
+                return;
+                }
+
+                caseIssueService.createIssue(
+                        record,
+                        issueType.getValue(),
+                        true,
+                        issueType.getValue().name().replace("_", " "),
+                        description.getValue().trim(),
+                        currentUserService.getUsername()
+                );
+
+                refreshUpcomingGrid();
+                dialog.close();
+        });
+
+        VerticalLayout content = new VerticalLayout(
+                issueType,
+                description
+        );
+        content.setPadding(false);
+        content.setSpacing(true);
+
+        dialog.add(content);
+        dialog.getFooter().add(cancelButton, submitButton);
+        dialog.open();
     }
 }
