@@ -38,6 +38,8 @@ import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class CaseRecordDialog extends Dialog {
 
@@ -70,6 +72,9 @@ public class CaseRecordDialog extends Dialog {
     
     private PatientFilesSection patientFilesSection;
     private DatePicker imekaUploadedDate;
+
+    private final Map<String, String[]> pendingDicomDemographicChanges =
+        new LinkedHashMap<>();
 
     public CaseRecordDialog(
         CaseRecordEntity record,
@@ -1431,6 +1436,72 @@ public class CaseRecordDialog extends Dialog {
 
                                 if (dicomStudyDate != null) {
                                         dateScanned.setValue(dicomStudyDate);
+                                }
+
+                                if (!oldPatientId.equals(patientId.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "Patient ID",
+                                                oldPatientId,
+                                                patientId.getValue(),
+                                                "SYSTEM"
+                                        );
+                                }
+
+                                if (!oldLastName.equals(lastName.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "Last Name",
+                                                oldLastName,
+                                                lastName.getValue(),
+                                                "SYSTEM"
+                                        );
+                                }
+
+                                if (!oldFirstName.equals(firstName.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "First Name",
+                                                oldFirstName,
+                                                firstName.getValue(),
+                                                "SYSTEM"
+                                        );
+                                }
+
+                                if (!oldSex.equals(sex.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "Sex",
+                                                oldSex,
+                                                sex.getValue(),
+                                                "SYSTEM"
+                                        );
+                                }
+
+                                if (!java.util.Objects.equals(oldDob, dateOfBirth.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "Date of Birth",
+                                                oldDob != null ? oldDob.toString() : "",
+                                                dateOfBirth.getValue() != null ? dateOfBirth.getValue().toString() : "",
+                                                "SYSTEM"
+                                        );
+                                }
+
+                                if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
+                                        auditEventService.logTimelineEvent(
+                                                "DICOM_DEMOGRAPHIC_UPDATE",
+                                                record,
+                                                "Date Scanned",
+                                                oldScanDate != null ? oldScanDate.toString() : "",
+                                                dateScanned.getValue() != null ? dateScanned.getValue().toString() : "",
+                                                "SYSTEM"
+                                        );
                                 }
 
                                 confirmDialog.close();
