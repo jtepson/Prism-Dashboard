@@ -156,8 +156,8 @@ public class CaseRecordDialog extends Dialog {
         Checkbox intakeSheetSent = new Checkbox("Intake Sheet Sent");
         intakeSheetSent.setValue(Boolean.TRUE.equals(record.getIntakeSheetSent()));
 
-        Checkbox invoiceSent = new Checkbox("Invoice Sent");
-        invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
+        DatePicker invoiceSentDate = new DatePicker("Invoice Sent Date");
+        invoiceSentDate.setValue(record.getInvoiceSentDate());
 
         if (mode == Mode.PROCESSED || mode == Mode.COMPLETED || mode == Mode.ERRORS) {
                 lastName.setReadOnly(true);
@@ -199,10 +199,8 @@ public class CaseRecordDialog extends Dialog {
                         formatEnum(record.getPatientStatus())
                 ),
                 buildDisplayField(
-                        "Invoice Sent",
-                        Boolean.TRUE.equals(record.getInvoiceSent())
-                                ? "Yes"
-                                : "No"
+                        "Invoice Sent Date",
+                        formatDate(record.getInvoiceSentDate())
                 )
         );
 
@@ -642,7 +640,7 @@ public class CaseRecordDialog extends Dialog {
                         funder,
                         intakeSheetDone,
                         intakeSheetSent,
-                        invoiceSent
+                        invoiceSentDate
                 );
 
                 Details upcomingDetails = new Details(
@@ -679,7 +677,7 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 bmsReviewForm.add(
-                        invoiceSent,
+                        invoiceSentDate,
                         buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
                         buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate()))
                 );
@@ -711,7 +709,7 @@ public class CaseRecordDialog extends Dialog {
                 archiveForm.add(
                         buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
                         buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate())),
-                        buildDisplayField("Invoice Sent", Boolean.TRUE.equals(record.getInvoiceSent()) ? "Yes" : "No"),
+                        buildDisplayField("Invoice Sent Date", formatDate(record.getInvoiceSentDate())),
                         buildDisplayField("Final Workflow Notes", nullSafe(record.getFinalWorkflowNotes()))
                 );
 
@@ -786,7 +784,6 @@ public class CaseRecordDialog extends Dialog {
                 record.setFunder(funder.getValue());
                 record.setIntakeSheetDone(intakeSheetDone.getValue());
                 record.setIntakeSheetSent(intakeSheetSent.getValue());
-                record.setInvoiceSent(invoiceSent.getValue());
                 String selectedSiteName = record.getSiteName();
                 if (editableSiteName[0] != null && editableSiteName[0].getValue() != null) {
                         selectedSiteName = editableSiteName[0].getValue().getFacilityName();
@@ -858,7 +855,6 @@ public class CaseRecordDialog extends Dialog {
 
                     if (mode == Mode.PROCESSED) {
                         record.setFinalWorkflowNotes(finalWorkflowNotes.getValue());
-                        caseRecordService.updateInvoiceSent(record, invoiceSent.getValue());
                         caseRecordService.saveEditedCase(record);
                     }
                     afterSave.run();

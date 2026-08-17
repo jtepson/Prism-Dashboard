@@ -287,8 +287,8 @@ public class UpcomingView extends VerticalLayout {
         Checkbox intakeSheetSent = new Checkbox("Intake Sheet Sent");
         intakeSheetSent.setValue(Boolean.TRUE.equals(record.getIntakeSheetSent()));
     
-        Checkbox invoiceSent = new Checkbox("Invoice Sent");
-        invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
+        DatePicker invoiceSentDate = new DatePicker("Invoice Sent Date");
+        invoiceSentDate.setValue(record.getInvoiceSentDate());
     
         FormLayout formLayout = new FormLayout();
         formLayout.setWidthFull();
@@ -302,7 +302,7 @@ public class UpcomingView extends VerticalLayout {
                 patientId, siteName,
                 dateOfBirth, dateScanned,
                 funder, intakeSheetDone,
-                intakeSheetSent, invoiceSent
+                intakeSheetSent, invoiceSentDate
         );
     
         Button saveButton = new Button("Save");
@@ -330,7 +330,7 @@ public class UpcomingView extends VerticalLayout {
             record.setFunder(funder.getValue().trim());
             record.setIntakeSheetDone(intakeSheetDone.getValue());
             record.setIntakeSheetSent(intakeSheetSent.getValue());
-            record.setInvoiceSent(invoiceSent.getValue());
+            record.setInvoiceSentDate(invoiceSentDate.getValue());
     
             try {
                 caseRecordService.updateUpcomingCaseDetails(record);
@@ -400,7 +400,6 @@ public class UpcomingView extends VerticalLayout {
 
         Checkbox intakeSheetDone = new Checkbox("Intake Sheet Done");
         Checkbox intakeSheetSent = new Checkbox("Intake Sheet Sent");
-        Checkbox invoiceSent = new Checkbox("Invoice Sent");
 
         FormLayout formLayout = new FormLayout();
         formLayout.setWidthFull();
@@ -414,7 +413,7 @@ public class UpcomingView extends VerticalLayout {
                 patientId, siteName,
                 dateOfBirth, dateScanned,
                 funder, intakeSheetDone,
-                intakeSheetSent, invoiceSent
+                intakeSheetSent
         );
 
         Button saveButton = new Button("Save");
@@ -444,7 +443,6 @@ public class UpcomingView extends VerticalLayout {
                 record.setFunder(funder.getValue().trim());
                 record.setIntakeSheetDone(intakeSheetDone.getValue());
                 record.setIntakeSheetSent(intakeSheetSent.getValue());
-                record.setInvoiceSent(invoiceSent.getValue());
                 record.setPatientStatus(PatientStatus.UPCOMING);
 
                 caseRecordService.createUpcomingCase(record);

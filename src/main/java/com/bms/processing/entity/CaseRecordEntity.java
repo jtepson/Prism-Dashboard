@@ -105,8 +105,8 @@ public class CaseRecordEntity {
     @Column(name = "intake_sheet_sent")
     private Boolean intakeSheetSent;
 
-    @Column(name = "invoice_sent")
-    private Boolean invoiceSent;
+    @Column(name = "invoice_sent_date")
+    private LocalDate invoiceSentDate;
 
     @Column(name = "processed_date")
     private LocalDateTime processedDate;
@@ -325,12 +325,12 @@ public class CaseRecordEntity {
         this.intakeSheetSent = intakeSheetSent;
     }
     
-    public Boolean getInvoiceSent() {
-        return invoiceSent;
+    public LocalDate getInvoiceSentDate() {
+        return invoiceSentDate;
     }
     
-    public void setInvoiceSent(Boolean invoiceSent) {
-        this.invoiceSent = invoiceSent;
+    public void setInvoiceSentDate(LocalDate invoiceSentDate) {
+        this.invoiceSentDate = invoiceSentDate;
     }
 
     public LocalDateTime getProcessedDate() {

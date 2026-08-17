@@ -132,22 +132,13 @@ public class ProcessedView extends VerticalLayout {
                 .setHeader("Processed Date")
                 .setAutoWidth(true);
 
-        grid.addComponentColumn(record -> {
-            Checkbox invoiceSent = new Checkbox();
-            invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
-
-            invoiceSent.addValueChangeListener(event -> {
-                try {
-                    caseRecordService.updateInvoiceSent(record, event.getValue());
-                    refreshProcessedGrid();
-                } catch (InvalidWorkflowTransitionException ex) {
-                    Span message = new Span(ex.getMessage());
-                    add(message);
-                }
-            });
-
-            return invoiceSent;
-        }).setHeader("Invoice Sent").setAutoWidth(true);
+        grid.addColumn(record ->
+                record.getInvoiceSentDate() != null
+                        ? record.getInvoiceSentDate().toString()
+                        : ""
+        )
+        .setHeader("Invoice Sent Date")
+        .setAutoWidth(true);
 
         grid.addComponentColumn(record -> {
             Button completeButton = new Button("Mark Completed");

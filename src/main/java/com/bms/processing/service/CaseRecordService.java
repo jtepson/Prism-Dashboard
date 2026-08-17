@@ -666,20 +666,29 @@ public class CaseRecordService {
         return savedRecord;
     }
 
-    public CaseRecordEntity updateInvoiceSent(CaseRecordEntity record, boolean invoiceSent) {
+    public CaseRecordEntity updateInvoiceSentDate(
+        CaseRecordEntity record,
+        LocalDate invoiceSentDate,
+        String username
+    ) {
         validateRecord(record);
 
-        //updated for linear errors workflow 7072026
-        PatientStatus status = record.getPatientStatus();
-        if (status != PatientStatus.PROCESSED
-            && status != PatientStatus.COMPLETED) {
-            throw new InvalidWorkflowTransitionException(
-                    "Invoice status can only be updated for processed or completed cases."
-            );
-        }
+        LocalDate previousValue = record.getInvoiceSentDate();
 
-        record.setInvoiceSent(invoiceSent);
-        return repository.save(record);
+        record.setInvoiceSentDate(invoiceSentDate);
+
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "INVOICE_SENT_DATE_UPDATED",
+                savedRecord,
+                "Invoice Sent Date",
+                previousValue != null ? previousValue.toString() : null,
+                invoiceSentDate != null ? invoiceSentDate.toString() : null,
+                username
+        );
+
+        return savedRecord;
     }
 
     public CaseRecordEntity returnToProcessing(CaseRecordEntity record) {

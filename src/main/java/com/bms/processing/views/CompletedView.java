@@ -137,22 +137,13 @@ public class CompletedView extends VerticalLayout {
                 .setHeader("Status")
                 .setAutoWidth(true);
 
-        grid.addComponentColumn(record -> {
-            Checkbox invoiceSent = new Checkbox();
-            invoiceSent.setValue(Boolean.TRUE.equals(record.getInvoiceSent()));
-
-            invoiceSent.addValueChangeListener(event -> {
-                try {
-                    caseRecordService.updateInvoiceSent(record, event.getValue());
-                    refreshCompletedGrid();
-                } catch (InvalidWorkflowTransitionException ex) {
-                    Span message = new Span(ex.getMessage());
-                    add(message);
-                }
-            });
-
-            return invoiceSent;
-        }).setHeader("Invoice Sent").setAutoWidth(true);
+        grid.addColumn(record ->
+                record.getInvoiceSentDate() != null
+                        ? record.getInvoiceSentDate().toString()
+                        : ""
+        )
+        .setHeader("Invoice Sent Date")
+        .setAutoWidth(true);
 
         grid.addComponentColumn(record -> {
             Span noteFlag = new Span("!");
