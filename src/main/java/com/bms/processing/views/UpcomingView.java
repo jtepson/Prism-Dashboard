@@ -19,6 +19,7 @@ import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.model.CaseIssueType;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.service.NotificationService;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -56,6 +57,7 @@ public class UpcomingView extends VerticalLayout {
     private final DicomRetrieveService dicomRetrieveService;
     private final CaseIssueService caseIssueService;
     private final CurrentUserService currentUserService;
+    private final NotificationService notificationService;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
@@ -67,7 +69,8 @@ public class UpcomingView extends VerticalLayout {
                 DicomService dicomService,
                 DicomRetrieveService dicomRetrieveService,
                 CaseIssueService caseIssueService,
-                CurrentUserService currentUserService
+                CurrentUserService currentUserService,
+                NotificationService notificationService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -79,6 +82,7 @@ public class UpcomingView extends VerticalLayout {
         this.dicomRetrieveService = dicomRetrieveService;
         this.caseIssueService = caseIssueService;
         this.currentUserService = currentUserService;
+        this.notificationService = notificationService;
 
         setSizeFull();
         setPadding(true);
@@ -506,6 +510,23 @@ public class UpcomingView extends VerticalLayout {
                         issueType.getValue().name().replace("_", " "),
                         description.getValue().trim(),
                         currentUserService.getUsername()
+                );
+
+                //audit tracking 08172026
+                auditEventService.logTimelineEvent(
+                        "CASE_ISSUE_CREATED",
+                        record,
+                        issueType.getValue().name().replace("_", " "),
+                        null,
+                        description.getValue().trim(),
+                        currentUserService.getUsername()
+                );
+
+                notificationService.notifyCaseError(
+                        record.getPatientLastName()
+                                + ", "
+                                + record.getPatientFirstName(),
+                        description.getValue().trim()
                 );
 
                 refreshUpcomingGrid();
