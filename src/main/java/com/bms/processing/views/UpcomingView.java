@@ -37,8 +37,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Div;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
+import java.util.List;
 
 @PageTitle("Upcoming")
 @PermitAll
@@ -201,13 +203,22 @@ public class UpcomingView extends VerticalLayout {
                         ButtonVariant.LUMO_SUCCESS
                 );
 
+                // new mark received button flow here, allows for issue resolution - updated 08172026
                 markReceivedButton.addClickListener(event -> {
-                        try {
-                        caseRecordService.markImagesReceived(record);
-                        refreshUpcomingGrid();
-                        } catch (InvalidWorkflowTransitionException ex) {
-                        showError(ex.getMessage());
+                        var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+                        if (activeIssues.isEmpty()) {
+                                try {
+                                caseRecordService.markImagesReceived(record);
+                                refreshUpcomingGrid();
+                                } catch (InvalidWorkflowTransitionException ex) {
+                                showError(ex.getMessage());
+                                }
+
+                                return;
                         }
+
+                        openResolveIssuesAndMarkReceivedDialog(record, activeIssues);
                 });
 
                 Button addIssueButton = new Button("Add Issue");
@@ -449,6 +460,102 @@ public class UpcomingView extends VerticalLayout {
         dialog.getFooter().add(cancelButton, saveButton);
         dialog.open();
     }
+
+    private void openResolveIssuesAndMarkReceivedDialog(
+                CaseRecordEntity record,
+                List<CaseIssueEntity> activeIssues
+        ) {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Outstanding Issues");
+                dialog.setWidth("600px");
+
+                Span warning = new Span(
+                        activeIssues.size() == 1
+                                ? "This case has 1 outstanding issue. Confirm that it has been resolved before marking images received."
+                                : "This case has " + activeIssues.size()
+                                        + " outstanding issues. Confirm that they have been resolved before marking images received."
+                );
+
+                VerticalLayout issueList = new VerticalLayout();
+                issueList.setPadding(false);
+                issueList.setSpacing(true);
+                issueList.setWidthFull();
+
+                for (CaseIssueEntity issue : activeIssues) {
+                        Div issueCard = new Div();
+                        issueCard.setWidthFull();
+
+                        Span title = new Span(issue.getTitle());
+                        title.getStyle().set("font-weight", "600");
+
+                        Div description = new Div();
+                        description.setText(issue.getDescription());
+                        description.getStyle()
+                                .set("white-space", "pre-wrap")
+                                .set("margin-top", "0.25rem");
+
+                        issueCard.add(title, description);
+
+                        issueCard.getStyle()
+                                .set("padding", "0.75rem")
+                                .set("border", "1px solid var(--lumo-contrast-20pct)")
+                                .set("border-radius", "8px");
+
+                        issueList.add(issueCard);
+                }
+
+                Button cancelButton = new Button("Cancel", event -> dialog.close());
+
+                Button resolveButton = new Button("Resolve Issues & Mark Received");
+                resolveButton.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY,
+                        ButtonVariant.LUMO_SUCCESS
+                );
+
+                resolveButton.addClickListener(event -> {
+                        
+                        try {
+                        String username = currentUserService.getUsername();
+
+                        caseRecordService.markImagesReceived(record);
+
+                        for (CaseIssueEntity issue : activeIssues) {
+                                caseIssueService.resolveIssue(
+                                        issue,
+                                        username,
+                                        "Resolved when images were marked received."
+                                );
+
+                                auditEventService.logTimelineEvent(
+                                        "CASE_ISSUE_RESOLVED",
+                                        record,
+                                        issue.getTitle(),
+                                        issue.getDescription(),
+                                        "Resolved when images were marked received.",
+                                        username
+                                );
+                        }
+
+                        dialog.close();
+                        refreshUpcomingGrid();
+
+                        } catch (InvalidWorkflowTransitionException ex) {
+                        showError(ex.getMessage());
+                        }
+                });
+
+                VerticalLayout content = new VerticalLayout(
+                        warning,
+                        issueList
+                );
+                content.setPadding(false);
+                content.setSpacing(true);
+                content.setWidthFull();
+
+                dialog.add(content);
+                dialog.getFooter().add(cancelButton, resolveButton);
+                dialog.open();
+        }
 
     private void showError(String message) {
         com.vaadin.flow.component.notification.Notification.show(
