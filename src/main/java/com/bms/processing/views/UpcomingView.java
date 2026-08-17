@@ -162,6 +162,28 @@ public class UpcomingView extends VerticalLayout {
                 .setHeader("Intake Sheet Done")
                 .setAutoWidth(true);
     
+        // new space for issue tag - updated 08172026
+        grid.addComponentColumn(record -> {
+                        boolean hasActiveIssue =
+                                !caseIssueService.findActiveByCaseRecord(record).isEmpty();
+
+                        Span badge = new Span("Error");
+                        badge.setVisible(hasActiveIssue);
+
+                        badge.getStyle()
+                                .set("display", "inline-block")
+                                .set("padding", "0.2rem 0.55rem")
+                                .set("border-radius", "999px")
+                                .set("font-size", "0.75rem")
+                                .set("font-weight", "700")
+                                .set("background", "var(--lumo-error-color-10pct)")
+                                .set("color", "var(--lumo-error-text-color)");
+
+                        return badge;
+                })
+                .setHeader("Issue")
+                .setAutoWidth(true);
+
         // updated 08172026 to account for marked received and mark issue
         grid.addComponentColumn(record -> {
                 HorizontalLayout actions = new HorizontalLayout();
@@ -197,7 +219,7 @@ public class UpcomingView extends VerticalLayout {
                 actions.add(markReceivedButton, addIssueButton);
 
                 return actions;
-                }).setHeader("").setAutoWidth(true);   
+                }).setHeader("").setAutoWidth(true);
     }
 
     private void refreshUpcomingGrid() {
