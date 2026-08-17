@@ -517,24 +517,10 @@ public class UpcomingView extends VerticalLayout {
                         try {
                         String username = currentUserService.getUsername();
 
-                        caseRecordService.markImagesReceived(record);
-
-                        for (CaseIssueEntity issue : activeIssues) {
-                                caseIssueService.resolveIssue(
-                                        issue,
-                                        username,
-                                        "Resolved when images were marked received."
-                                );
-
-                                auditEventService.logTimelineEvent(
-                                        "CASE_ISSUE_RESOLVED",
-                                        record,
-                                        issue.getTitle(),
-                                        issue.getDescription(),
-                                        "Resolved when images were marked received.",
-                                        username
-                                );
-                        }
+                        caseRecordService.resolveIssuesAndMarkImagesReceived(
+                                record,
+                                username
+                        );
 
                         dialog.close();
                         refreshUpcomingGrid();

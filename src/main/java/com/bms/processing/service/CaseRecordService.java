@@ -19,15 +19,18 @@ public class CaseRecordService {
     private final CaseRecordRepository repository;
     private final AuditEventService auditEventService;
     private final NotificationService notificationService;
+    private final CaseIssueService caseIssueService;
 
     public CaseRecordService(
             CaseRecordRepository repository,
             AuditEventService auditEventService,
-            NotificationService notificationService
+            NotificationService notificationService,
+            CaseIssueService caseIssueService
     ) {
         this.repository = repository;
         this.auditEventService = auditEventService;
         this.notificationService = notificationService;
+        this.caseIssueService = caseIssueService;
     }
 
     public List<CaseRecordEntity> findAll() {
@@ -545,6 +548,44 @@ public class CaseRecordService {
                 "SYSTEM",
                 true
         );
+
+        return savedRecord;
+    }
+
+    @Transactional
+    public CaseRecordEntity resolveIssuesAndMarkImagesReceived(
+            CaseRecordEntity record,
+            String resolvedBy
+    ) {
+        validateRecord(record);
+
+        if (record.getPatientStatus() != PatientStatus.UPCOMING
+                && record.getPatientStatus() != PatientStatus.VERIFYING) {
+            throw new InvalidWorkflowTransitionException(
+                    "Only UPCOMING or VERIFYING cases can be marked as received."
+            );
+        }
+
+        var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+        CaseRecordEntity savedRecord = markImagesReceived(record);
+
+        for (var issue : activeIssues) {
+            caseIssueService.resolveIssue(
+                    issue,
+                    resolvedBy,
+                    "Resolved when images were marked received."
+            );
+
+            auditEventService.logTimelineEvent(
+                    "CASE_ISSUE_RESOLVED",
+                    savedRecord,
+                    issue.getTitle(),
+                    issue.getDescription(),
+                    "Resolved when images were marked received.",
+                    resolvedBy
+            );
+        }
 
         return savedRecord;
     }
