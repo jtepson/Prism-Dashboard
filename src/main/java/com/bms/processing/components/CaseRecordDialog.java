@@ -1007,23 +1007,46 @@ public class CaseRecordDialog extends Dialog {
                 grid.setWidthFull();
                 grid.setAllRowsVisible(true);
 
-                grid.addColumn(DicomStudyResult::getPatientName)
-                        .setHeader("Patient Name")
+                // updated grid here with a cleaner look for dcm results, updated 08172026
+                grid.addColumn(study -> nullSafe(study.getParsedLastName()))
+                        .setHeader("Last Name")
                         .setAutoWidth(true);
 
-                grid.addColumn(DicomStudyResult::getPatientId)
+                grid.addColumn(study -> nullSafe(study.getParsedFirstName()))
+                        .setHeader("First Name")
+                        .setAutoWidth(true);
+
+                grid.addColumn(study -> nullSafe(study.getPatientId()))
                         .setHeader("Patient ID")
                         .setAutoWidth(true);
 
-                grid.addColumn(DicomStudyResult::getStudyDate)
+                grid.addColumn(study -> {
+                        LocalDate dob = parseDicomDate(study.getPatientBirthDate());
+                        return dob != null ? dob.toString() : "";
+                        })
+                        .setHeader("Date of Birth")
+                        .setAutoWidth(true);
+
+                grid.addColumn(study -> nullSafe(study.getPatientSex()))
+                        .setHeader("Sex")
+                        .setAutoWidth(true);
+
+                grid.addColumn(study -> {
+                        LocalDate studyDate = parseDicomDate(study.getStudyDate());
+                        return studyDate != null ? studyDate.toString() : "";
+                        })
                         .setHeader("Study Date")
                         .setAutoWidth(true);
 
-                grid.addColumn(DicomStudyResult::getAccessionNumber)
+                grid.addColumn(study -> nullSafe(study.getStudyInstanceUid()))
+                        .setHeader("Study UID")
+                        .setAutoWidth(true);
+
+                grid.addColumn(study -> nullSafe(study.getAccessionNumber()))
                         .setHeader("Accession")
                         .setAutoWidth(true);
 
-                grid.addColumn(DicomStudyResult::getDescription)
+                grid.addColumn(study -> nullSafe(study.getDescription()))
                         .setHeader("Description")
                         .setAutoWidth(true);
 
