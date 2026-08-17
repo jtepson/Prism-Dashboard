@@ -1389,6 +1389,14 @@ public class CaseRecordDialog extends Dialog {
 
                         updateFromDicomButton.addClickListener(event -> {
 
+                                // added audit events for dicom section - updated 08172026
+                                String oldPatientId = patientId.getValue();
+                                String oldLastName = lastName.getValue();
+                                String oldFirstName = firstName.getValue();
+                                String oldSex = sex.getValue();
+                                LocalDate oldDob = dateOfBirth.getValue();
+                                LocalDate oldScanDate = dateScanned.getValue();
+
                                 studyInstanceUid.setValue(
                                         nullSafe(study.getStudyInstanceUid())
                                 );
