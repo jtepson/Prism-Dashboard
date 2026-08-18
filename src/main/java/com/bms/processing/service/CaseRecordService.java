@@ -666,6 +666,7 @@ public class CaseRecordService {
         return savedRecord;
     }
 
+    //correcting this so saving a dialog does not create a fake invoice event - updated 08182026
     public CaseRecordEntity updateInvoiceSentDate(
         CaseRecordEntity record,
         LocalDate invoiceSentDate,
@@ -674,6 +675,10 @@ public class CaseRecordService {
         validateRecord(record);
 
         LocalDate previousValue = record.getInvoiceSentDate();
+
+        if (java.util.Objects.equals(previousValue, invoiceSentDate)) {
+            return record;
+        }
 
         record.setInvoiceSentDate(invoiceSentDate);
 
