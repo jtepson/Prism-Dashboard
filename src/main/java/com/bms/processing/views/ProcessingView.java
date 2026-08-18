@@ -18,6 +18,9 @@ import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.model.CaseIssueSource;
+import com.bms.processing.model.CaseIssueStatus;
+import com.bms.processing.model.CaseIssueType;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -870,6 +873,38 @@ public class ProcessingView extends VerticalLayout {
 		dialog.open();
 	}
 
+	//added in for third party to auto update caseissue instead of only writing the legacy vendor note - updated 08182026
+	private void createOrUpdateVendorIssue(
+			CaseRecordEntity record,
+			CaseIssueSource source,
+			String note
+	) {
+		var existingIssue = caseIssueService.findActiveByCaseRecord(record).stream()
+				.filter(issue -> issue.getIssueSource() == source)
+				.findFirst();
+
+		if (existingIssue.isPresent()) {
+			caseIssueService.updateIssue(
+					existingIssue.get(),
+					source,
+					CaseIssueType.VENDOR_FAILURE,
+					false,
+					formatEnum(source) + " Vendor Failure",
+					note,
+					currentUserService.getUsername()
+			);
+		} else {
+			caseIssueService.createIssue(
+					record,
+					source,
+					CaseIssueType.VENDOR_FAILURE,
+					false,
+					formatEnum(source) + " Vendor Failure",
+					note,
+					currentUserService.getUsername()
+			);
+		}
+	}
 
     private void showError(String message) {
         Notification notification = Notification.show(message, 3500, Notification.Position.MIDDLE);
