@@ -15,6 +15,8 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
+import com.bms.processing.components.CaseIssueDialog;
+import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -64,6 +66,7 @@ public class ProcessingView extends VerticalLayout {
     private final DicomService dicomService;
 	private final DicomRetrieveService dicomRetrieveService;
 	private final CurrentUserService currentUserService;
+	private final CaseIssueService caseIssueService;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
@@ -74,7 +77,8 @@ public class ProcessingView extends VerticalLayout {
 			DicomConfigService dicomConfigService,
 			DicomService dicomService,
 			DicomRetrieveService dicomRetrieveService,
-			CurrentUserService currentUserService
+			CurrentUserService currentUserService,
+			CaseIssueService caseIssueService
 	) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -85,6 +89,7 @@ public class ProcessingView extends VerticalLayout {
         this.dicomService = dicomService;
 		this.dicomRetrieveService = dicomRetrieveService;
 		this.currentUserService = currentUserService;
+		this.caseIssueService = caseIssueService;
 
 		setSizeFull();
         setPadding(true);
@@ -576,281 +581,28 @@ public class ProcessingView extends VerticalLayout {
 
 			finalizeButton.addClickListener(event -> openFinalizeDialog(record));
 
-			Button errorButton = new Button("Error");
-			errorButton.addThemeVariants(
+			//new issue button, replacing error - updated 08182026
+			Button addIssueButton = new Button("Add Issue");
+			addIssueButton.addThemeVariants(
 					ButtonVariant.LUMO_SMALL,
 					ButtonVariant.LUMO_ERROR
 			);
 
-			errorButton.addClickListener(event -> openSubmitErrorDialog(record));
+			addIssueButton.addClickListener(event ->
+					new CaseIssueDialog(
+							record,
+							caseIssueService,
+							currentUserService,
+							this::refreshProcessingGrid
+					).open()
+			);
 
-			actions.add(finalizeButton, errorButton);
+			actions.add(finalizeButton, addIssueButton);
 			return actions;
 		}).setHeader("").setAutoWidth(true);
 
 		}
-
-	private void openEditDialog(CaseRecordEntity record) {
-	    Dialog dialog = new Dialog();
-	    dialog.setHeaderTitle("Patient Information");
-	    dialog.setWidth("1000px");
-
-	    TextField lastName = new TextField("Last Name");
-	    lastName.setValue(nullSafe(record.getPatientLastName()));
-
-	    TextField firstName = new TextField("First Name");
-	    firstName.setValue(nullSafe(record.getPatientFirstName()));
-
-	    TextField patientId = new TextField("Patient ID");
-	    patientId.setValue(nullSafe(record.getPatientId()));
-
-	    TextField siteName = new TextField("Site Name");
-	    siteName.setValue(nullSafe(record.getSiteName()));
-
-		DatePicker dateOfBirth = new DatePicker("Date of Birth");
-		dateOfBirth.setValue(record.getDateOfBirth());
-
-		DatePicker dateScanned = new DatePicker("Date Scanned");
-		dateScanned.setValue(record.getDateScanned());
-
-		DatePicker imagesReceivedDate = new DatePicker("Images Received");
-		imagesReceivedDate.setValue(record.getImagesReceivedDate());
-
-	    ComboBox<PatientStatus> patientStatus = new ComboBox<>("Patient Status");
-	    patientStatus.setItems(PatientStatus.values());
-	    patientStatus.setValue(record.getPatientStatus());
-	    patientStatus.setItemLabelGenerator(this::formatEnum);
-
-	    TextArea notes = new TextArea("Notes");
-	    notes.setWidthFull();
-	    notes.setMinHeight("120px");
-	    notes.setValue(nullSafe(record.getNotes()));
-
-	    ComboBox<ThirdPartyStatus> imekaStatus = new ComboBox<>("IMEKA Status");
-	    imekaStatus.setItems(ThirdPartyStatus.values());
-	    imekaStatus.setValue(record.getImekaStatus());
-	    imekaStatus.setItemLabelGenerator(this::formatEnum);
-
-	    DatePicker imekaSentDate = new DatePicker("IMEKA Sent Date");
-	    imekaSentDate.setValue(record.getImekaSentDate());
-
-	    ComboBox<ThirdPartyStatus> duramapStatus = new ComboBox<>("DuraMap Status");
-	    duramapStatus.setItems(ThirdPartyStatus.values());
-	    duramapStatus.setValue(record.getDuramapStatus());
-	    duramapStatus.setItemLabelGenerator(this::formatEnum);
-
-	    DatePicker duramapSentDate = new DatePicker("DuraMap Sent Date");
-	    duramapSentDate.setValue(record.getDuramapSentDate());
-
-	    ComboBox<ThirdPartyStatus> nrStatus = new ComboBox<>("Neuroreader Status");
-	    nrStatus.setItems(ThirdPartyStatus.values());
-	    nrStatus.setValue(record.getNeuroreaderStatus());
-	    nrStatus.setItemLabelGenerator(this::formatEnum);
-
-	    DatePicker nrSentDate = new DatePicker("Neuroreader Sent Date");
-	    nrSentDate.setValue(record.getNeuroreaderSentDate());
-
-	    ComboBox<FinalOutcome> finalOutcome = new ComboBox<>("Final Outcome");
-	    finalOutcome.setItems(FinalOutcome.values());
-	    finalOutcome.setValue(record.getFinalOutcome());
-	    finalOutcome.setItemLabelGenerator(this::formatEnum);
-
-	    TextArea imekaErrorNote = new TextArea("IMEKA Error Note");
-	    imekaErrorNote.setWidthFull();
-	    imekaErrorNote.setMinHeight("100px");
-	    imekaErrorNote.setValue(nullSafe(record.getImekaErrorNote()));
-	    imekaErrorNote.setVisible(record.getImekaStatus() == ThirdPartyStatus.ERROR);
-
-	    TextArea duramapErrorNote = new TextArea("DuraMap Error Note");
-	    duramapErrorNote.setWidthFull();
-	    duramapErrorNote.setMinHeight("100px");
-	    duramapErrorNote.setValue(nullSafe(record.getDuramapErrorNote()));
-	    duramapErrorNote.setVisible(record.getDuramapStatus() == ThirdPartyStatus.ERROR);
-
-	    TextArea neuroreaderErrorNote = new TextArea("Neuroreader Error Note");
-	    neuroreaderErrorNote.setWidthFull();
-	    neuroreaderErrorNote.setMinHeight("100px");
-	    neuroreaderErrorNote.setValue(nullSafe(record.getNeuroreaderErrorNote()));
-	    neuroreaderErrorNote.setVisible(record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR);
-
-		boolean minorAtScan = record.isMinorAtScan();
-
-	    H4 patientHeader = new H4("Patient Information");
-	    FormLayout patientForm = new FormLayout();
-	    patientForm.setWidthFull();
-	    patientForm.setResponsiveSteps(
-	            new FormLayout.ResponsiveStep("0", 1),
-	            new FormLayout.ResponsiveStep("700px", 2)
-	    );
-	    patientForm.add(lastName, firstName, patientId, siteName, dateOfBirth, dateScanned);
-
-	    H4 processingHeader = new H4("Processing Status");
-	    FormLayout processingForm = new FormLayout();
-	    processingForm.setWidthFull();
-	    processingForm.setResponsiveSteps(
-	            new FormLayout.ResponsiveStep("0", 1),
-	            new FormLayout.ResponsiveStep("700px", 2)
-	    );
-	    processingForm.add(imagesReceivedDate, patientStatus, notes);
-	    processingForm.setColspan(notes,2);
-
-	    H4 thirdPartyHeader = new H4("Third Party Processing");
-	    FormLayout thirdPartyForm = new FormLayout();
-	    thirdPartyForm.setWidthFull();
-	    thirdPartyForm.setResponsiveSteps(
-	            new FormLayout.ResponsiveStep("0", 1),
-	            new FormLayout.ResponsiveStep("700px", 2)
-	    );
-
-		imekaStatus.setVisible(!minorAtScan);
-		imekaSentDate.setVisible(!minorAtScan);
-		imekaErrorNote.setVisible(!minorAtScan && record.getImekaStatus() == ThirdPartyStatus.ERROR);
-
-		nrStatus.setVisible(!minorAtScan);
-		nrSentDate.setVisible(!minorAtScan);
-		neuroreaderErrorNote.setVisible(!minorAtScan && record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR);
-
-		duramapStatus.setVisible(minorAtScan || record.getImekaStatus() == ThirdPartyStatus.ERROR);
-		duramapSentDate.setVisible(minorAtScan || record.getImekaStatus() == ThirdPartyStatus.ERROR);
-		duramapErrorNote.setVisible(
-				(minorAtScan || record.getImekaStatus() == ThirdPartyStatus.ERROR)
-						&& record.getDuramapStatus() == ThirdPartyStatus.ERROR
-		);
-
-		VerticalLayout duramapBlock = new VerticalLayout(duramapStatus, duramapSentDate, duramapErrorNote);
-		duramapBlock.setPadding(false);
-		duramapBlock.setSpacing(true);
-		duramapBlock.setVisible(minorAtScan || record.getImekaStatus() == ThirdPartyStatus.ERROR);
-
-		thirdPartyForm.add(imekaStatus, imekaSentDate);
-		thirdPartyForm.add(imekaErrorNote);
-		thirdPartyForm.setColspan(imekaErrorNote, 2);
-
-		thirdPartyForm.add(duramapBlock);
-		thirdPartyForm.setColspan(duramapBlock, 2);
-
-		thirdPartyForm.add(nrStatus, nrSentDate);
-		thirdPartyForm.add(neuroreaderErrorNote);
-		thirdPartyForm.setColspan(neuroreaderErrorNote, 2);
-
-		imekaStatus.addValueChangeListener(event -> {
-			if (minorAtScan) {
-				return;
-			}
 		
-			boolean imekaErrored = event.getValue() == ThirdPartyStatus.ERROR;
-			imekaErrorNote.setVisible(imekaErrored);
-			duramapBlock.setVisible(imekaErrored);
-		
-			if (!imekaErrored) {
-				duramapStatus.setValue(ThirdPartyStatus.NOT_SENT);
-				duramapSentDate.clear();
-				duramapErrorNote.clear();
-				duramapErrorNote.setVisible(false);
-			} else if (duramapStatus.getValue() == null) {
-				duramapStatus.setValue(ThirdPartyStatus.NOT_SENT);
-			}
-		});
-
-	    duramapStatus.addValueChangeListener(event ->
-	            duramapErrorNote.setVisible(event.getValue() == ThirdPartyStatus.ERROR)
-	    );
-
-	    nrStatus.addValueChangeListener(event -> {
-			if (minorAtScan) {
-				neuroreaderErrorNote.setVisible(false);
-				return;
-			}
-		
-			neuroreaderErrorNote.setVisible(event.getValue() == ThirdPartyStatus.ERROR);
-		});
-
-	    Button saveButton = new Button("Save");
-	    saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-	    Button cancelButton = new Button("Cancel", e -> dialog.close());
-
-	    saveButton.addClickListener(event -> {
-	        if (imekaStatus.getValue() == ThirdPartyStatus.ERROR && imekaErrorNote.getValue().trim().isEmpty()) {
-	            showError("IMEKA error note is required.");
-	            return;
-	        }
-
-	        if (duramapBlock.isVisible()
-	                && duramapStatus.getValue() == ThirdPartyStatus.ERROR
-	                && duramapErrorNote.getValue().trim().isEmpty()) {
-	            showError("DuraMap error note is required.");
-	            return;
-	        }
-
-	        if (nrStatus.getValue() == ThirdPartyStatus.ERROR
-	                && neuroreaderErrorNote.getValue().trim().isEmpty()) {
-	            showError("Neuroreader error note is required.");
-	            return;
-	        }
-
-	        if ((finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_ERRORS
-	                || finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_THIRD_PARTY_ERRORS)
-	                && notes.getValue().trim().isEmpty()) {
-	            showError("Notes are required for processed cases with errors.");
-	            return;
-	        }
-
-	        record.setPatientLastName(lastName.getValue().trim());
-			record.setPatientFirstName(firstName.getValue().trim());
-			record.setPatientId(patientId.getValue().trim());
-			record.setSiteName(siteName.getValue().trim());
-			record.setDateOfBirth(dateOfBirth.getValue());
-			record.setDateScanned(dateScanned.getValue());
-			record.setImagesReceivedDate(imagesReceivedDate.getValue());
-			record.setPatientStatus(patientStatus.getValue());
-
-	        record.setImekaStatus(imekaStatus.getValue());
-	        record.setImekaSentDate(imekaSentDate.getValue());
-
-	        record.setDuramapStatus(duramapBlock.isVisible() ? duramapStatus.getValue() : ThirdPartyStatus.NOT_SENT);
-	        record.setDuramapSentDate(duramapBlock.isVisible() ? duramapSentDate.getValue() : null);
-
-	        record.setNeuroreaderStatus(nrStatus.getValue());
-	        record.setNeuroreaderSentDate(nrSentDate.getValue());
-
-	        record.setNotes(notes.getValue().trim());
-	        record.setImekaErrorNote(imekaErrorNote.isVisible() ? imekaErrorNote.getValue().trim() : null);
-	        record.setDuramapErrorNote(duramapErrorNote.isVisible() ? duramapErrorNote.getValue().trim() : null);
-	        record.setNeuroreaderErrorNote(neuroreaderErrorNote.isVisible() ? neuroreaderErrorNote.getValue().trim() : null);
-	        record.setFinalOutcome(finalOutcome.getValue());
-
-	        if (finalOutcome.getValue() == FinalOutcome.PROCESSED
-					|| finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_ERRORS
-					|| finalOutcome.getValue() == FinalOutcome.PROCESSED_WITH_THIRD_PARTY_ERRORS) {
-				record.setProcessedDate(LocalDateTime.now());
-				record.setPatientStatus(PatientStatus.PROCESSED);
-			}
-
-	        try {
-				caseRecordService.saveEditedCase(record);
-				refreshProcessingGrid();
-				dialog.close();
-				showSuccess("Case updated.");
-			} catch (InvalidWorkflowTransitionException ex) {
-				showError(ex.getMessage());
-			}
-	    });
-
-	    VerticalLayout content = new VerticalLayout(
-	            patientHeader, patientForm,
-	            processingHeader, processingForm,
-	            thirdPartyHeader, thirdPartyForm
-	    );
-	    content.setPadding(false);
-	    content.setSpacing(true);
-	    content.setWidthFull();
-
-	    dialog.add(content);
-	    dialog.getFooter().add(cancelButton, saveButton);
-	    dialog.open();
-	}
-
     private void openNotesDialog(CaseRecordEntity record) {
     	Dialog dialog = new Dialog();
     	dialog.setHeaderTitle("Case Notes");
