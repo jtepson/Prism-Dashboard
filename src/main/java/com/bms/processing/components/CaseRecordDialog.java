@@ -14,6 +14,7 @@ import com.bms.processing.service.DicomService;
 import com.bms.processing.model.DicomStudyResult;
 import com.bms.processing.model.DicomReportResult;
 import com.bms.processing.service.DicomRetrieveService;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -76,36 +77,70 @@ public class CaseRecordDialog extends Dialog {
     private final Map<String, String[]> pendingDicomDemographicChanges =
         new LinkedHashMap<>();
 
+    private final CurrentUserService currentUserService;
+
+    // temporarily moving this around, first preserves existing call, then the second adds currentuserservice - updated 08182026
     public CaseRecordDialog(
-        CaseRecordEntity record,
-        CaseRecordService caseRecordService,
-        Mode mode,
-        Runnable afterSave,
-        SiteService siteService,
-        AuditEventService auditEventService,
-        PatientFileService patientFileService,
-        String baseStoragePath,
-        DicomConfigService dicomConfigService,
-        DicomService dicomService,
-        DicomRetrieveService dicomRetrieveService
-    ) {
-        this.record = record;
-        this.caseRecordService = caseRecordService;
-        this.siteService = siteService;
-        this.auditEventService = auditEventService;
-        this.mode = mode;
-        this.afterSave = afterSave;
-        this.patientFileService = patientFileService;
-        this.baseStoragePath = baseStoragePath;
-        this.dicomConfigService = dicomConfigService;
-        this.dicomService = dicomService;
-        this.dicomRetrieveService = dicomRetrieveService;
+                CaseRecordEntity record,
+                CaseRecordService caseRecordService,
+                Mode mode,
+                Runnable afterSave,
+                SiteService siteService,
+                AuditEventService auditEventService,
+                PatientFileService patientFileService,
+                String baseStoragePath,
+                DicomConfigService dicomConfigService,
+                DicomService dicomService,
+                DicomRetrieveService dicomRetrieveService
+        ) {
+                this(
+                        record,
+                        caseRecordService,
+                        mode,
+                        afterSave,
+                        siteService,
+                        auditEventService,
+                        patientFileService,
+                        baseStoragePath,
+                        dicomConfigService,
+                        dicomService,
+                        dicomRetrieveService,
+                        null
+                );
+        }
 
-        setHeaderTitle("Patient Summary");
-        setWidth("900px");
+        public CaseRecordDialog(
+                CaseRecordEntity record,
+                CaseRecordService caseRecordService,
+                Mode mode,
+                Runnable afterSave,
+                SiteService siteService,
+                AuditEventService auditEventService,
+                PatientFileService patientFileService,
+                String baseStoragePath,
+                DicomConfigService dicomConfigService,
+                DicomService dicomService,
+                DicomRetrieveService dicomRetrieveService,
+                CurrentUserService currentUserService
+        ) {
+                this.record = record;
+                this.caseRecordService = caseRecordService;
+                this.siteService = siteService;
+                this.auditEventService = auditEventService;
+                this.mode = mode;
+                this.afterSave = afterSave;
+                this.patientFileService = patientFileService;
+                this.baseStoragePath = baseStoragePath;
+                this.dicomConfigService = dicomConfigService;
+                this.dicomService = dicomService;
+                this.dicomRetrieveService = dicomRetrieveService;
+                this.currentUserService = currentUserService;
 
-        buildDialog();
-    }
+                setHeaderTitle("Patient Summary");
+                setWidth("900px");
+
+                buildDialog();
+        }
 
     private void buildDialog() {
         TextField lastName = new TextField("Last Name");
@@ -158,6 +193,13 @@ public class CaseRecordDialog extends Dialog {
 
         DatePicker invoiceSentDate = new DatePicker("Invoice Sent Date");
         invoiceSentDate.setValue(record.getInvoiceSentDate());
+
+        boolean canEditInvoice =
+                currentUserService != null
+                        && (currentUserService.isAdmin()
+                        || currentUserService.isBms());
+
+        invoiceSentDate.setReadOnly(!canEditInvoice);
 
         if (mode == Mode.PROCESSED || mode == Mode.COMPLETED || mode == Mode.ERRORS) {
                 lastName.setReadOnly(true);
@@ -856,6 +898,14 @@ public class CaseRecordDialog extends Dialog {
                     if (mode == Mode.PROCESSED) {
                         record.setFinalWorkflowNotes(finalWorkflowNotes.getValue());
                         caseRecordService.saveEditedCase(record);
+                    }
+
+                    if (canEditInvoice) {
+                        caseRecordService.updateInvoiceSentDate(
+                                record,
+                                invoiceSentDate.getValue(),
+                                currentUserService.getUsername()
+                        );
                     }
                     afterSave.run();
                 }
