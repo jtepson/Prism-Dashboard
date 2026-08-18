@@ -237,13 +237,15 @@ public class CaseIssueDialog extends Dialog {
             return;
         }
 
-        issue.setIssueSource(source.getValue());
-        issue.setIssueType(type.getValue());
-        issue.setBlocking(blocking.getValue());
-        issue.setTitle(formatEnum(type.getValue()));
-        issue.setDescription(description.getValue().trim());
-
-        caseIssueService.save(issue);
+        caseIssueService.updateIssue(
+                issue,
+                source.getValue(),
+                type.getValue(),
+                blocking.getValue(),
+                formatEnum(type.getValue()),
+                description.getValue().trim(),
+                currentUserService.getUsername()
+        );
 
         if (afterSave != null) {
             afterSave.run();

@@ -16,9 +16,14 @@ import java.time.LocalDateTime;
 public class CaseIssueService {
 
     private final CaseIssueRepository caseIssueRepository;
+    private final AuditEventService auditEventService;
 
-    public CaseIssueService(CaseIssueRepository caseIssueRepository) {
+    public CaseIssueService(
+        CaseIssueRepository caseIssueRepository,
+        AuditEventService auditEventService
+    ) {
         this.caseIssueRepository = caseIssueRepository;
+        this.auditEventService = auditEventService;
     }
 
     public List<CaseIssueEntity> findAll() {
@@ -65,7 +70,60 @@ public class CaseIssueService {
         issue.setCreatedAt(LocalDateTime.now());
         issue.setIssueSource(issueSource);
 
-        return caseIssueRepository.save(issue);
+        //added in to account for issue resolution
+        CaseIssueEntity savedIssue = caseIssueRepository.save(issue);
+        auditEventService.logTimelineEvent(
+                "CASE_ISSUE_CREATED",
+                caseRecord,
+                savedIssue.getTitle(),
+                null,
+                savedIssue.getDescription(),
+                createdBy
+        );
+
+        return savedIssue;
+    }
+
+    //added this for issue updated, for better tracking 08182026
+    public CaseIssueEntity updateIssue(
+            CaseIssueEntity issue,
+            CaseIssueSource issueSource,
+            CaseIssueType issueType,
+            boolean blocking,
+            String title,
+            String description,
+            String updatedBy
+    ) {
+        String oldValue =
+                "Source=" + issue.getIssueSource()
+                        + ", Category=" + issue.getIssueType()
+                        + ", Blocking=" + issue.getBlocking()
+                        + ", Note=" + issue.getDescription();
+
+        issue.setIssueSource(issueSource);
+        issue.setIssueType(issueType);
+        issue.setBlocking(blocking);
+        issue.setTitle(title);
+        issue.setDescription(description);
+
+        CaseIssueEntity savedIssue = caseIssueRepository.save(issue);
+
+        String newValue =
+                "Source=" + savedIssue.getIssueSource()
+                        + ", Category=" + savedIssue.getIssueType()
+                        + ", Blocking=" + savedIssue.getBlocking()
+                        + ", Note=" + savedIssue.getDescription();
+
+        auditEventService.logTimelineEvent(
+                "CASE_ISSUE_UPDATED",
+                savedIssue.getCaseRecord(),
+                savedIssue.getTitle(),
+                oldValue,
+                newValue,
+                updatedBy
+        );
+
+        return savedIssue;
     }
 
     public CaseIssueEntity resolveIssue(
@@ -78,7 +136,17 @@ public class CaseIssueService {
         issue.setResolvedAt(LocalDateTime.now());
         issue.setResolutionNote(resolutionNote);
 
-        return caseIssueRepository.save(issue);
+        CaseIssueEntity savedIssue = caseIssueRepository.save(issue);
+        auditEventService.logTimelineEvent(
+                "CASE_ISSUE_RESOLVED",
+                savedIssue.getCaseRecord(),
+                savedIssue.getTitle(),
+                "ACTIVE",
+                resolutionNote,
+                resolvedBy
+        );
+
+        return savedIssue;
     }
 
     public List<CaseIssueEntity> findByStatus(CaseIssueStatus status) {

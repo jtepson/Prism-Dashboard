@@ -15,6 +15,9 @@ import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.components.CaseIssueDialog;
+import com.bms.processing.entity.CaseIssueEntity;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -161,6 +164,36 @@ public class ErrorsView extends VerticalLayout {
 
             return noteFlag;
         }).setHeader("Notes").setAutoWidth(true);
+
+        grid.addComponentColumn(record -> {
+            var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+            if (activeIssues.isEmpty()) {
+                return new Span("-");
+            }
+
+            CaseIssueEntity issue = activeIssues.get(0);
+
+            Button issueButton = new Button(
+                    activeIssues.size() == 1
+                            ? issue.getTitle()
+                            : issue.getTitle() + " +" + (activeIssues.size() - 1)
+            );
+
+            issueButton.addClickListener(event ->
+                    new CaseIssueDialog(
+                            record,
+                            issue,
+                            caseIssueService,
+                            currentUserService,
+                            this::refreshErrorsGrid
+                    ).open()
+            );
+
+            return issueButton;
+        })
+        .setHeader("Issue")
+        .setAutoWidth(true);
 
         grid.addComponentColumn(record -> {
 
