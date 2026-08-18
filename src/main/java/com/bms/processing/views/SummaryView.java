@@ -1657,7 +1657,8 @@
                                         baseStoragePath,
                                         dicomConfigService,
                                         dicomService,
-                                        dicomRetrieveService
+                                        dicomRetrieveService,
+                                        currentUserService
                                 );
 
                                 dialog.addDetachListener(event -> {

@@ -14,6 +14,7 @@ import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.model.CaseIssueStatus;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -45,6 +46,7 @@ public class ErrorsView extends VerticalLayout {
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
     private final CaseIssueService caseIssueService;
+    private final CurrentUserService currentUserService;
 
     public ErrorsView(
             CaseRecordService caseRecordService,
@@ -54,7 +56,8 @@ public class ErrorsView extends VerticalLayout {
             DicomConfigService dicomConfigService,
             DicomService dicomService,
             DicomRetrieveService dicomRetrieveService,
-            CaseIssueService caseIssueService
+            CaseIssueService caseIssueService,
+            CurrentUserService currentUserService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -64,6 +67,7 @@ public class ErrorsView extends VerticalLayout {
             this.dicomService = dicomService;
             this.dicomRetrieveService = dicomRetrieveService;
             this.caseIssueService = caseIssueService;
+            this.currentUserService = currentUserService;
 
         setSizeFull();
         setPadding(true);
@@ -92,7 +96,8 @@ public class ErrorsView extends VerticalLayout {
                         baseStoragePath,
                         dicomConfigService,
                         dicomService,
-                        dicomRetrieveService
+                        dicomRetrieveService,
+                        currentUserService
                 ).open()
         );
 

@@ -9,6 +9,7 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -42,6 +43,7 @@ public class ManagePatientsView extends VerticalLayout {
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
+    private final CurrentUserService currentUserService;
 
     public ManagePatientsView(
             CaseRecordService caseRecordService,
@@ -50,7 +52,8 @@ public class ManagePatientsView extends VerticalLayout {
             @Value("${prism.files.storage-path}") String baseStoragePath,
             DicomConfigService dicomConfigService,
             DicomService dicomService,
-            DicomRetrieveService dicomRetrieveService
+            DicomRetrieveService dicomRetrieveService,
+            CurrentUserService currentUserService
     ) {
         this.caseRecordService = caseRecordService;
         this.auditEventService = auditEventService;
@@ -59,6 +62,7 @@ public class ManagePatientsView extends VerticalLayout {
         this.dicomConfigService = dicomConfigService;
         this.dicomService = dicomService;
         this.dicomRetrieveService = dicomRetrieveService;
+        this.currentUserService = currentUserService;
 
         setSizeFull();
         setPadding(true);
@@ -148,7 +152,8 @@ public class ManagePatientsView extends VerticalLayout {
                         baseStoragePath,
                         dicomConfigService,
                         dicomService,
-                        dicomRetrieveService
+                        dicomRetrieveService,
+                        currentUserService
                 ).open()
         );
     }

@@ -79,36 +79,7 @@ public class CaseRecordDialog extends Dialog {
 
     private final CurrentUserService currentUserService;
 
-    // temporarily moving this around, first preserves existing call, then the second adds currentuserservice - updated 08182026
-    public CaseRecordDialog(
-                CaseRecordEntity record,
-                CaseRecordService caseRecordService,
-                Mode mode,
-                Runnable afterSave,
-                SiteService siteService,
-                AuditEventService auditEventService,
-                PatientFileService patientFileService,
-                String baseStoragePath,
-                DicomConfigService dicomConfigService,
-                DicomService dicomService,
-                DicomRetrieveService dicomRetrieveService
-        ) {
-                this(
-                        record,
-                        caseRecordService,
-                        mode,
-                        afterSave,
-                        siteService,
-                        auditEventService,
-                        patientFileService,
-                        baseStoragePath,
-                        dicomConfigService,
-                        dicomService,
-                        dicomRetrieveService,
-                        null
-                );
-        }
-
+    // deleted temp constructor, leaving remaining one that works with currentuserservice - updated 08182026
         public CaseRecordDialog(
                 CaseRecordEntity record,
                 CaseRecordService caseRecordService,
