@@ -16,44 +16,68 @@ import java.nio.file.Path;
 @RequestMapping("/patient-files")
 public class PatientFileController {
 
-    private final PatientFileRepository repository;
+        private final PatientFileRepository repository;
 
-    public PatientFileController(PatientFileRepository repository) {
-        this.repository = repository;
-    }
+        public PatientFileController(PatientFileRepository repository) {
+                this.repository = repository;
+        }
 
-    @GetMapping("/{id}/view")
-    public ResponseEntity<Resource> view(@PathVariable Long id) {
+        @GetMapping("/{id}/view")
+        public ResponseEntity<Resource> view(@PathVariable Long id) {
 
-        PatientFileEntity file = repository.findById(id)
-                .orElseThrow();
+                PatientFileEntity file = repository.findById(id)
+                        .orElseThrow();
 
-        Resource resource =
-                new FileSystemResource(Path.of(file.getStoragePath()));
+                Resource resource =
+                        new FileSystemResource(Path.of(file.getStoragePath()));
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
-    }
+                MediaType mediaType = resolveMediaType(file);
 
-    @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(@PathVariable Long id) {
+                return ResponseEntity.ok()
+                        .header(
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                ContentDisposition.inline()
+                                        .filename(file.getOriginalFileName())
+                                        .build()
+                                        .toString()
+                        )
+                        .contentType(mediaType)
+                        .body(resource);
+        }
 
-        PatientFileEntity file = repository.findById(id)
-                .orElseThrow();
+        @GetMapping("/{id}/download")
+        public ResponseEntity<Resource> download(@PathVariable Long id) {
 
-        Resource resource =
-                new FileSystemResource(Path.of(file.getStoragePath()));
+                PatientFileEntity file = repository.findById(id)
+                        .orElseThrow();
 
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment()
-                                .filename(file.getOriginalFileName())
-                                .build()
-                                .toString()
-                )
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
-    }
+                Resource resource =
+                        new FileSystemResource(Path.of(file.getStoragePath()));
+
+                MediaType mediaType = resolveMediaType(file);
+
+                return ResponseEntity.ok()
+                        .header(
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                ContentDisposition.attachment()
+                                        .filename(file.getOriginalFileName())
+                                        .build()
+                                        .toString()
+                        )
+                        .contentType(mediaType)
+                        .body(resource);
+        }
+
+        private MediaType resolveMediaType(PatientFileEntity file) {
+
+                if (file.getContentType() == null || file.getContentType().isBlank()) {
+                return MediaType.APPLICATION_OCTET_STREAM;
+                }
+
+                try {
+                return MediaType.parseMediaType(file.getContentType());
+                } catch (IllegalArgumentException ex) {
+                return MediaType.APPLICATION_OCTET_STREAM;
+                }
+        }
 }
