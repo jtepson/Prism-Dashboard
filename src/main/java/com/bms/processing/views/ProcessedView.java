@@ -13,6 +13,9 @@ import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.components.CaseIssueDialog;
+import com.bms.processing.entity.CaseIssueEntity;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -43,6 +46,7 @@ public class ProcessedView extends VerticalLayout {
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
     private final CurrentUserService currentUserService;
+    private final CaseIssueService caseIssueService;
 
     public ProcessedView(
             CaseRecordService caseRecordService,
@@ -52,7 +56,8 @@ public class ProcessedView extends VerticalLayout {
             DicomConfigService dicomConfigService,
             DicomService dicomService,
             DicomRetrieveService dicomRetrieveService,
-            CurrentUserService currentUserService
+            CurrentUserService currentUserService,
+            CaseIssueService caseIssueService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -62,6 +67,7 @@ public class ProcessedView extends VerticalLayout {
             this.dicomService = dicomService;
             this.dicomRetrieveService = dicomRetrieveService;
             this.currentUserService = currentUserService;
+            this.caseIssueService = caseIssueService;
 
         setSizeFull();
         setPadding(true);
@@ -136,6 +142,47 @@ public class ProcessedView extends VerticalLayout {
         grid.addColumn(record -> formatDateTime(record.getProcessedDate()))
                 .setHeader("Processed Date")
                 .setAutoWidth(true);
+
+        grid.addComponentColumn(record -> {
+            var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+            if (activeIssues.isEmpty()) {
+                return new Span("");
+            }
+
+            long blockingCount = activeIssues.stream()
+                    .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+                    .count();
+
+            Button issueButton = new Button(
+                    activeIssues.size() == 1
+                            ? "Issue"
+                            : "Issues (" + activeIssues.size() + ")"
+            );
+
+            issueButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+
+            if (blockingCount > 0) {
+                issueButton.getStyle()
+                        .set("color", "var(--lumo-error-text-color)");
+            }
+
+            issueButton.addClickListener(event -> {
+                CaseIssueEntity issue = activeIssues.get(0);
+
+                new CaseIssueDialog(
+                        record,
+                        issue,
+                        caseIssueService,
+                        currentUserService,
+                        this::refreshProcessedGrid
+                ).open();
+            });
+
+            return issueButton;
+        })
+        .setHeader("Issues")
+        .setAutoWidth(true);
 
         // reworked this to account for centralized tracking of invoice data - updated 08182026
         grid.addComponentColumn(record -> {

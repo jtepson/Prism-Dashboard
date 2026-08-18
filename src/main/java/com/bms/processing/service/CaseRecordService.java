@@ -637,6 +637,15 @@ public class CaseRecordService {
 
         PatientStatus oldStatus = record.getPatientStatus();
 
+        boolean hasBlockingIssue = caseIssueService.findActiveByCaseRecord(record).stream()
+                .anyMatch(issue -> Boolean.TRUE.equals(issue.getBlocking()));
+
+        if (hasBlockingIssue) {
+            throw new InvalidWorkflowTransitionException(
+                    "Case cannot be completed while blocking issues are active."
+            );
+        }
+
         record.setPatientStatus(PatientStatus.COMPLETED);
 
         if (record.getCompletedDate() == null) {
