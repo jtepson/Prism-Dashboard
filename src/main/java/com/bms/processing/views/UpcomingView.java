@@ -289,6 +289,12 @@ public class UpcomingView extends VerticalLayout {
     
         DatePicker invoiceSentDate = new DatePicker("Invoice Sent Date");
         invoiceSentDate.setValue(record.getInvoiceSentDate());
+
+        boolean canEditInvoice =
+                currentUserService.isAdmin()
+                || currentUserService.isBms();
+
+        invoiceSentDate.setReadOnly(!canEditInvoice);
     
         FormLayout formLayout = new FormLayout();
         formLayout.setWidthFull();
@@ -330,10 +336,18 @@ public class UpcomingView extends VerticalLayout {
             record.setFunder(funder.getValue().trim());
             record.setIntakeSheetDone(intakeSheetDone.getValue());
             record.setIntakeSheetSent(intakeSheetSent.getValue());
-            record.setInvoiceSentDate(invoiceSentDate.getValue());
     
             try {
                 caseRecordService.updateUpcomingCaseDetails(record);
+
+                if (canEditInvoice) {
+                        caseRecordService.updateInvoiceSentDate(
+                                record,
+                                invoiceSentDate.getValue(),
+                                currentUserService.getUsername()
+                        );
+                }
+
                 refreshUpcomingGrid();
                 dialog.close();
             } catch (InvalidWorkflowTransitionException ex) {
