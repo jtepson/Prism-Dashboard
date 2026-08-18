@@ -63,6 +63,30 @@ public class PatientFilesSection extends VerticalLayout {
                         .setAutoWidth(true);
 
                 grid.addColumn(file ->
+                        file.getFileSize() != null
+                                ? formatFileSize(file.getFileSize())
+                                : ""
+                        )
+                        .setHeader("Size")
+                        .setAutoWidth(true);
+
+                grid.addColumn(file ->
+                        file.getCreatedAt() != null
+                                ? file.getCreatedAt().toString().replace("T", " ")
+                                : ""
+                        )
+                        .setHeader("Uploaded")
+                        .setAutoWidth(true);
+
+                grid.addColumn(file ->
+                        file.getUploadedBy() != null
+                                ? file.getUploadedBy()
+                                : ""
+                        )
+                        .setHeader("Uploaded By")
+                        .setAutoWidth(true);
+
+                grid.addColumn(file ->
                                 file.getFileDate() != null
                                         ? file.getFileDate().toString()
                                         : "")
@@ -73,14 +97,34 @@ public class PatientFilesSection extends VerticalLayout {
                         .setHeader("Source")
                         .setAutoWidth(true);
 
+                //custom view behavior per file type - updated 08182026
                 grid.addComponentColumn(file -> {
+                        String contentType = file.getContentType();
+
+                        boolean viewable =
+                                "application/pdf".equalsIgnoreCase(contentType)
+                                        || "image/jpeg".equalsIgnoreCase(contentType)
+                                        || "image/png".equalsIgnoreCase(contentType);
+
+                        if (!viewable) {
+                                Span notAvailable = new Span("-");
+                                notAvailable.getStyle()
+                                        .set("color", "var(--lumo-secondary-text-color)");
+
+                                return notAvailable;
+                        }
+
                         Anchor view = new Anchor(
                                 "/patient-files/" + file.getId() + "/view",
                                 "View"
                         );
+
                         view.setTarget("_blank");
+
                         return view;
-                }).setHeader("View").setAutoWidth(true);
+                })
+                .setHeader("View")
+                .setAutoWidth(true);
 
                 grid.addComponentColumn(file -> {
                         Anchor download = new Anchor(
@@ -216,5 +260,22 @@ public class PatientFilesSection extends VerticalLayout {
                 instructions.add(allowed, maxSize);
 
                 return instructions;
+        }
+
+        //helper for new columns - updated 08182026
+        private String formatFileSize(long bytes) {
+                if (bytes < 1024) {
+                        return bytes + " B";
+                }
+
+                double kb = bytes / 1024.0;
+
+                if (kb < 1024) {
+                        return String.format("%.1f KB", kb);
+                }
+
+                double mb = kb / 1024.0;
+
+                return String.format("%.1f MB", mb);
         }
 }
