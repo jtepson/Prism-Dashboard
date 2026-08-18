@@ -727,12 +727,37 @@ public class ProcessingView extends VerticalLayout {
 			String label,
 			ThirdPartyStatus selectedStatus
 	) {
+		CaseIssueSource issueSource = switch (label) {
+			case "IMEKA" -> CaseIssueSource.IMEKA;
+			case "DuraMap" -> CaseIssueSource.DURAMAP;
+			case "Neuroreader" -> CaseIssueSource.NEUROREADER;
+			default -> null;
+		};
+
 		if (selectedStatus == ThirdPartyStatus.SENT) {
 			promptSentDateChoice(label, record, selectedStatus);
 		} else {
 			try {
-				applyThirdPartyStatus(record, label, selectedStatus, null, null);
+				applyThirdPartyStatus(
+						record,
+						label,
+						selectedStatus,
+						null,
+						null
+				);
+
+				if (issueSource != null) {
+					caseIssueService.resolveActiveIssueBySource(
+							record,
+							issueSource,
+							currentUserService.getUsername(),
+							label + " status changed from Error to "
+									+ formatEnum(selectedStatus) + "."
+					);
+				}
+
 				refreshProcessingGrid();
+
 			} catch (InvalidWorkflowTransitionException ex) {
 				showError(ex.getMessage());
 			}
