@@ -17,6 +17,7 @@ import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.model.CaseIssueSource;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.service.NotificationService;
@@ -611,6 +612,7 @@ public class UpcomingView extends VerticalLayout {
 
                 caseIssueService.createIssue(
                         record,
+                        CaseIssueSource.ACQUISITION,
                         issueType.getValue(),
                         true,
                         issueType.getValue().name().replace("_", " "),

@@ -5,6 +5,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.repository.CaseIssueRepository;
 import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.model.CaseIssueSource;
 
 import org.springframework.stereotype.Service;
 
@@ -44,12 +45,13 @@ public class CaseIssueService {
     }
 
     public CaseIssueEntity createIssue(
-        CaseRecordEntity caseRecord,
-        CaseIssueType issueType,
-        boolean blocking,
-        String title,
-        String description,
-        String createdBy
+            CaseRecordEntity caseRecord,
+            CaseIssueSource issueSource,
+            CaseIssueType issueType,
+            boolean blocking,
+            String title,
+            String description,
+            String createdBy
     ) {
         CaseIssueEntity issue = new CaseIssueEntity();
 
@@ -61,6 +63,7 @@ public class CaseIssueService {
         issue.setDescription(description);
         issue.setCreatedBy(createdBy);
         issue.setCreatedAt(LocalDateTime.now());
+        issue.setIssueSource(issueSource);
 
         return caseIssueRepository.save(issue);
     }
