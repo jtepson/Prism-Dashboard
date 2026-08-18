@@ -17,6 +17,7 @@ import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.entity.CaseIssueEntity;
+import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -239,8 +240,8 @@ public class ErrorsView extends VerticalLayout {
 
         grid.setItems(
                 caseIssueService.findByStatusWithCaseRecord(CaseIssueStatus.ACTIVE).stream()
-                        .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
-                        .map(issue -> issue.getCaseRecord())
+                        .map(CaseIssueEntity::getCaseRecord)
+                        .filter(java.util.Objects::nonNull)
                         .distinct()
                         .filter(record ->
                                 filter.isEmpty()
