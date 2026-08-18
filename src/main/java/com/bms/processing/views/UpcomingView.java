@@ -121,7 +121,8 @@ public class UpcomingView extends VerticalLayout {
                         baseStoragePath,
                         dicomConfigService,
                         dicomService,
-                        dicomRetrieveService
+                        dicomRetrieveService,
+                        currentUserService
                 ).open()
         );
 
