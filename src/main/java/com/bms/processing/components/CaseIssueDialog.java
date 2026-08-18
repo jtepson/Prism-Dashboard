@@ -34,18 +34,42 @@ public class CaseIssueDialog extends Dialog {
     private final TextArea description =
             new TextArea("Issue Note");
 
+    private final CaseIssueEntity issue;
+
     public CaseIssueDialog(
             CaseRecordEntity record,
             CaseIssueService caseIssueService,
             CurrentUserService currentUserService,
             Runnable afterSave
     ) {
+        this(
+                record,
+                null,
+                caseIssueService,
+                currentUserService,
+                afterSave
+        );
+    }
+    
+    public CaseIssueDialog(
+            CaseRecordEntity record,
+            CaseIssueEntity issue,
+            CaseIssueService caseIssueService,
+            CurrentUserService currentUserService,
+            Runnable afterSave
+    ) {
         this.record = record;
+        this.issue = issue;
         this.caseIssueService = caseIssueService;
         this.currentUserService = currentUserService;
         this.afterSave = afterSave;
 
-        setHeaderTitle("Add Issue");
+        setHeaderTitle(
+                issue == null
+                        ? "Add Issue"
+                        : "Issue Details"
+        );
+
         setWidth("600px");
 
         buildDialog();
