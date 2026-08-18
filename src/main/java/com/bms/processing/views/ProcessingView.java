@@ -747,9 +747,10 @@ public class ProcessingView extends VerticalLayout {
 				);
 
 				if (issueSource != null) {
-					caseIssueService.resolveActiveIssueBySource(
+					caseIssueService.resolveActiveIssueBySourceAndType(
 							record,
 							issueSource,
+							CaseIssueType.VENDOR_FAILURE,
 							currentUserService.getUsername(),
 							label + " status changed from Error to "
 									+ formatEnum(selectedStatus) + "."
@@ -783,6 +784,11 @@ public class ProcessingView extends VerticalLayout {
 		yesButton.addClickListener(event -> {
 			try {
 				applyThirdPartyStatus(record, label, selectedStatus, null, LocalDate.now());
+				resolveVendorIssueAfterStatusChange(
+						record,
+						label,
+						selectedStatus
+				);
 				refreshProcessingGrid();
 				dialog.close();
 			} catch (InvalidWorkflowTransitionException ex) {
@@ -829,6 +835,11 @@ public class ProcessingView extends VerticalLayout {
 
 			try {
 				applyThirdPartyStatus(record, label, selectedStatus, null, customDate.getValue());
+				resolveVendorIssueAfterStatusChange(
+						record,
+						label,
+						selectedStatus
+				);
 				refreshProcessingGrid();
 				dialog.close();
 			} catch (InvalidWorkflowTransitionException ex) {
@@ -1043,6 +1054,32 @@ public class ProcessingView extends VerticalLayout {
 			case "Neuroreader" -> caseRecordService.updateNeuroreaderStatus(record, status, errorNote, sentDate);
 			default -> throw new InvalidWorkflowTransitionException("Unsupported third-party workflow: " + label);
 		}
+	}
+
+	private void resolveVendorIssueAfterStatusChange(
+			CaseRecordEntity record,
+			String label,
+			ThirdPartyStatus selectedStatus
+	) {
+		CaseIssueSource source = switch (label) {
+			case "IMEKA" -> CaseIssueSource.IMEKA;
+			case "DuraMap" -> CaseIssueSource.DURAMAP;
+			case "Neuroreader" -> CaseIssueSource.NEUROREADER;
+			default -> null;
+		};
+
+		if (source == null) {
+			return;
+		}
+
+		caseIssueService.resolveActiveIssueBySourceAndType(
+				record,
+				source,
+				CaseIssueType.VENDOR_FAILURE,
+				currentUserService.getUsername(),
+				label + " status changed from Error to "
+						+ formatEnum(selectedStatus) + "."
+		);
 	}
 
 }

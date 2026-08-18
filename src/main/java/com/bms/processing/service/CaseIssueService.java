@@ -149,14 +149,18 @@ public class CaseIssueService {
         return savedIssue;
     }
 
-    public void resolveActiveIssueBySource(
+
+    //updated 08182026 to account for new issue system centralzation
+    public void resolveActiveIssueBySourceAndType(
             CaseRecordEntity caseRecord,
             CaseIssueSource issueSource,
+            CaseIssueType issueType,
             String resolvedBy,
             String resolutionNote
     ) {
         findActiveByCaseRecord(caseRecord).stream()
                 .filter(issue -> issue.getIssueSource() == issueSource)
+                .filter(issue -> issue.getIssueType() == issueType)
                 .forEach(issue ->
                         resolveIssue(
                                 issue,
