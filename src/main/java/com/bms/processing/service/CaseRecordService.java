@@ -125,11 +125,7 @@ public class CaseRecordService {
         );
 
         //email trigger
-        notificationService.notifyCaseFinalized(
-                savedRecord.getPatientLastName()
-                        + ", "
-                        + savedRecord.getPatientFirstName()
-        );
+        notificationService.notifyCaseFinalized(record);
 
         return savedRecord;
     }
@@ -666,11 +662,7 @@ public class CaseRecordService {
         );
         
         //trigger to send email
-        notificationService.notifyCaseCompleted(
-                savedRecord.getPatientLastName()
-                        + ", "
-                        + savedRecord.getPatientFirstName()
-        );
+        notificationService.notifyCaseCompleted(record);
 
         return savedRecord;
     }
