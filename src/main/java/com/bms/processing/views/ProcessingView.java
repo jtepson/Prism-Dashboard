@@ -582,6 +582,13 @@ public class ProcessingView extends VerticalLayout {
 					.set("color", "var(--lumo-warning-text-color)");
 		}
 
+		badge.getStyle().set("cursor", "pointer");
+
+		badge.getElement().addEventListener(
+				"click",
+				event -> openActiveIssuesDialog(record)
+		).addEventData("event.stopPropagation()");
+
 		return badge;
 	})
 	.setHeader("Issues")
@@ -1082,4 +1089,50 @@ public class ProcessingView extends VerticalLayout {
 		);
 	}
 
+	private void openActiveIssuesDialog(CaseRecordEntity record) {
+		var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+		if (activeIssues.isEmpty()) {
+			return;
+		}
+
+		Dialog dialog = new Dialog();
+		dialog.setHeaderTitle("Active Issues");
+		dialog.setWidth("600px");
+
+		VerticalLayout issues = new VerticalLayout();
+		issues.setPadding(false);
+		issues.setSpacing(true);
+
+		activeIssues.forEach(issue -> {
+			Button issueButton = new Button(
+					issue.getTitle()
+							+ (Boolean.TRUE.equals(issue.getBlocking())
+							? " - Blocking"
+							: "")
+			);
+
+			issueButton.setWidthFull();
+
+			issueButton.addClickListener(event -> {
+				dialog.close();
+
+				new CaseIssueDialog(
+						record,
+						issue,
+						caseIssueService,
+						currentUserService,
+						this::refreshProcessingGrid
+				).open();
+			});
+
+			issues.add(issueButton);
+		});
+
+		Button close = new Button("Close", event -> dialog.close());
+
+		dialog.add(issues);
+		dialog.getFooter().add(close);
+		dialog.open();
+	}
 }
