@@ -149,6 +149,23 @@ public class CaseIssueService {
         return savedIssue;
     }
 
+    public void resolveActiveIssueBySource(
+            CaseRecordEntity caseRecord,
+            CaseIssueSource issueSource,
+            String resolvedBy,
+            String resolutionNote
+    ) {
+        findActiveByCaseRecord(caseRecord).stream()
+                .filter(issue -> issue.getIssueSource() == issueSource)
+                .forEach(issue ->
+                        resolveIssue(
+                                issue,
+                                resolvedBy,
+                                resolutionNote
+                        )
+                );
+    }
+
     public List<CaseIssueEntity> findByStatus(CaseIssueStatus status) {
         return caseIssueRepository.findByStatus(status);
     }

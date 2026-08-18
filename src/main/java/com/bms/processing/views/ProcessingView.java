@@ -209,21 +209,21 @@ public class ProcessingView extends VerticalLayout {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
 						promptRequiredErrorNote(
-								"IMEKA Error Note Required",
-								record.getImekaErrorNote(),
+								"DuraMap Error Note Required",
+								record.getDuramapErrorNote(),
 								noteValue -> {
 									try {
 										applyThirdPartyStatus(
 												record,
-												"IMEKA",
+												"DuraMap",
 												ThirdPartyStatus.ERROR,
 												noteValue,
-												record.getImekaSentDate()
+												record.getDuramapSentDate()
 										);
 
 										createOrUpdateVendorIssue(
 												record,
-												CaseIssueSource.IMEKA,
+												CaseIssueSource.DURAMAP,
 												noteValue
 										);
 
@@ -271,6 +271,12 @@ public class ProcessingView extends VerticalLayout {
 												noteValue,
 												record.getNeuroreaderSentDate()
 										);
+
+										createOrUpdateVendorIssue(
+												record,
+												CaseIssueSource.NEUROREADER,
+												noteValue
+										);
 										refreshProcessingGrid();
 									} catch (InvalidWorkflowTransitionException ex) {
 										showError(ex.getMessage());
@@ -316,7 +322,15 @@ public class ProcessingView extends VerticalLayout {
 												noteValue,
 												record.getImekaSentDate()
 										);
+
+										createOrUpdateVendorIssue(
+												record,
+												CaseIssueSource.IMEKA,
+												noteValue
+										);
+
 										refreshProcessingGrid();
+
 									} catch (InvalidWorkflowTransitionException ex) {
 										showError(ex.getMessage());
 									}
@@ -324,9 +338,9 @@ public class ProcessingView extends VerticalLayout {
 						);
 					} else {
 						handleThirdPartyStatusSelection(
-							record,
-							"IMEKA",
-							e.getValue()
+								record,
+								"IMEKA",
+								e.getValue()
 						);
 					}
 				}
@@ -349,33 +363,40 @@ public class ProcessingView extends VerticalLayout {
 					if (e.getValue() != null) {
 						if (e.getValue() == ThirdPartyStatus.ERROR) {
 							promptRequiredErrorNote(
-        "DuraMap Error Note Required",
-        record.getDuramapErrorNote(),
-        noteValue -> {
-            try {
-                applyThirdPartyStatus(
-                        record,
-                        "DuraMap",
-                        ThirdPartyStatus.ERROR,
-                        noteValue,
-                        record.getDuramapSentDate()
-                );
-                refreshProcessingGrid();
-            } catch (InvalidWorkflowTransitionException ex) {
-                showError(ex.getMessage());
-            }
-        }
-);
+									"DuraMap Error Note Required",
+									record.getDuramapErrorNote(),
+									noteValue -> {
+										try {
+											applyThirdPartyStatus(
+													record,
+													"DuraMap",
+													ThirdPartyStatus.ERROR,
+													noteValue,
+													record.getDuramapSentDate()
+											);
+
+											createOrUpdateVendorIssue(
+													record,
+													CaseIssueSource.DURAMAP,
+													noteValue
+											);
+
+											refreshProcessingGrid();
+
+										} catch (InvalidWorkflowTransitionException ex) {
+											showError(ex.getMessage());
+										}
+									}
+							);
 						} else {
 							handleThirdPartyStatusSelection(
-								record,
-								"DuraMap",
-								e.getValue()
+									record,
+									"DuraMap",
+									e.getValue()
 							);
 						}
 					}
 				});
-	
 				stack.add(dura);
 			}
 	
@@ -403,6 +424,11 @@ public class ProcessingView extends VerticalLayout {
 												ThirdPartyStatus.ERROR,
 												noteValue,
 												record.getNeuroreaderSentDate()
+										);
+										createOrUpdateVendorIssue(
+												record,
+												CaseIssueSource.NEUROREADER,
+												noteValue
 										);
 										refreshProcessingGrid();
 									} catch (InvalidWorkflowTransitionException ex) {
@@ -977,41 +1003,6 @@ public class ProcessingView extends VerticalLayout {
 
 	private boolean containsIgnoreCase(String value, String filter) {
 		return value != null && value.toLowerCase().contains(filter);
-	}
-
-	private void openSubmitErrorDialog(CaseRecordEntity record) {
-		Dialog dialog = new Dialog();
-		dialog.setHeaderTitle("Submit Study to Errors");
-		dialog.setWidth("600px");
-
-		TextArea errorNote = new TextArea("Explain the issue");
-		errorNote.setWidthFull();
-		errorNote.setMinHeight("180px");
-		errorNote.setValue(record.getNotes() != null ? record.getNotes() : "");
-
-		Button cancelButton = new Button("Cancel", e -> dialog.close());
-
-		Button submitButton = new Button("Submit Error");
-		submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-
-		submitButton.addClickListener(event -> {
-			try {
-				caseRecordService.markCaseAsError(record, errorNote.getValue());
-				refreshProcessingGrid();
-				dialog.close();
-				showSuccess("Study moved to Errors.");
-			} catch (InvalidWorkflowTransitionException ex) {
-				showError(ex.getMessage());
-			}
-		});
-
-		VerticalLayout content = new VerticalLayout(errorNote);
-		content.setPadding(false);
-		content.setSpacing(true);
-
-		dialog.add(content);
-		dialog.getFooter().add(cancelButton, submitButton);
-		dialog.open();
 	}
 
 	private void applyThirdPartyStatus(
