@@ -2,6 +2,7 @@ package com.bms.processing.service;
 
 import com.bms.processing.entity.EmailTemplateEntity;
 import com.bms.processing.repository.NotificationRecipientRepository;
+import com.bms.processing.entity.CaseRecordEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,16 +13,19 @@ public class NotificationService {
     private final EmailService emailService;
     private final NotificationRecipientRepository notificationRecipientRepository;
     private final EmailTemplateService emailTemplateService;
+    private final CaseIssueService caseIssueService;
 
     // pulls email service, recipients, and saved templates
     public NotificationService(
             EmailService emailService,
             NotificationRecipientRepository notificationRecipientRepository,
-            EmailTemplateService emailTemplateService
+            EmailTemplateService emailTemplateService,
+            CaseIssueService caseIssueService
     ) {
         this.emailService = emailService;
         this.notificationRecipientRepository = notificationRecipientRepository;
         this.emailTemplateService = emailTemplateService;
+        this.caseIssueService = caseIssueService;
     }
 
     public void sendTestNotification(String to) {
@@ -67,6 +71,38 @@ public class NotificationService {
         );
     }
 
+    public void notifyCaseFinalized(CaseRecordEntity record) {
+        String issueSummary = caseIssueService.buildActiveIssueSummary(record);
+
+        sendTemplateToGroup(
+                "CASE_FINALIZED",
+                "Prism Dashboard: Patient Processed",
+                "Patient processed and ready for review: {{patientName}}\n\n{{issueSummary}}",
+                record.getPatientFirstName() + " " + record.getPatientLastName(),
+                record.getPatientId(),
+                record.getSiteName(),
+                "Processed",
+                "",
+                issueSummary
+        );
+    }
+
+    public void notifyCaseCompleted(CaseRecordEntity record) {
+        String issueSummary = caseIssueService.buildActiveIssueSummary(record);
+
+        sendTemplateToGroup(
+                "CASE_COMPLETED",
+                "Prism Dashboard: Case Completed",
+                "Case completed for {{patientName}}\n\n{{issueSummary}}",
+                record.getPatientFirstName() + " " + record.getPatientLastName(),
+                record.getPatientId(),
+                record.getSiteName(),
+                "Completed",
+                "",
+                issueSummary
+        );
+    }
+
     // template-backed send path
     private void sendTemplateToGroup(
             String groupName,
@@ -76,7 +112,8 @@ public class NotificationService {
             String patientId,
             String sitename,
             String status,
-            String errorMessage
+            String errorMessage,
+            String issueSummary
     ) {
         EmailTemplateEntity template =
                 emailTemplateService.findByKey(groupName)
@@ -97,7 +134,8 @@ public class NotificationService {
                 patientId,
                 status,
                 errorMessage,
-                sitename
+                sitename,
+                issueSummary
         );
 
         body = replaceTemplateVariables(
@@ -106,7 +144,8 @@ public class NotificationService {
                 patientId,
                 status,
                 sitename,
-                errorMessage
+                errorMessage,
+                issueSummary
         );
 
         sendToGroup(groupName, subject, body);
@@ -119,7 +158,8 @@ public class NotificationService {
             String patientId,
             String status,
             String errorMessage,
-            String siteName
+            String siteName,
+            String issueSummary
     ) {
         if (value == null) {
             return "";
@@ -130,7 +170,8 @@ public class NotificationService {
                 .replace("{{patientId}}", safe(patientId))
                 .replace("{{status}}", safe(status))
                 .replace("{{errorMessage}}", safe(errorMessage))
-                .replace("{{siteName}}", safe(siteName));
+                .replace("{{siteName}}", safe(siteName))
+                .replace("{{issueSummary}}", safe(issueSummary));
     }
 
     // keeps emails from saying null
@@ -147,6 +188,7 @@ public class NotificationService {
                 "",
                 "",
                 "Completed",
+                "",
                 ""
         );
     }
@@ -160,6 +202,7 @@ public class NotificationService {
                 "",
                 "",
                 "Upcoming",
+                "",
                 ""
         );
     }
@@ -173,6 +216,7 @@ public class NotificationService {
                 "",
                 "",
                 "Processed",
+                "",
                 ""
         );
     }
@@ -186,7 +230,8 @@ public class NotificationService {
                 "",
                 "",
                 "Error",
-                errorMessage
+                errorMessage,
+                ""
         );
     }
 }

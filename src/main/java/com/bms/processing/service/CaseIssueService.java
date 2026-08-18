@@ -49,6 +49,23 @@ public class CaseIssueService {
         );
     }
 
+    public String buildActiveIssueSummary(CaseRecordEntity caseRecord) {
+        List<CaseIssueEntity> activeIssues = findActiveByCaseRecord(caseRecord);
+
+        if (activeIssues.isEmpty()) {
+            return "";
+        }
+
+        return activeIssues.stream()
+                .map(issue ->
+                        "[" + issue.getIssueSource() + "] "
+                                + issue.getTitle()
+                                + ": "
+                                + issue.getDescription()
+                )
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
     public CaseIssueEntity createIssue(
             CaseRecordEntity caseRecord,
             CaseIssueSource issueSource,
