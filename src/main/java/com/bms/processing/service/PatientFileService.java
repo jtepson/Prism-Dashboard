@@ -4,12 +4,14 @@ import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.repository.PatientFileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 import java.io.InputStream;
 import java.nio.file.StandardCopyOption;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,13 +20,29 @@ public class PatientFileService {
 
     private final PatientFileRepository repository;
     private final CaseRecordService caseRecordService;
+    private final List<String> allowedExtensions;
+    private final long maxSizeBytes;
+    private final CurrentUserService currentUserService;
 
+    //updated constructer for new centralization for uploading mechanics - 08182026
     public PatientFileService(
             PatientFileRepository repository,
-            CaseRecordService caseRecordService
+            CaseRecordService caseRecordService,
+            CurrentUserService currentUserService,
+            @Value("${prism.files.allowed-extensions}") String allowedExtensions,
+            @Value("${prism.files.max-size-mb}") long maxSizeMb
     ) {
         this.repository = repository;
         this.caseRecordService = caseRecordService;
+        this.currentUserService = currentUserService;
+
+        this.allowedExtensions = Arrays.stream(allowedExtensions.split(","))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .filter(value -> !value.isBlank())
+                .toList();
+
+        this.maxSizeBytes = maxSizeMb * 1024L * 1024L;
     }
 
     public List<PatientFileEntity> findFilesForCase(Long caseRecordId) {
@@ -38,10 +56,7 @@ public class PatientFileService {
             String contentType,
             long fileSize,
             InputStream inputStream,
-            String baseStoragePath,
-            String uploadedBy,
-            List<String> allowedExtensions,
-            long maxSizeBytes
+            String baseStoragePath
     ) throws IOException {
 
         if (caseRecordId == null) {
@@ -111,7 +126,7 @@ public class PatientFileService {
         );
         entity.setFileSize(fileSize);
         entity.setStoragePath(targetPath.toString());
-        entity.setUploadedBy(uploadedBy);
+        entity.setUploadedBy(currentUserService.getUsername());
 
         return repository.save(entity);
     }
@@ -188,6 +203,14 @@ public class PatientFileService {
         PatientFileEntity savedFile = repository.save(entity);
         autoUpdateThirdPartyStatus(savedFile);
         return savedFile;
+    }
+
+    public List<String> getAllowedExtensions() {
+        return allowedExtensions;
+    }
+
+    public long getMaxSizeBytes() {
+        return maxSizeBytes;
     }
 
     private void autoUpdateThirdPartyStatus(PatientFileEntity file) {

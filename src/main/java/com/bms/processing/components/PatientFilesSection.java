@@ -4,6 +4,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.service.PatientFileService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
@@ -12,10 +13,13 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.stream.Collectors;
 
 public class PatientFilesSection extends VerticalLayout {
 
@@ -41,7 +45,7 @@ public class PatientFilesSection extends VerticalLayout {
 
                 buildGrid();
 
-                add(buildUpload(), grid);
+                add(buildUploadInstructions(), buildUpload(), grid);
                 refresh();
         }
 
@@ -97,17 +101,48 @@ public class PatientFilesSection extends VerticalLayout {
                 grid.setItems(patientFileService.findFilesForCase(record.getId()));
         }
 
+        // new method for expanded uploading logic - updated 08182026
         private Upload buildUpload() {
                 MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
                 Upload upload = new Upload(buffer);
 
-                upload.setAcceptedFileTypes("application/pdf", ".pdf");
-                upload.setMaxFiles(1);
+                String[] acceptedTypes = patientFileService.getAllowedExtensions().stream()
+                        .map(extension -> "." + extension)
+                        .toArray(String[]::new);
+
+                upload.setAcceptedFileTypes(acceptedTypes);
+                upload.setMaxFiles(10);
                 upload.setDropAllowed(true);
+
+                long maxSizeBytes = patientFileService.getMaxSizeBytes();
+                int maxSizeMb = (int) (maxSizeBytes / (1024L * 1024L));
+
+                upload.setMaxFileSize((int) Math.min(maxSizeBytes, Integer.MAX_VALUE));
+
+                upload.setDropLabel(new Span("Drop patient files here"));
+
+                String allowedTypes = patientFileService.getAllowedExtensions().stream()
+                        .map(String::toUpperCase)
+                        .collect(Collectors.joining(", "));
+
+                Div instructions = new Div();
+
+                Paragraph allowed = new Paragraph(
+                        "Allowed file types: " + allowedTypes
+                );
+
+                Paragraph maxSize = new Paragraph(
+                        "Maximum file size: " + maxSizeMb + " MB"
+                );
+
+                instructions.add(allowed, maxSize);
+
+                allowed.getStyle().set("margin", "0");
+                maxSize.getStyle().set("margin", "0");
 
                 upload.addSucceededListener(event -> {
                         try {
-                        patientFileService.saveManualPdf(
+                        patientFileService.saveManualFile(
                                 record.getId(),
                                 event.getFileName(),
                                 event.getMIMEType(),
@@ -116,13 +151,30 @@ public class PatientFilesSection extends VerticalLayout {
                                 baseStoragePath
                         );
 
-                        showSuccess("PDF uploaded.");
+                        showSuccess(event.getFileName() + " uploaded.");
                         refresh();
 
                         } catch (Exception ex) {
                         showError(ex.getMessage());
                         }
                 });
+
+                upload.addFileRejectedListener(event ->
+                        showError(
+                                event.getErrorMessage() != null
+                                        ? event.getErrorMessage()
+                                        : "File upload was rejected."
+                        )
+                );
+
+                VerticalLayout wrapper = new VerticalLayout(
+                        upload,
+                        instructions
+                );
+
+                wrapper.setPadding(false);
+                wrapper.setSpacing(false);
+                wrapper.setWidthFull();
 
                 return upload;
         }
@@ -135,5 +187,34 @@ public class PatientFilesSection extends VerticalLayout {
         private void showError(String message) {
                 Notification notification = Notification.show(message, 4000, Notification.Position.MIDDLE);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+
+        //helper for new upload logic - updated 081822026
+        private Component buildUploadInstructions() {
+                String allowedTypes = patientFileService.getAllowedExtensions().stream()
+                        .map(String::toUpperCase)
+                        .collect(Collectors.joining(", "));
+
+                long maxSizeMb =
+                        patientFileService.getMaxSizeBytes() / (1024L * 1024L);
+
+                VerticalLayout instructions = new VerticalLayout();
+                instructions.setPadding(false);
+                instructions.setSpacing(false);
+
+                Span allowed = new Span(
+                        "Allowed file types: " + allowedTypes
+                );
+
+                Span maxSize = new Span(
+                        "Maximum file size: " + maxSizeMb + " MB"
+                );
+
+                allowed.getStyle().set("color", "var(--lumo-secondary-text-color)");
+                maxSize.getStyle().set("color", "var(--lumo-secondary-text-color)");
+
+                instructions.add(allowed, maxSize);
+
+                return instructions;
         }
 }
