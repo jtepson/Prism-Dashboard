@@ -7,6 +7,7 @@ import com.bms.processing.service.CaseRecordService;
 import com.bms.processing.service.InvalidWorkflowTransitionException;
 import com.bms.processing.components.CaseRecordDialog;
 import com.bms.processing.components.SiteDialog;
+import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.service.SiteService;
 import com.bms.processing.service.AuditEventService;
@@ -16,12 +17,9 @@ import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.entity.CaseIssueEntity;
-import com.bms.processing.model.CaseIssueType;
-import com.bms.processing.model.CaseIssueSource;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.service.NotificationService;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -230,7 +228,12 @@ public class UpcomingView extends VerticalLayout {
                 );
 
                 addIssueButton.addClickListener(event ->
-                        openAddIssueDialog(record)
+                        new CaseIssueDialog(
+                                record,
+                                caseIssueService,
+                                currentUserService,
+                                this::refreshUpcomingGrid
+                        ).open()
                 );
 
                 actions.add(markReceivedButton, addIssueButton);
@@ -569,87 +572,4 @@ public class UpcomingView extends VerticalLayout {
         return value != null && value.toLowerCase().contains(filter);
     }
 
-    private void openAddIssueDialog(CaseRecordEntity record) {
-        Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Add Upcoming Issue");
-        dialog.setWidth("600px");
-
-        ComboBox<CaseIssueType> issueType = new ComboBox<>("Issue Type");
-        issueType.setItems(
-                CaseIssueType.MISSING_DATA,
-                CaseIssueType.INADEQUATE_SCAN_DATA,
-                CaseIssueType.MISSING_STUDY_INFORMATION,
-                CaseIssueType.OTHER
-        );
-        issueType.setWidthFull();
-        issueType.setItemLabelGenerator(value ->
-                value.name().replace("_", " ")
-        );
-
-        TextArea description = new TextArea("Issue Note");
-        description.setWidthFull();
-        description.setMinHeight("160px");
-
-        Button cancelButton = new Button("Cancel", event -> dialog.close());
-
-        Button submitButton = new Button("Add Issue");
-        submitButton.addThemeVariants(
-                ButtonVariant.LUMO_PRIMARY,
-                ButtonVariant.LUMO_ERROR
-        );
-
-        submitButton.addClickListener(event -> {
-                if (issueType.getValue() == null) {
-                showError("Issue type is required.");
-                return;
-                }
-
-                if (description.getValue() == null
-                        || description.getValue().trim().isEmpty()) {
-                showError("Issue note is required.");
-                return;
-                }
-
-                caseIssueService.createIssue(
-                        record,
-                        CaseIssueSource.ACQUISITION,
-                        issueType.getValue(),
-                        true,
-                        issueType.getValue().name().replace("_", " "),
-                        description.getValue().trim(),
-                        currentUserService.getUsername()
-                );
-
-                //audit tracking 08172026
-                auditEventService.logTimelineEvent(
-                        "CASE_ISSUE_CREATED",
-                        record,
-                        issueType.getValue().name().replace("_", " "),
-                        null,
-                        description.getValue().trim(),
-                        currentUserService.getUsername()
-                );
-
-                notificationService.notifyCaseError(
-                        record.getPatientLastName()
-                                + ", "
-                                + record.getPatientFirstName(),
-                        description.getValue().trim()
-                );
-
-                refreshUpcomingGrid();
-                dialog.close();
-        });
-
-        VerticalLayout content = new VerticalLayout(
-                issueType,
-                description
-        );
-        content.setPadding(false);
-        content.setSpacing(true);
-
-        dialog.add(content);
-        dialog.getFooter().add(cancelButton, submitButton);
-        dialog.open();
-    }
 }
