@@ -12,7 +12,8 @@ import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.bms.processing.service.CurrentUserService;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -41,6 +42,7 @@ public class CompletedView extends VerticalLayout {
     private final DicomConfigService dicomConfigService;
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
+    private final CurrentUserService currentUserService;
 
     public CompletedView(
             CaseRecordService caseRecordService,
@@ -49,7 +51,8 @@ public class CompletedView extends VerticalLayout {
             @Value("${prism.files.storage-path}") String baseStoragePath,
             DicomConfigService dicomConfigService,
             DicomService dicomService,
-            DicomRetrieveService dicomRetrieveService
+            DicomRetrieveService dicomRetrieveService,
+            CurrentUserService currentUserService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -58,6 +61,7 @@ public class CompletedView extends VerticalLayout {
             this.dicomConfigService = dicomConfigService;
             this.dicomService = dicomService;
             this.dicomRetrieveService = dicomRetrieveService;
+            this.currentUserService = currentUserService;
 
         setSizeFull();
         setPadding(true);
@@ -137,11 +141,38 @@ public class CompletedView extends VerticalLayout {
                 .setHeader("Status")
                 .setAutoWidth(true);
 
-        grid.addColumn(record ->
-                record.getInvoiceSentDate() != null
-                        ? record.getInvoiceSentDate().toString()
-                        : ""
-        )
+        // new invoice sent component column, fixing for issue 17 on github - updated 08182026
+        grid.addComponentColumn(record -> {
+            DatePicker invoiceSentDate = new DatePicker();
+            invoiceSentDate.setValue(record.getInvoiceSentDate());
+            invoiceSentDate.setWidth("150px");
+
+            boolean canEditInvoice =
+                    currentUserService.isAdmin()
+                            || currentUserService.isBms();
+
+            invoiceSentDate.setReadOnly(!canEditInvoice);
+
+            if (canEditInvoice) {
+                invoiceSentDate.addValueChangeListener(event -> {
+                    try {
+                        caseRecordService.updateInvoiceSentDate(
+                                record,
+                                event.getValue(),
+                                currentUserService.getUsername()
+                        );
+
+                        refreshCompletedGrid();
+
+                    } catch (InvalidWorkflowTransitionException ex) {
+                        Span message = new Span(ex.getMessage());
+                        add(message);
+                    }
+                });
+            }
+
+            return invoiceSentDate;
+        })
         .setHeader("Invoice Sent Date")
         .setAutoWidth(true);
 
