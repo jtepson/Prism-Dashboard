@@ -90,7 +90,8 @@ public class CompletedView extends VerticalLayout {
                         baseStoragePath,
                         dicomConfigService,
                         dicomService,
-                        dicomRetrieveService
+                        dicomRetrieveService,
+                        currentUserService
                 ).open()
         );
 

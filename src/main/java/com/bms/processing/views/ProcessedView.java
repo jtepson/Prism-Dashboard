@@ -90,7 +90,8 @@ public class ProcessedView extends VerticalLayout {
                         baseStoragePath,
                         dicomConfigService,
                         dicomService,
-                        dicomRetrieveService
+                        dicomRetrieveService,
+                        currentUserService
                 ).open()
         );
 

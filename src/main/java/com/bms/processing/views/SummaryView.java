@@ -15,6 +15,7 @@
         import com.bms.processing.service.DicomConfigService;
         import com.bms.processing.service.DicomService;
         import com.bms.processing.service.DicomRetrieveService;
+        import com.bms.processing.service.CurrentUserService;
         import com.vaadin.flow.component.Component;
         import com.vaadin.flow.component.UI;
         import com.vaadin.flow.component.button.Button;
@@ -120,6 +121,8 @@
         //Audit logging
         private final AuditEventService auditEventService;
 
+        private final CurrentUserService currentUserService; 
+
         public SummaryView(
                         CaseRecordService caseRecordService,
                         SiteService siteService,
@@ -128,7 +131,8 @@
                         @Value("${prism.files.storage-path}") String baseStoragePath,
                         DicomConfigService dicomConfigService,
                         DicomService dicomService,
-                        DicomRetrieveService dicomRetrieveService
+                        DicomRetrieveService dicomRetrieveService,
+                        CurrentUserService currentUserService
         ) {
                 this.caseRecordService = caseRecordService;
                 this.siteService = siteService;
@@ -138,6 +142,7 @@
                 this.dicomConfigService = dicomConfigService;
                 this.dicomService = dicomService;
                 this.dicomRetrieveService = dicomRetrieveService;
+                this.currentUserService = currentUserService;
 
                 setSizeFull();
                 setPadding(false);
@@ -810,7 +815,8 @@
                                 baseStoragePath,
                                 dicomConfigService,
                                 dicomService,
-                                dicomRetrieveService
+                                dicomRetrieveService,
+                                currentUserService
                         ).open()
                 );
                 return grid;
