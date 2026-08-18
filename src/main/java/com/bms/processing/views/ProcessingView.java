@@ -209,18 +209,26 @@ public class ProcessingView extends VerticalLayout {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
 						promptRequiredErrorNote(
-								"DuraMap Error Note Required",
-								record.getDuramapErrorNote(),
+								"IMEKA Error Note Required",
+								record.getImekaErrorNote(),
 								noteValue -> {
 									try {
 										applyThirdPartyStatus(
 												record,
-												"DuraMap",
+												"IMEKA",
 												ThirdPartyStatus.ERROR,
 												noteValue,
-												record.getDuramapSentDate()
+												record.getImekaSentDate()
 										);
+
+										createOrUpdateVendorIssue(
+												record,
+												CaseIssueSource.IMEKA,
+												noteValue
+										);
+
 										refreshProcessingGrid();
+
 									} catch (InvalidWorkflowTransitionException ex) {
 										showError(ex.getMessage());
 									}
