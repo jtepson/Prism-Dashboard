@@ -31,6 +31,9 @@ public class PatientFileEntity {
     @Column(name = "file_date")
     private LocalDate fileDate;
 
+    @Column(name = "uploaded_by")
+    private String uploadedBy;
+
     @Column(name = "content_type")
     private String contentType;
 
@@ -42,6 +45,7 @@ public class PatientFileEntity {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
 
     @PrePersist
     public void onCreate() {
@@ -98,6 +102,14 @@ public class PatientFileEntity {
 
     public LocalDate getFileDate() {
         return fileDate;
+    }
+
+    public String getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(String uploadedBy) {
+        this.uploadedBy = uploadedBy;
     }
 
     public void setFileDate(LocalDate fileDate) {
