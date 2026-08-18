@@ -510,7 +510,47 @@ public class ProcessingView extends VerticalLayout {
 		return stack;
 	}).setHeader("Third Party Sent Date").setAutoWidth(true);
 
+	//added new column for issues - updated 08182026
+	grid.addComponentColumn(record -> {
+		var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+		if (activeIssues.isEmpty()) {
+			return new Span("");
+		}
+
+		long blockingCount = activeIssues.stream()
+				.filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+				.count();
+
+		Span badge = new Span(
+				activeIssues.size() == 1
+						? "Issue"
+						: "Issues (" + activeIssues.size() + ")"
+		);
+
+		badge.getStyle()
+				.set("display", "inline-block")
+				.set("padding", "0.2rem 0.55rem")
+				.set("border-radius", "999px")
+				.set("font-size", "0.75rem")
+				.set("font-weight", "700");
+
+		if (blockingCount > 0) {
+			badge.getStyle()
+					.set("background", "var(--lumo-error-color-10pct)")
+					.set("color", "var(--lumo-error-text-color)");
+		} else {
+			badge.getStyle()
+					.set("background", "var(--lumo-warning-color-10pct)")
+					.set("color", "var(--lumo-warning-text-color)");
+		}
+
+		return badge;
+	})
+	.setHeader("Issues")
+	.setAutoWidth(true);
 	
+	//im not fixing this indentation
 		grid.addComponentColumn(record -> {
 				Span noteFlag = new Span("!");
 				noteFlag.getStyle()
@@ -602,7 +642,7 @@ public class ProcessingView extends VerticalLayout {
 		}).setHeader("").setAutoWidth(true);
 
 		}
-		
+
     private void openNotesDialog(CaseRecordEntity record) {
     	Dialog dialog = new Dialog();
     	dialog.setHeaderTitle("Case Notes");
