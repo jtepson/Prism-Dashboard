@@ -31,44 +31,87 @@ public class PatientFileService {
         return repository.findByCaseRecordIdOrderByFileDateDesc(caseRecordId);
     }
 
-    public PatientFileEntity saveManualPdf(
+    // removing previous pdf-restricted uploading component for this new one - updated 08182026
+    public PatientFileEntity saveManualFile(
             Long caseRecordId,
-            MultipartFile file,
-            String baseStoragePath
+            String originalFilename,
+            String contentType,
+            long fileSize,
+            InputStream inputStream,
+            String baseStoragePath,
+            String uploadedBy,
+            List<String> allowedExtensions,
+            long maxSizeBytes
     ) throws IOException {
 
         if (caseRecordId == null) {
             throw new IllegalArgumentException("Case record ID is required.");
         }
 
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("A PDF file is required.");
+        if (inputStream == null) {
+            throw new IllegalArgumentException("A file is required.");
         }
 
-        String originalFilename = file.getOriginalFilename();
-
-        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
-            throw new IllegalArgumentException("Only PDF files are allowed.");
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new IllegalArgumentException("Original filename is required.");
         }
 
-        Path caseDirectory = Path.of(baseStoragePath, "patient-files", caseRecordId.toString());
+        if (fileSize <= 0) {
+            throw new IllegalArgumentException("File is empty.");
+        }
+
+        if (fileSize > maxSizeBytes) {
+            throw new IllegalArgumentException(
+                    "File exceeds the maximum allowed size."
+            );
+        }
+
+        String extension = getExtension(originalFilename);
+
+        if (extension == null || !allowedExtensions.contains(extension.toLowerCase())) {
+            throw new IllegalArgumentException(
+                    "Unsupported file type: " + originalFilename
+            );
+        }
+
+        Path caseDirectory = Path.of(
+                baseStoragePath,
+                "patient-files",
+                caseRecordId.toString()
+        );
+
         Files.createDirectories(caseDirectory);
 
-        String storedFileName = UUID.randomUUID() + ".pdf";
+        String storedFileName =
+                UUID.randomUUID() + "." + extension.toLowerCase();
+
         Path targetPath = caseDirectory.resolve(storedFileName);
 
-        file.transferTo(targetPath);
+        Files.copy(
+                inputStream,
+                targetPath,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+
+        if (!Files.exists(targetPath)) {
+            throw new IOException("File storage failed.");
+        }
 
         PatientFileEntity entity = new PatientFileEntity();
         entity.setCaseRecordId(caseRecordId);
         entity.setFileName(storedFileName);
         entity.setOriginalFileName(originalFilename);
-        entity.setFileType("Report");
+        entity.setFileType(determineFileType(extension));
         entity.setSource("Manual Upload");
         entity.setFileDate(LocalDate.now());
-        entity.setContentType(file.getContentType());
-        entity.setFileSize(file.getSize());
+        entity.setContentType(
+                contentType == null || contentType.isBlank()
+                        ? "application/octet-stream"
+                        : contentType
+        );
+        entity.setFileSize(fileSize);
         entity.setStoragePath(targetPath.toString());
+        entity.setUploadedBy(uploadedBy);
 
         return repository.save(entity);
     }
@@ -158,5 +201,26 @@ public class PatientFileService {
             // IMEKA report landed in Patient Files so status should follow it and get updated - updated 6252026
             caseRecordService.markImekaUploadedFromReport(file.getCaseRecordId());
         }
+    }
+
+    private String getExtension(String filename) {
+        int dotIndex = filename.lastIndexOf('.');
+
+        if (dotIndex < 0 || dotIndex == filename.length() - 1) {
+            return null;
+        }
+
+        return filename.substring(dotIndex + 1);
+    }
+
+    private String determineFileType(String extension) {
+        return switch (extension.toLowerCase()) {
+            case "pdf" -> "PDF";
+            case "docx" -> "Document";
+            case "xlsx" -> "Spreadsheet";
+            case "csv" -> "CSV";
+            case "jpg", "jpeg", "png" -> "Image";
+            default -> "Other";
+        };
     }
 }
