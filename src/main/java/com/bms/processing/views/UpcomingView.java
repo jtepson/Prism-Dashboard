@@ -577,7 +577,7 @@ public class UpcomingView extends VerticalLayout {
         issueType.setItems(
                 CaseIssueType.MISSING_DATA,
                 CaseIssueType.INADEQUATE_SCAN_DATA,
-                CaseIssueType.ACQUISITION,
+                CaseIssueType.MISSING_STUDY_INFORMATION,
                 CaseIssueType.OTHER
         );
         issueType.setWidthFull();

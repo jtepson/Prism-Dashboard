@@ -2,6 +2,7 @@ package com.bms.processing.entity;
 
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.model.CaseIssueSource;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,10 @@ public class CaseIssueEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "case_record_id", nullable = false)
     private CaseRecordEntity caseRecord;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "issue_source", nullable = false)
+    private CaseIssueSource issueSource;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "issue_type", nullable = false)
@@ -64,6 +69,14 @@ public class CaseIssueEntity {
 
     public void setCaseRecord(CaseRecordEntity caseRecord) {
         this.caseRecord = caseRecord;
+    }
+
+    public CaseIssueSource getIssueSource() {
+        return issueSource;
+    }
+
+    public void setIssueSource(CaseIssueSource issueSource) {
+        this.issueSource = issueSource;
     }
 
     public CaseIssueType getIssueType() {

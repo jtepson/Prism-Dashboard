@@ -1,13 +1,14 @@
 package com.bms.processing.model;
 
-//Second part here, redesigning error allocation 70702026
 public enum CaseIssueType {
     MISSING_DATA,
     INADEQUATE_SCAN_DATA,
-    REPORT_CORRECTION,
-    PRISM_PROCESSING,
-    ACQUISITION,
+    CORRUPT_DICOM,
+    MISSING_STUDY_INFORMATION,
+    VENDOR_FAILURE,
     QA_ARTIFACT,
-    ADMIN,
+    IMAGE_QUALITY,
+    REPORT_CORRECTION,
+    ADMINISTRATIVE,
     OTHER
 }
