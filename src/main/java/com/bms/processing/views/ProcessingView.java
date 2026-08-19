@@ -21,7 +21,6 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.model.CaseIssueSource;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.model.CaseIssueType;
-import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -158,106 +157,107 @@ public class ProcessingView extends VerticalLayout {
                 .setHeader("Site Name")
                 .setAutoWidth(true);
 
+	//updated 08192026 for new third party centralized column
 	grid.addComponentColumn(record -> {
 		VerticalLayout stack = new VerticalLayout();
 		stack.setPadding(false);
-		stack.setSpacing(false);
+		stack.setSpacing(true);
 		stack.setMargin(false);
-		stack.setAlignItems(FlexComponent.Alignment.START);
-		stack.getStyle()
-				.set("font-size", "0.8rem")
-				.set("line-height", "1.1")
-				.set("justify-content", "center")
-				.set("height", "100%");
 
-		//changing this around to allow for duramap to be the default, and if patient is not a minor, then hey they have IMEKA as an option. 
-			if (record.isMinorAtScan()) {
-				stack.add(thirdPartyLabel("DuraMap"));
-				stack.add(thirdPartyLabel("Neuroreader"));
-			} else {
-				stack.add(thirdPartyLabel("IMEKA"));
-				
-				if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
-					stack.add(thirdPartyLabel("DuraMap"));
-				}
-				
-				stack.add(thirdPartyLabel("Neuroreader"));
+		if (!record.isMinorAtScan()) {
+			stack.add(
+					buildThirdPartyRow(
+							"IMEKA",
+							record.getImekaStatus(),
+							record.getImekaSentDate(),
+							() -> promptSentDateChoice(
+									"IMEKA",
+									record,
+									ThirdPartyStatus.SENT
+							),
+							() -> {
+								try {
+									applyThirdPartyStatus(
+											record,
+											"IMEKA",
+											ThirdPartyStatus.UPLOADED,
+											null,
+											record.getImekaSentDate()
+									);
+
+									resolveVendorIssueAfterStatusChange(
+											record,
+											"IMEKA",
+											ThirdPartyStatus.UPLOADED
+									);
+
+									refreshProcessingGrid();
+
+								} catch (InvalidWorkflowTransitionException ex) {
+									showError(ex.getMessage());
+								}
+							},
+							"Uploaded",
+							() -> promptVendorIssue(
+									record,
+									"IMEKA",
+									CaseIssueSource.IMEKA,
+									record.getImekaErrorNote(),
+									noteValue -> {
+										try {
+											applyThirdPartyStatus(
+													record,
+													"IMEKA",
+													ThirdPartyStatus.ERROR,
+													noteValue,
+													record.getImekaSentDate()
+											);
+
+											refreshProcessingGrid();
+
+										} catch (InvalidWorkflowTransitionException ex) {
+											showError(ex.getMessage());
+										}
+									}
+							)
+					)
+			);
 		}
 
-		return stack;
-
-	}).setHeader("Third Party Processing").setAutoWidth(true);
-
-
-	//rewriting this so that pt with an age under 18 has a default of Duramap, if adult then they would get imeka, then errored results in dura
-	grid.addComponentColumn(record -> {
-		VerticalLayout stack = new VerticalLayout();
-		stack.setPadding(false);
-		stack.setSpacing(false);
-		stack.setMargin(false);
-	
-		if (record.isMinorAtScan()) {
-			ComboBox<ThirdPartyStatus> dura = new ComboBox<>();
-			dura.setItems(
-					ThirdPartyStatus.NOT_SENT,
-					ThirdPartyStatus.SENT,
-					ThirdPartyStatus.ERROR
-			);
-			dura.setValue(record.getDuramapStatus());
-			dura.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			dura.setWidth("110px");
-	
-			dura.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptVendorIssue(
+		stack.add(
+				buildThirdPartyRow(
+						"Neuroreader",
+						record.getNeuroreaderStatus(),
+						record.getNeuroreaderSentDate(),
+						() -> promptSentDateChoice(
+								"Neuroreader",
 								record,
-								"DuraMap",
-								CaseIssueSource.DURAMAP,
-								record.getDuramapErrorNote(),
-								noteValue -> {
-									try {
-										applyThirdPartyStatus(
-												record,
-												"DuraMap",
-												ThirdPartyStatus.ERROR,
-												noteValue,
-												record.getDuramapSentDate()
-										);
+								ThirdPartyStatus.SENT
+						),
+						() -> {
+							try {
+								applyThirdPartyStatus(
+										record,
+										"Neuroreader",
+										ThirdPartyStatus.COMPLETED,
+										null,
+										record.getNeuroreaderSentDate()
+								);
 
-										refreshProcessingGrid();
+								resolveVendorIssueAfterStatusChange(
+										record,
+										"Neuroreader",
+										ThirdPartyStatus.COMPLETED
+								);
 
-									} catch (InvalidWorkflowTransitionException ex) {
-										showError(ex.getMessage());
-									}
-								}
-						);
-					} else {
-						handleThirdPartyStatusSelection(
-							record,
-							"DuraMap",
-							e.getValue()
-						);
-					}
-				}
-			});
-	
-			stack.add(dura);
+								refreshProcessingGrid();
 
-			ComboBox<ThirdPartyStatus> nr = new ComboBox<>();
-			nr.setItems(
-					ThirdPartyStatus.NOT_SENT,
-					ThirdPartyStatus.SENT,
-					ThirdPartyStatus.ERROR
-			);
-			nr.setValue(record.getNeuroreaderStatus());
-			nr.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			nr.setWidth("110px");
-
-			nr.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptVendorIssue(
+							} catch (InvalidWorkflowTransitionException ex) {
+								showError(ex.getMessage());
+							}
+						},
+						"Completed",
+						() -> promptVendorIssue(
 								record,
 								"Neuroreader",
 								CaseIssueSource.NEUROREADER,
@@ -278,83 +278,28 @@ public class ProcessingView extends VerticalLayout {
 										showError(ex.getMessage());
 									}
 								}
-						);
-					} else {
-						handleThirdPartyStatusSelection(
-								record,
-								"Neuroreader",
-								e.getValue()
-						);
-					}
-				}
-			});
+						)
+				)
+		);
 
-			stack.add(nr);
-	
-		} else {
-			ComboBox<ThirdPartyStatus> imeka = new ComboBox<>();
-			imeka.setItems(
-					ThirdPartyStatus.NOT_SENT,
-					ThirdPartyStatus.SENT,
-					ThirdPartyStatus.UPLOADED,
-					ThirdPartyStatus.ERROR
-			);
-			imeka.setValue(record.getImekaStatus());
-			imeka.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			imeka.setWidth("110px");
-	
-			imeka.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptVendorIssue(
-								record,
-								"IMEKA",
-								CaseIssueSource.IMEKA,
-								record.getImekaErrorNote(),
-								noteValue -> {
-									try {
-										applyThirdPartyStatus(
-												record,
-												"IMEKA",
-												ThirdPartyStatus.ERROR,
-												noteValue,
-												record.getImekaSentDate()
-										);
+		if (record.isMinorAtScan()
+				|| record.getImekaStatus() == ThirdPartyStatus.ERROR) {
 
-										refreshProcessingGrid();
-
-									} catch (InvalidWorkflowTransitionException ex) {
-										showError(ex.getMessage());
-									}
-								}
-						);
-					} else {
-						handleThirdPartyStatusSelection(
-								record,
-								"IMEKA",
-								e.getValue()
-						);
-					}
-				}
-			});
-	
-			stack.add(imeka);
-	
-			if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
-				ComboBox<ThirdPartyStatus> dura = new ComboBox<>();
-				dura.setItems(
-						ThirdPartyStatus.NOT_SENT,
-						ThirdPartyStatus.SENT,
-						ThirdPartyStatus.ERROR
-				);
-				dura.setValue(record.getDuramapStatus());
-				dura.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-				dura.setWidth("110px");
-	
-				dura.addValueChangeListener(e -> {
-					if (e.getValue() != null) {
-						if (e.getValue() == ThirdPartyStatus.ERROR) {
-							promptVendorIssue(
+			stack.add(
+					buildThirdPartyRow(
+							"DuraMap",
+							record.getDuramapStatus(),
+							record.getDuramapSentDate(),
+							() -> promptSentDateChoice(
+									"DuraMap",
+									record,
+									ThirdPartyStatus.SENT
+							),
+							() -> {
+								// No follow-up completion action for DuraMap.
+							},
+							"",
+							() -> promptVendorIssue(
 									record,
 									"DuraMap",
 									CaseIssueSource.DURAMAP,
@@ -375,164 +320,15 @@ public class ProcessingView extends VerticalLayout {
 											showError(ex.getMessage());
 										}
 									}
-							);
-						} else {
-							handleThirdPartyStatusSelection(
-									record,
-									"DuraMap",
-									e.getValue()
-							);
-						}
-					}
-				});
-				stack.add(dura);
-			}
-	
-			ComboBox<ThirdPartyStatus> nr = new ComboBox<>();
-			nr.setItems(
-					ThirdPartyStatus.NOT_SENT,
-					ThirdPartyStatus.SENT,
-					ThirdPartyStatus.ERROR
+							)
+					)
 			);
-			nr.setValue(record.getNeuroreaderStatus());
-			nr.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-			nr.setWidth("110px");
-	
-			nr.addValueChangeListener(e -> {
-				if (e.getValue() != null) {
-					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptVendorIssue(
-								record,
-								"Neuroreader",
-								CaseIssueSource.NEUROREADER,
-								record.getNeuroreaderErrorNote(),
-								noteValue -> {
-									try {
-										applyThirdPartyStatus(
-												record,
-												"Neuroreader",
-												ThirdPartyStatus.ERROR,
-												noteValue,
-												record.getNeuroreaderSentDate()
-										);
-
-										refreshProcessingGrid();
-
-									} catch (InvalidWorkflowTransitionException ex) {
-										showError(ex.getMessage());
-									}
-								}
-						);
-					} else {
-						handleThirdPartyStatusSelection(
-							record,
-							"Neuroreader",
-							e.getValue()
-						);
-					}
-				}
-			});
-	
-			stack.add(nr);
 		}
-	
+
 		return stack;
-	}).setHeader("Third Party Status").setAutoWidth(true);
-
-	grid.addComponentColumn(record -> {
-		VerticalLayout stack = new VerticalLayout();
-		stack.setPadding(false);
-		stack.setSpacing(false);
-		stack.setMargin(false);
-	
-		if (record.isMinorAtScan()) {
-			DatePicker duraDate = new DatePicker();
-			duraDate.setValue(record.getDuramapSentDate());
-			duraDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
-			duraDate.setWidth("135px");
-
-			duraDate.addValueChangeListener(e -> {
-				try {
-					caseRecordService.updateDuramapSentDate(record, e.getValue());
-					refreshProcessingGrid();
-				} catch (InvalidWorkflowTransitionException ex) {
-					showError(ex.getMessage());
-				}
-			});
-
-			stack.add(duraDate);
-
-			DatePicker nrDate = new DatePicker();
-			nrDate.setValue(record.getNeuroreaderSentDate());
-			nrDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
-			nrDate.setWidth("135px");
-
-			nrDate.addValueChangeListener(e -> {
-				try {
-					caseRecordService.updateNeuroreaderSentDate(record, e.getValue());
-					refreshProcessingGrid();
-				} catch (InvalidWorkflowTransitionException ex) {
-					showError(ex.getMessage());
-				}
-			});
-
-			stack.add(nrDate);
-
-		} else {
-			DatePicker imekaDate = new DatePicker();
-			imekaDate.setValue(record.getImekaSentDate());
-			imekaDate.setReadOnly(record.getImekaStatus() == ThirdPartyStatus.UPLOADED);
-			imekaDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
-			imekaDate.setWidth("135px");
-	
-			imekaDate.addValueChangeListener(e -> {
-				try {
-					caseRecordService.updateImekaSentDate(record, e.getValue());
-					refreshProcessingGrid();
-				} catch (InvalidWorkflowTransitionException ex) {
-					showError(ex.getMessage());
-				}
-			});
-	
-			stack.add(imekaDate);
-	
-			if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
-				DatePicker duraDate = new DatePicker();
-				duraDate.setValue(record.getDuramapSentDate());
-				duraDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
-				duraDate.setWidth("135px");
-	
-				duraDate.addValueChangeListener(e -> {
-					try {
-						caseRecordService.updateDuramapSentDate(record, e.getValue());
-						refreshProcessingGrid();
-					} catch (InvalidWorkflowTransitionException ex) {
-						showError(ex.getMessage());
-					}
-				});
-	
-				stack.add(duraDate);
-			}
-	
-			DatePicker nrDate = new DatePicker();
-			nrDate.setValue(record.getNeuroreaderSentDate());
-			nrDate.addThemeVariants(DatePickerVariant.LUMO_SMALL);
-			nrDate.setWidth("135px");
-	
-			nrDate.addValueChangeListener(e -> {
-				try {
-					caseRecordService.updateNeuroreaderSentDate(record, e.getValue());
-					refreshProcessingGrid();
-				} catch (InvalidWorkflowTransitionException ex) {
-					showError(ex.getMessage());
-				}
-			});
-	
-			stack.add(nrDate);
-		}
-	
-		return stack;
-	}).setHeader("Third Party Sent Date").setAutoWidth(true);
+	})
+	.setHeader("Third Party Processing")
+	.setAutoWidth(true);
 
 	//added new column for issues - updated 08182026
 	grid.addComponentColumn(record -> {
@@ -1110,60 +906,143 @@ public class ProcessingView extends VerticalLayout {
 			String primaryActionLabel,
 			Runnable onError
 	) {
+		ThirdPartyStatus currentStatus =
+				status == null
+						? ThirdPartyStatus.NOT_SENT
+						: status;
+
 		Span vendor = new Span(label);
 		vendor.getStyle()
-				.set("font-weight", "600")
-				.set("min-width", "90px");
+				.set("width", "120px")
+				.set("font-size", "0.95rem")
+				.set("font-weight", "500");
 
-		Span statusText = new Span(
-				status == null
-						? "NOT SENT"
-						: formatEnum(status)
+		HorizontalLayout actionColumn = new HorizontalLayout();
+		actionColumn.setPadding(false);
+		actionColumn.setSpacing(false);
+		actionColumn.setWidth("104px");
+		actionColumn.setJustifyContentMode(
+				FlexComponent.JustifyContentMode.CENTER
 		);
 
-		statusText.getStyle()
-				.set("font-size", "0.8rem")
-				.set("min-width", "85px");
+		HorizontalLayout errorColumn = new HorizontalLayout();
+		errorColumn.setPadding(false);
+		errorColumn.setSpacing(false);
+		errorColumn.setWidth("104px");
+		errorColumn.setJustifyContentMode(
+				FlexComponent.JustifyContentMode.CENTER
+		);
 
-		if (sentDate != null) {
-			statusText.setText(
-					formatEnum(status) + " · " + sentDate
+		// terminal states
+		if (currentStatus == ThirdPartyStatus.UPLOADED) {
+
+			actionColumn.add(buildThirdPartyStatusLabel("Uploaded"));
+
+		} else if (currentStatus == ThirdPartyStatus.COMPLETED) {
+
+			actionColumn.add(buildThirdPartyStatusLabel("Completed"));
+
+		} else if (currentStatus == ThirdPartyStatus.ERROR) {
+
+			actionColumn.add(buildThirdPartyStatusLabel("Error"));
+
+		} else if ("DuraMap".equals(label)
+				&& currentStatus == ThirdPartyStatus.SENT) {
+
+			// DuraMap is finished from our perspective once sent
+			actionColumn.add(buildThirdPartyStatusLabel("Sent"));
+
+		} else {
+
+			if (currentStatus == ThirdPartyStatus.SENT
+					&& primaryActionLabel != null
+					&& !primaryActionLabel.isBlank()) {
+
+				Button primaryButton = new Button(primaryActionLabel);
+				primaryButton.addThemeVariants(
+						ButtonVariant.LUMO_SMALL
+				);
+
+				primaryButton.setWidth("96px");
+
+				primaryButton.getStyle()
+						.set("background", "var(--lumo-contrast-5pct)")
+						.set("color", "var(--lumo-primary-text-color)");
+
+				primaryButton.addClickListener(
+						event -> onPrimaryAction.run()
+				);
+
+				actionColumn.add(primaryButton);
+
+			} else {
+
+				Button sentButton = new Button("Sent");
+				sentButton.addThemeVariants(
+						ButtonVariant.LUMO_SMALL
+				);
+
+				sentButton.setWidth("96px");
+
+				sentButton.getStyle()
+						.set("background", "var(--lumo-contrast-5pct)")
+						.set("color", "var(--lumo-primary-text-color)");
+
+				sentButton.addClickListener(
+						event -> onSent.run()
+				);
+
+				actionColumn.add(sentButton);
+			}
+
+			Button errorButton = new Button("Error");
+			errorButton.addThemeVariants(
+					ButtonVariant.LUMO_SMALL,
+					ButtonVariant.LUMO_ERROR
 			);
+
+			errorButton.setWidth("96px");
+
+			errorButton.getStyle()
+					.set("background", "var(--lumo-contrast-5pct)")
+					.set("color", "var(--lumo-error-text-color)");
+
+			errorButton.addClickListener(
+					event -> onError.run()
+			);
+
+			errorColumn.add(errorButton);
 		}
-
-		Button sentButton = new Button("Sent");
-		sentButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-		sentButton.addClickListener(event -> onSent.run());
-
-		Button primaryButton = new Button(primaryActionLabel);
-		primaryButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-		primaryButton.addClickListener(event -> onPrimaryAction.run());
-
-		boolean showPrimary =
-				status == ThirdPartyStatus.SENT
-						|| status == ThirdPartyStatus.ERROR;
-
-		primaryButton.setVisible(showPrimary);
-
-		Button errorButton = new Button("Error");
-		errorButton.addThemeVariants(
-				ButtonVariant.LUMO_SMALL,
-				ButtonVariant.LUMO_ERROR
-		);
-		errorButton.addClickListener(event -> onError.run());
 
 		HorizontalLayout row = new HorizontalLayout(
 				vendor,
-				statusText,
-				sentButton,
-				primaryButton,
-				errorButton
+				actionColumn,
+				errorColumn
 		);
 
 		row.setPadding(false);
 		row.setSpacing(true);
+		row.setWidthFull();
 		row.setAlignItems(FlexComponent.Alignment.CENTER);
 
 		return row;
+	}
+
+	private Span buildThirdPartyStatusLabel(String text) {
+		Span label = new Span(text);
+
+		label.getStyle()
+				.set("display", "inline-flex")
+				.set("align-items", "center")
+				.set("justify-content", "center")
+				.set("width", "96px")
+				.set("height", "32px")
+				.set("border-radius", "6px")
+				.set("font-size", "0.8rem")
+				.set("font-weight", "500")
+				.set("background", "var(--lumo-contrast-5pct)")
+				.set("color", "var(--lumo-secondary-text-color)");
+
+		return label;
 	}
 }

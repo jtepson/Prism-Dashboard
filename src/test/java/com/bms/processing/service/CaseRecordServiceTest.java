@@ -71,8 +71,8 @@ class CaseRecordServiceTest {
             // IMEKA complete (uses uploaded in system)
             record.setImekaStatus(ThirdPartyStatus.UPLOADED);
 
-            // Neuroreader sent
-            record.setNeuroreaderStatus(ThirdPartyStatus.SENT);
+            // Neuroreader report complete
+            record.setNeuroreaderStatus(ThirdPartyStatus.COMPLETED);
 
             // DuraMap not needed (since IMEKA not error)
             record.setDuramapStatus(ThirdPartyStatus.NOT_SENT);
@@ -188,7 +188,7 @@ class CaseRecordServiceTest {
             record.setDateOfBirth(LocalDate.now().minusYears(30)); // adult
             record.setImekaStatus(ThirdPartyStatus.NOT_SENT);
             record.setDuramapStatus(ThirdPartyStatus.NOT_SENT);
-            record.setNeuroreaderStatus(ThirdPartyStatus.SENT);
+            record.setNeuroreaderStatus(ThirdPartyStatus.COMPLETED);
 
             assertThrows(
                     InvalidWorkflowTransitionException.class,
