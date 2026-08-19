@@ -661,6 +661,107 @@ public class CaseRecordService {
         return savedRecord;
     }
 
+    //status moving utilites - 08192026
+    public CaseRecordEntity rollbackWorkflowStatus(
+            CaseRecordEntity record,
+            PatientStatus destination,
+            String reason,
+            String username
+    ) {
+        validateRecord(record);
+
+        if (destination == null) {
+            throw new InvalidWorkflowTransitionException(
+                    "Destination workflow status is required."
+            );
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new InvalidWorkflowTransitionException(
+                    "A rollback reason is required."
+            );
+        }
+
+        PatientStatus current = record.getPatientStatus();
+
+        if (!isWorkflowStage(current) || !isWorkflowStage(destination)) {
+            throw new InvalidWorkflowTransitionException(
+                    "Only active workflow stages can be used for rollback."
+            );
+        }
+
+        if (workflowOrder(destination) >= workflowOrder(current)) {
+            throw new InvalidWorkflowTransitionException(
+                    "Rollback can only move a case to an earlier workflow stage."
+            );
+        }
+
+        record.setPatientStatus(destination);
+
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "WORKFLOW_ROLLBACK",
+                savedRecord,
+                "Workflow rollback",
+                current.name(),
+                destination.name() + " - " + reason.trim(),
+                username
+        );
+
+        return savedRecord;
+    }
+
+    public CaseRecordEntity adminOverrideWorkflowStatus(
+            CaseRecordEntity record,
+            PatientStatus destination,
+            String reason,
+            String username
+    ) {
+        validateRecord(record);
+
+        if (destination == null) {
+            throw new InvalidWorkflowTransitionException(
+                    "Destination workflow status is required."
+            );
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new InvalidWorkflowTransitionException(
+                    "An override reason is required."
+            );
+        }
+
+        PatientStatus current = record.getPatientStatus();
+
+        if (!isWorkflowStage(destination)) {
+            throw new InvalidWorkflowTransitionException(
+                    "Invalid workflow destination."
+            );
+        }
+
+        if (current == destination) {
+            throw new InvalidWorkflowTransitionException(
+                    "Case is already in " + destination.name() + "."
+            );
+        }
+
+        record.setPatientStatus(destination);
+
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "WORKFLOW_OVERRIDE",
+                savedRecord,
+                "Administrative workflow override",
+                current != null ? current.name() : null,
+                destination.name() + " - " + reason.trim(),
+                username
+        );
+
+        return savedRecord;
+    }
+
     //correcting this so saving a dialog does not create a fake invoice event - updated 08182026
     public CaseRecordEntity updateInvoiceSentDate(
         CaseRecordEntity record,
@@ -897,5 +998,25 @@ public class CaseRecordService {
         record.setDicomLinked(normalizedStudyUid != null);
 
         return repository.save(record);
+    }
+
+    //move utility helpers - 08192026
+    private boolean isWorkflowStage(PatientStatus status) {
+        return status == PatientStatus.UPCOMING
+                || status == PatientStatus.ACQUIRED
+                || status == PatientStatus.PROCESSING
+                || status == PatientStatus.PROCESSED
+                || status == PatientStatus.COMPLETED;
+    }
+    
+    private int workflowOrder(PatientStatus status) {
+        return switch (status) {
+            case UPCOMING -> 0;
+            case ACQUIRED -> 1;
+            case PROCESSING -> 2;
+            case PROCESSED -> 3;
+            case COMPLETED -> 4;
+            default -> -1;
+        };
     }
 }

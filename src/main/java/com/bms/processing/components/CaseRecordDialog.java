@@ -18,6 +18,7 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.model.PatientStatus;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -360,6 +361,7 @@ public class CaseRecordDialog extends Dialog {
                 new FormLayout.ResponsiveStep("700px", 2)
         );
 
+        
         Button queryArchiveButton = new Button("Link Study", new Icon(VaadinIcon.SEARCH));
 
         queryArchiveButton.addClickListener(event -> {
@@ -916,6 +918,13 @@ public class CaseRecordDialog extends Dialog {
         content.setSpacing(true);
         content.setWidthFull();
 
+        Button moveCaseButton = new Button("Move Case");
+        moveCaseButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+
+        moveCaseButton.addClickListener(event ->
+                openMoveCaseDialog()
+        );
+
         Button cancelButton = new Button("Cancel", e -> close());
 
         Button saveButton = new Button("Save");
@@ -1024,11 +1033,122 @@ public class CaseRecordDialog extends Dialog {
         });
 
         add(content);
+
         if (mode == Mode.COMPLETED) {
-                getFooter().add(cancelButton);
+                getFooter().add(
+                        moveCaseButton,
+                        cancelButton
+                );
         } else {
-                getFooter().add(cancelButton, saveButton);
+                getFooter().add(
+                        moveCaseButton,
+                        cancelButton,
+                        saveButton
+                );
         }
+
+    }
+
+    private void openMoveCaseDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Move Case");
+        dialog.setWidth("500px");
+
+        ComboBox<PatientStatus> destination =
+                new ComboBox<>("Move To");
+
+        boolean isAdmin = currentUserService.isAdmin();
+
+        if (isAdmin) {
+                destination.setItems(
+                        PatientStatus.UPCOMING,
+                        PatientStatus.ACQUIRED,
+                        PatientStatus.PROCESSING,
+                        PatientStatus.PROCESSED,
+                        PatientStatus.COMPLETED
+                );
+        } else {
+                int currentOrder = workflowOrder(record.getPatientStatus());
+
+                destination.setItems(
+                        java.util.stream.Stream.of(
+                                        PatientStatus.UPCOMING,
+                                        PatientStatus.ACQUIRED,
+                                        PatientStatus.PROCESSING,
+                                        PatientStatus.PROCESSED,
+                                        PatientStatus.COMPLETED
+                                )
+                                .filter(status ->
+                                        workflowOrder(status) < currentOrder
+                                )
+                                .toList()
+                );
+        }
+
+        destination.setItemLabelGenerator(this::formatEnum);
+        destination.setWidthFull();
+
+        TextArea reason = new TextArea("Reason");
+        reason.setWidthFull();
+        reason.setMinHeight("120px");
+        reason.setRequired(true);
+
+        Button cancel = new Button("Cancel", e -> dialog.close());
+
+        Button move = new Button("Move Case");
+        move.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        move.addClickListener(event -> {
+                if (destination.getValue() == null) {
+                showError("Destination workflow status is required.");
+                return;
+                }
+
+                if (reason.getValue() == null
+                        || reason.getValue().trim().isEmpty()) {
+                showError("A reason is required.");
+                return;
+                }
+
+                try {
+                if (isAdmin) {
+                        caseRecordService.adminOverrideWorkflowStatus(
+                                record,
+                                destination.getValue(),
+                                reason.getValue().trim(),
+                                currentUserService.getUsername()
+                        );
+                } else {
+                        caseRecordService.rollbackWorkflowStatus(
+                                record,
+                                destination.getValue(),
+                                reason.getValue().trim(),
+                                currentUserService.getUsername()
+                        );
+                }
+
+                if (afterSave != null) {
+                        afterSave.run();
+                }
+
+                dialog.close();
+                close();
+
+                } catch (InvalidWorkflowTransitionException ex) {
+                showError(ex.getMessage());
+                }
+        });
+
+        VerticalLayout content = new VerticalLayout(
+                destination,
+                reason
+        );
+        content.setPadding(false);
+        content.setSpacing(true);
+
+        dialog.add(content);
+        dialog.getFooter().add(cancel, move);
+        dialog.open();
     }
 
     private Component buildDisplayField(String label, String value) {
@@ -1764,6 +1884,17 @@ if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
                         Integer.parseInt(value.substring(4, 6)),
                         Integer.parseInt(value.substring(6, 8))
                 );
+        }
+
+        private int workflowOrder(PatientStatus status) {
+                return switch (status) {
+                        case UPCOMING -> 0;
+                        case ACQUIRED -> 1;
+                        case PROCESSING -> 2;
+                        case PROCESSED -> 3;
+                        case COMPLETED -> 4;
+                        default -> -1;
+                };
         }
 
 }

@@ -390,7 +390,7 @@ public class ProcessingView extends VerticalLayout {
 					try {
 						caseRecordService.startProcessing(record);
 						refreshProcessingGrid();
-						showSuccess("Case moved to Processing.");
+						showSuccess("Processing started.");
 					} catch (InvalidWorkflowTransitionException ex) {
 						showError(ex.getMessage());
 					}
