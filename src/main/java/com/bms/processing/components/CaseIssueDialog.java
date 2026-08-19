@@ -77,7 +77,12 @@ public class CaseIssueDialog extends Dialog {
 
     private void buildDialog() {
 
-        source.setItems(CaseIssueSource.values());
+        source.setItems(
+                CaseIssueSource.ACQUISITION,
+                CaseIssueSource.INTERNAL_PROCESSING,
+                CaseIssueSource.ADMINISTRATIVE,
+                CaseIssueSource.OTHER
+        );
         source.setItemLabelGenerator(this::formatEnum);
 
         type.setItems(CaseIssueType.values());
