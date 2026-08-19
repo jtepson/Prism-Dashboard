@@ -28,6 +28,7 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 @PageTitle("Completed")
 @PermitAll
@@ -117,8 +118,7 @@ public class CompletedView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")
-                .setAutoWidth(true)
-                .setSortable(true);
+                .setAutoWidth(true);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("Patient First")
@@ -210,7 +210,17 @@ public class CompletedView extends VerticalLayout {
         grid.setItems(
                 caseRecordService.findAll().stream()
                         .filter(record -> record.getPatientStatus() == PatientStatus.COMPLETED)
-                        .toList()
+                .sorted(
+                        Comparator.comparing(
+                                CaseRecordEntity::getCompletedDate,
+                                Comparator.nullsLast(Comparator.reverseOrder())
+                        )
+                        .thenComparing(
+                                CaseRecordEntity::getPatientLastName,
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                        )
+                )
+                .toList()
         );
     }
 

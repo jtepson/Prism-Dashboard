@@ -41,6 +41,7 @@ import com.vaadin.flow.component.html.Div;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
+import java.util.Comparator;
 
 @PageTitle("Upcoming")
 @PermitAll
@@ -142,12 +143,10 @@ public class UpcomingView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")
-                .setSortable(true)
                 .setAutoWidth(true);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("Patient First")
-                .setSortable(true)
                 .setAutoWidth(true);
     
         grid.addColumn(CaseRecordEntity::getPatientId)

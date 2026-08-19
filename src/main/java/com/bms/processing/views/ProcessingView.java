@@ -52,6 +52,7 @@ import com.vaadin.flow.component.html.Div;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 @PageTitle("Processing")
 @PermitAll
@@ -142,8 +143,7 @@ public class ProcessingView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Last Name")
-                .setAutoWidth(true)
-                .setSortable(true);
+                .setAutoWidth(true);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("First Name")
@@ -767,6 +767,15 @@ public class ProcessingView extends VerticalLayout {
 								|| containsIgnoreCase(record.getPatientId(), filter)
 								|| containsIgnoreCase(record.getSiteName(), filter)
 								|| containsIgnoreCase(record.getFunder(), filter))
+						.sorted(
+								Comparator.comparing(
+										CaseRecordEntity::getImagesReceivedDate,
+										Comparator.nullsLast(Comparator.naturalOrder())
+								).thenComparing(
+										CaseRecordEntity::getPatientLastName,
+										Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+								)
+						)
 						.toList()
 		);
 	}

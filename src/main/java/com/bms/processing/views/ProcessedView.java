@@ -31,6 +31,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
+import java.util.Comparator;
 
 @PageTitle("Processed")
 @PermitAll
@@ -118,8 +119,7 @@ public class ProcessedView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")
-                .setAutoWidth(true)
-                .setSortable(true);
+                .setAutoWidth(true);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("Patient First")
@@ -256,6 +256,16 @@ public class ProcessedView extends VerticalLayout {
                                 || containsIgnoreCase(record.getPatientId(), filter)
                                 || containsIgnoreCase(record.getSiteName(), filter)
                                 || containsIgnoreCase(record.getFunder(), filter))
+                        .sorted(
+                                Comparator.comparing(
+                                        CaseRecordEntity::getProcessedDate,
+                                        Comparator.nullsLast(Comparator.reverseOrder())
+                                )
+                                .thenComparing(
+                                        CaseRecordEntity::getPatientLastName,
+                                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                                )
+                        )
                         .toList()
         );
     }

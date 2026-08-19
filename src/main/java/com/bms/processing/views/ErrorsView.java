@@ -35,6 +35,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
+import java.util.Comparator;
 
 @PageTitle("Errors")
 @PermitAll
@@ -123,8 +124,7 @@ public class ErrorsView extends VerticalLayout {
 
         grid.addColumn(CaseRecordEntity::getPatientLastName)
                 .setHeader("Patient Last")
-                .setAutoWidth(true)
-                .setSortable(true);
+                .setAutoWidth(true);
 
         grid.addColumn(CaseRecordEntity::getPatientFirstName)
                 .setHeader("Patient First")
@@ -251,6 +251,16 @@ public class ErrorsView extends VerticalLayout {
                                         || containsIgnoreCase(record.getPatientFirstName(), filter)
                                         || containsIgnoreCase(record.getPatientId(), filter)
                                         || containsIgnoreCase(record.getSiteName(), filter)
+                        )
+                        .sorted(
+                                Comparator.comparing(
+                                        CaseRecordEntity::getImagesReceivedDate,
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                )
+                                .thenComparing(
+                                        CaseRecordEntity::getPatientLastName,
+                                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                                )
                         )
                         .toList()
         );
