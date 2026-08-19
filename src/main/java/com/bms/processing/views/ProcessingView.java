@@ -208,8 +208,10 @@ public class ProcessingView extends VerticalLayout {
 			dura.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptRequiredErrorNote(
-								"DuraMap Error Note Required",
+						promptVendorIssue(
+								record,
+								"DuraMap",
+								CaseIssueSource.DURAMAP,
 								record.getDuramapErrorNote(),
 								noteValue -> {
 									try {
@@ -219,13 +221,6 @@ public class ProcessingView extends VerticalLayout {
 												ThirdPartyStatus.ERROR,
 												noteValue,
 												record.getDuramapSentDate()
-										);
-
-										createOrUpdateVendorIssue(
-												record,
-												CaseIssueSource.DURAMAP,
-												CaseIssueType.VENDOR_FAILURE,
-												noteValue
 										);
 
 										refreshProcessingGrid();
@@ -260,8 +255,10 @@ public class ProcessingView extends VerticalLayout {
 			nr.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptRequiredErrorNote(
-								"Neuroreader Error Note Required",
+						promptVendorIssue(
+								record,
+								"Neuroreader",
+								CaseIssueSource.NEUROREADER,
 								record.getNeuroreaderErrorNote(),
 								noteValue -> {
 									try {
@@ -273,13 +270,8 @@ public class ProcessingView extends VerticalLayout {
 												record.getNeuroreaderSentDate()
 										);
 
-										createOrUpdateVendorIssue(
-												record,
-												CaseIssueSource.NEUROREADER,
-												CaseIssueType.VENDOR_FAILURE,
-												noteValue
-										);
 										refreshProcessingGrid();
+
 									} catch (InvalidWorkflowTransitionException ex) {
 										showError(ex.getMessage());
 									}
@@ -312,8 +304,10 @@ public class ProcessingView extends VerticalLayout {
 			imeka.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptRequiredErrorNote(
-								"IMEKA Error Note Required",
+						promptVendorIssue(
+								record,
+								"IMEKA",
+								CaseIssueSource.IMEKA,
 								record.getImekaErrorNote(),
 								noteValue -> {
 									try {
@@ -323,13 +317,6 @@ public class ProcessingView extends VerticalLayout {
 												ThirdPartyStatus.ERROR,
 												noteValue,
 												record.getImekaSentDate()
-										);
-
-										createOrUpdateVendorIssue(
-												record,
-												CaseIssueSource.IMEKA,
-												CaseIssueType.VENDOR_FAILURE,
-												noteValue
 										);
 
 										refreshProcessingGrid();
@@ -365,8 +352,10 @@ public class ProcessingView extends VerticalLayout {
 				dura.addValueChangeListener(e -> {
 					if (e.getValue() != null) {
 						if (e.getValue() == ThirdPartyStatus.ERROR) {
-							promptRequiredErrorNote(
-									"DuraMap Error Note Required",
+							promptVendorIssue(
+									record,
+									"DuraMap",
+									CaseIssueSource.DURAMAP,
 									record.getDuramapErrorNote(),
 									noteValue -> {
 										try {
@@ -376,13 +365,6 @@ public class ProcessingView extends VerticalLayout {
 													ThirdPartyStatus.ERROR,
 													noteValue,
 													record.getDuramapSentDate()
-											);
-
-											createOrUpdateVendorIssue(
-													record,
-													CaseIssueSource.DURAMAP,
-													CaseIssueType.VENDOR_FAILURE,
-													noteValue
 											);
 
 											refreshProcessingGrid();
@@ -417,8 +399,10 @@ public class ProcessingView extends VerticalLayout {
 			nr.addValueChangeListener(e -> {
 				if (e.getValue() != null) {
 					if (e.getValue() == ThirdPartyStatus.ERROR) {
-						promptRequiredErrorNote(
-								"Neuroreader Error Note Required",
+						promptVendorIssue(
+								record,
+								"Neuroreader",
+								CaseIssueSource.NEUROREADER,
 								record.getNeuroreaderErrorNote(),
 								noteValue -> {
 									try {
@@ -429,13 +413,9 @@ public class ProcessingView extends VerticalLayout {
 												noteValue,
 												record.getNeuroreaderSentDate()
 										);
-										createOrUpdateVendorIssue(
-												record,
-												CaseIssueSource.NEUROREADER,
-												CaseIssueType.VENDOR_FAILURE,
-												noteValue
-										);
+
 										refreshProcessingGrid();
+
 									} catch (InvalidWorkflowTransitionException ex) {
 										showError(ex.getMessage());
 									}
@@ -919,40 +899,6 @@ public class ProcessingView extends VerticalLayout {
 			.set("line-height", "36px");
 
 		return label;
-	}
-
-	private void promptRequiredErrorNote(
-        String title,
-        String existingValue,
-        Consumer<String> onSave
-	) {
-		Dialog dialog = new Dialog();
-		dialog.setHeaderTitle(title);
-		dialog.setWidth("600px");
-
-		TextArea note = new TextArea("Error Explanation");
-		note.setWidthFull();
-		note.setMinHeight("160px");
-		note.setValue(existingValue != null ? existingValue : "");
-
-		Button saveButton = new Button("Save");
-		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-		Button cancelButton = new Button("Cancel", e -> dialog.close());
-
-		saveButton.addClickListener(event -> {
-			if (note.getValue().trim().isEmpty()) {
-				showError("Error explanation is required.");
-				return;
-			}
-
-			onSave.accept(note.getValue().trim());
-			dialog.close();
-		});
-
-		dialog.add(note);
-		dialog.getFooter().add(cancelButton, saveButton);
-		dialog.open();
 	}
 
 	//updating vendor specific error method - updated 08192026
