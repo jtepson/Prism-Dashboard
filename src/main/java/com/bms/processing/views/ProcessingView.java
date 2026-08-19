@@ -1099,4 +1099,71 @@ public class ProcessingView extends VerticalLayout {
 		dialog.getFooter().add(close);
 		dialog.open();
 	}
+
+	//helper to allow for better third party tracking (button) - updated 08192026
+	private HorizontalLayout buildThirdPartyRow(
+			String label,
+			ThirdPartyStatus status,
+			LocalDate sentDate,
+			Runnable onSent,
+			Runnable onPrimaryAction,
+			String primaryActionLabel,
+			Runnable onError
+	) {
+		Span vendor = new Span(label);
+		vendor.getStyle()
+				.set("font-weight", "600")
+				.set("min-width", "90px");
+
+		Span statusText = new Span(
+				status == null
+						? "NOT SENT"
+						: formatEnum(status)
+		);
+
+		statusText.getStyle()
+				.set("font-size", "0.8rem")
+				.set("min-width", "85px");
+
+		if (sentDate != null) {
+			statusText.setText(
+					formatEnum(status) + " · " + sentDate
+			);
+		}
+
+		Button sentButton = new Button("Sent");
+		sentButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		sentButton.addClickListener(event -> onSent.run());
+
+		Button primaryButton = new Button(primaryActionLabel);
+		primaryButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		primaryButton.addClickListener(event -> onPrimaryAction.run());
+
+		boolean showPrimary =
+				status == ThirdPartyStatus.SENT
+						|| status == ThirdPartyStatus.ERROR;
+
+		primaryButton.setVisible(showPrimary);
+
+		Button errorButton = new Button("Error");
+		errorButton.addThemeVariants(
+				ButtonVariant.LUMO_SMALL,
+				ButtonVariant.LUMO_ERROR
+		);
+		errorButton.addClickListener(event -> onError.run());
+
+		HorizontalLayout row = new HorizontalLayout(
+				vendor,
+				statusText,
+				sentButton,
+				primaryButton,
+				errorButton
+		);
+
+		row.setPadding(false);
+		row.setSpacing(true);
+		row.setAlignItems(FlexComponent.Alignment.CENTER);
+
+		return row;
+	}
 }

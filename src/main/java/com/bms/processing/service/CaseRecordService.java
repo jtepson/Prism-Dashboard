@@ -61,26 +61,14 @@ public class CaseRecordService {
         }
 
         if (record.isMinorAtScan()) {
-            return record.getDuramapStatus() == ThirdPartyStatus.SENT
-                    || record.getDuramapStatus() == ThirdPartyStatus.ERROR
-                    || record.getDuramapStatus() == ThirdPartyStatus.COMPLETED;
+            return true;
         }
 
         boolean imekaReady =
                 record.getImekaStatus() == ThirdPartyStatus.UPLOADED
                         || record.getImekaStatus() == ThirdPartyStatus.ERROR;
 
-        if (!imekaReady) {
-            return false;
-        }
-
-        if (record.getImekaStatus() == ThirdPartyStatus.ERROR) {
-            return record.getDuramapStatus() == ThirdPartyStatus.SENT
-                    || record.getDuramapStatus() == ThirdPartyStatus.ERROR
-                    || record.getDuramapStatus() == ThirdPartyStatus.COMPLETED;
-        }
-
-        return true;
+        return imekaReady;
     }
 
     public CaseRecordEntity finalizeCase(CaseRecordEntity record, boolean studyAvailableInBmsView) {
@@ -436,9 +424,10 @@ public class CaseRecordService {
                 throw new InvalidWorkflowTransitionException("IMEKA uses UPLOADED instead of COMPLETED.");
             }
 
-            if (record.getNeuroreaderStatus() == ThirdPartyStatus.COMPLETED
-                    || record.getNeuroreaderStatus() == ThirdPartyStatus.UPLOADED) {
-                throw new InvalidWorkflowTransitionException("Neuroreader does not use COMPLETED or UPLOADED.");
+            if (record.getNeuroreaderStatus() == ThirdPartyStatus.UPLOADED) {
+                throw new InvalidWorkflowTransitionException(
+                        "Neuroreader uses COMPLETED instead of UPLOADED."
+                );
             }
 
             if (record.getImekaStatus() != ThirdPartyStatus.ERROR
@@ -477,13 +466,14 @@ public class CaseRecordService {
             }
         }
 
-        if (record.getDuramapStatus() == ThirdPartyStatus.SENT || record.getDuramapStatus() == ThirdPartyStatus.COMPLETED) {
+        if (record.getDuramapStatus() == ThirdPartyStatus.SENT) {
             if (record.getDuramapSentDate() == null) {
                 throw new InvalidWorkflowTransitionException("DuraMap sent date is required.");
             }
         }
 
-        if (record.getNeuroreaderStatus() == ThirdPartyStatus.SENT) {
+        if (record.getNeuroreaderStatus() == ThirdPartyStatus.SENT
+                || record.getNeuroreaderStatus() == ThirdPartyStatus.COMPLETED) {
             if (record.getNeuroreaderSentDate() == null) {
                 throw new InvalidWorkflowTransitionException("Neuroreader sent date is required.");
             }
