@@ -581,28 +581,6 @@ public class ProcessingView extends VerticalLayout {
 	
 	//im not fixing this indentation
 		grid.addComponentColumn(record -> {
-				Span noteFlag = new Span("!");
-				noteFlag.getStyle()
-					.set("font-weight", "700")
-					.set("cursor", "pointer")
-					.set("color", "var(--lumo-error-text-color)");
-
-		boolean hasNotes =
-				(record.getNotes() != null && !record.getNotes().trim().isEmpty()) ||
-				(record.getImekaErrorNote() != null && !record.getImekaErrorNote().trim().isEmpty()) ||
-				(record.getDuramapErrorNote() != null && !record.getDuramapErrorNote().trim().isEmpty()) ||
-				(record.getNeuroreaderErrorNote() != null && !record.getNeuroreaderErrorNote().trim().isEmpty());
-				noteFlag.setVisible(hasNotes);
-
-			noteFlag.getElement().setProperty("title", hasNotes ? "View notes" : "");
-
-			noteFlag.getElement().addEventListener("click", e -> openNotesDialog(record))
-			.addEventData("event.stopPropagation()");
-
-				return noteFlag;
-		}).setHeader("Notes").setAutoWidth(true);
-
-		grid.addComponentColumn(record -> {
 			if (record.getPatientStatus() == PatientStatus.ACQUIRED) {
 				Button startButton = new Button("Start Processing");
 				startButton.addThemeVariants(
@@ -671,48 +649,6 @@ public class ProcessingView extends VerticalLayout {
 		}).setHeader("").setAutoWidth(true);
 
 		}
-
-    private void openNotesDialog(CaseRecordEntity record) {
-    	Dialog dialog = new Dialog();
-    	dialog.setHeaderTitle("Case Notes");
-    	dialog.setWidth("700px");
-
-    	VerticalLayout layout = new VerticalLayout();
-    	layout.setPadding(false);
-    	layout.setSpacing(true);
-    	layout.setWidthFull();
-
-    	addNoteSection(layout, "Processing Notes", record.getNotes());
-    	addNoteSection(layout, "IMEKA Error Notes", record.getImekaErrorNote());
-    	addNoteSection(layout, "DuraMap Error Notes", record.getDuramapErrorNote());
-    	addNoteSection(layout, "Neuroreader Error Notes", record.getNeuroreaderErrorNote());
-
-    	Button closeButton = new Button("Close", e -> dialog.close());
-
-    	dialog.add(layout);
-    	dialog.getFooter().add(closeButton);
-    	dialog.open();
-    }
-
-    private void addNoteSection(VerticalLayout parent, String title, String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return;
-    	}
-
-    	H4 header = new H4(title);
-
-    	Div body = new Div();
-    	body.setText(value);
-    	body.getStyle()
-            .set("white-space", "pre-wrap")
-            .set("padding", "0.75rem")
-            .set("border", "1px solid var(--lumo-contrast-20pct)")
-            .set("border-radius", "8px")
-            .set("background", "var(--lumo-contrast-5pct)")
-            .set("width", "100%");
-
-    	parent.add(header, body);
-    }
 
 	private void handleThirdPartyStatusSelection(
 			CaseRecordEntity record,
