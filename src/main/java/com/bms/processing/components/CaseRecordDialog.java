@@ -557,32 +557,154 @@ public class CaseRecordDialog extends Dialog {
                 )
         );
         
+        //Updated notes section on dialog to allow for issues to be tracked appropriately - updated 08192026
         VerticalLayout notesLayout = new VerticalLayout();
         notesLayout.setPadding(false);
         notesLayout.setSpacing(true);
         notesLayout.setWidthFull();
 
-        if (mode == Mode.PROCESSING) {
+        TextArea generalNotes = new TextArea("General Notes");
+        generalNotes.setWidthFull();
+        generalNotes.setValue(nullSafe(record.getNotes()));
 
-            notesLayout.add(
-                    notes,
-                    imekaError,
-                    duramapError,
-                    neuroreaderError
-            );
+        boolean canEditGeneralNotes =
+                mode == Mode.UPCOMING
+                        || mode == Mode.PROCESSING
+                        || mode == Mode.PROCESSED;
 
+        generalNotes.setReadOnly(!canEditGeneralNotes);
+
+        VerticalLayout activeIssuesLayout = new VerticalLayout();
+        activeIssuesLayout.setPadding(false);
+        activeIssuesLayout.setSpacing(true);
+        activeIssuesLayout.setWidthFull();
+
+        var activeIssues = caseIssueService.findActiveByCaseRecord(record);
+
+        if (activeIssues.isEmpty()) {
+        activeIssuesLayout.add(new Span("No active issues."));
         } else {
+        for (CaseIssueEntity issue : activeIssues) {
+                Button issueButton = new Button(
+                        issue.getTitle()
+                                + (Boolean.TRUE.equals(issue.getBlocking())
+                                ? " - Blocking"
+                                : "")
+                );
 
-            addReadOnlyNoteSection(notesLayout, "Notes", record.getNotes());
-            addReadOnlyNoteSection(notesLayout, "IMEKA Error Note", record.getImekaErrorNote());
-            addReadOnlyNoteSection(notesLayout, "DuraMap Error Note", record.getDuramapErrorNote());
-            addReadOnlyNoteSection(notesLayout, "Neuroreader Error Note", record.getNeuroreaderErrorNote());
+                issueButton.setWidthFull();
 
-            if (notesLayout.getComponentCount() == 0) {
-                notesLayout.add(new Span("No notes."));
-            }
+                issueButton.addClickListener(event ->
+                        new CaseIssueDialog(
+                                record,
+                                issue,
+                                caseIssueService,
+                                currentUserService,
+                                () -> {
+                                if (afterSave != null) {
+                                        afterSave.run();
+                                }
+                                }
+                        ).open()
+                );
+
+                activeIssuesLayout.add(issueButton);
         }
-        Details notesDetails = new Details("Notes", notesLayout);
+        }
+
+        VerticalLayout resolvedIssuesLayout = new VerticalLayout();
+        resolvedIssuesLayout.setPadding(false);
+        resolvedIssuesLayout.setSpacing(true);
+        resolvedIssuesLayout.setWidthFull();
+
+        var resolvedIssues = caseIssueService.findByCaseRecord(record).stream()
+                .filter(issue -> issue.getStatus() == CaseIssueStatus.RESOLVED)
+                .sorted((a, b) -> {
+                if (a.getResolvedAt() == null && b.getResolvedAt() == null) {
+                        return 0;
+                }
+                if (a.getResolvedAt() == null) {
+                        return 1;
+                }
+                if (b.getResolvedAt() == null) {
+                        return -1;
+                }
+
+                return b.getResolvedAt().compareTo(a.getResolvedAt());
+                })
+                .toList();
+
+        if (resolvedIssues.isEmpty()) {
+        resolvedIssuesLayout.add(new Span("No resolved issues."));
+        } else {
+        for (CaseIssueEntity issue : resolvedIssues) {
+                VerticalLayout issueCard = new VerticalLayout();
+                issueCard.setPadding(true);
+                issueCard.setSpacing(false);
+                issueCard.setWidthFull();
+
+                Span title = new Span(issue.getTitle());
+                title.getStyle().set("font-weight", "700");
+
+                Span source = new Span(
+                        "Source: "
+                                + formatEnum(issue.getIssueSource())
+                );
+
+                Span note = new Span(
+                        "Issue: "
+                                + nullSafe(issue.getDescription())
+                );
+
+                Span resolution = new Span(
+                        "Resolution: "
+                                + nullSafe(issue.getResolutionNote())
+                );
+
+                Span resolvedBy = new Span(
+                        "Resolved by "
+                                + nullSafe(issue.getResolvedBy())
+                                + (issue.getResolvedAt() != null
+                                ? " on " + formatDateTimeCompact(issue.getResolvedAt())
+                                : "")
+                );
+
+                issueCard.add(
+                        title,
+                        source,
+                        note,
+                        resolution,
+                        resolvedBy
+                );
+
+                issueCard.getStyle()
+                        .set("border", "1px solid var(--lumo-contrast-20pct)")
+                        .set("border-radius", "8px");
+
+                resolvedIssuesLayout.add(issueCard);
+        }
+        }
+
+        Details generalNotesDetails =
+                new Details("General Notes", generalNotes);
+
+        Details activeIssuesDetails =
+                new Details("Active Issues", activeIssuesLayout);
+
+        Details resolvedIssuesDetails =
+                new Details("Resolved Issues", resolvedIssuesLayout);
+
+        generalNotesDetails.setOpened(true);
+        activeIssuesDetails.setOpened(!activeIssues.isEmpty());
+        resolvedIssuesDetails.setOpened(false);
+
+        notesLayout.add(
+                generalNotesDetails,
+                activeIssuesDetails,
+                resolvedIssuesDetails
+        );
+
+        Details notesDetails = new Details("Notes & Issues", notesLayout);
         notesDetails.setOpened(false);
 
         //activity section for pt history
@@ -864,7 +986,7 @@ public class CaseRecordDialog extends Dialog {
                 if (afterSave != null) {
                     if (mode == Mode.PROCESSING) {
 
-                        record.setNotes(notes.getValue());
+                        record.setNotes(generalNotes.getValue());
                         record.setImekaErrorNote(imekaError.getValue());
                         record.setDuramapErrorNote(duramapError.getValue());
                         record.setNeuroreaderErrorNote(neuroreaderError.getValue());
