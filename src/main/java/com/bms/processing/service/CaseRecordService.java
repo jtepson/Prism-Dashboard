@@ -53,8 +53,8 @@ public class CaseRecordService {
         }
 
         boolean neuroReady =
-                record.getNeuroreaderStatus() == ThirdPartyStatus.SENT
-                        || record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR;
+            record.getNeuroreaderStatus() == ThirdPartyStatus.COMPLETED
+                    || record.getNeuroreaderStatus() == ThirdPartyStatus.ERROR;
 
         if (!neuroReady) {
             return false;
@@ -279,8 +279,11 @@ public class CaseRecordService {
             );
         }
 
-        if (status == ThirdPartyStatus.UPLOADED) {
-            throw new InvalidWorkflowTransitionException("DuraMap does not use UPLOADED.");
+        if (status == ThirdPartyStatus.UPLOADED
+                || status == ThirdPartyStatus.COMPLETED) {
+            throw new InvalidWorkflowTransitionException(
+                    "DuraMap only uses NOT_SENT, SENT, or ERROR."
+            );
         }
 
         if (status == ThirdPartyStatus.ERROR) {
@@ -294,7 +297,7 @@ public class CaseRecordService {
 
         if (status == ThirdPartyStatus.NOT_SENT) {
             record.setDuramapSentDate(null);
-        } else if (status == ThirdPartyStatus.SENT || status == ThirdPartyStatus.COMPLETED) {
+        } else if (status == ThirdPartyStatus.SENT) {
             if (sentDate == null) {
                 throw new InvalidWorkflowTransitionException("DuraMap sent date is required.");
             }
@@ -313,8 +316,9 @@ public class CaseRecordService {
         validateRecord(record);
         validateStatus(status, "Neuroreader");
 
-        if (status == ThirdPartyStatus.COMPLETED || status == ThirdPartyStatus.UPLOADED) {
-            throw new InvalidWorkflowTransitionException("Neuroreader does not use COMPLETED or UPLOADED.");
+
+        if (status == ThirdPartyStatus.UPLOADED) {
+            throw new InvalidWorkflowTransitionException("Neuroreader uses COMPLETED instead of UPLOADED.");
         }
 
         if (status == ThirdPartyStatus.ERROR) {
@@ -328,7 +332,7 @@ public class CaseRecordService {
 
         if (status == ThirdPartyStatus.NOT_SENT) {
             record.setNeuroreaderSentDate(null);
-        } else if (status == ThirdPartyStatus.SENT) {
+        } else if (status == ThirdPartyStatus.SENT || status == ThirdPartyStatus.COMPLETED) {
             if (sentDate == null) {
                 throw new InvalidWorkflowTransitionException("Neuroreader sent date is required.");
             }
