@@ -21,6 +21,7 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.model.CaseIssueSource;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -121,7 +122,8 @@ public class ProcessingView extends VerticalLayout {
 						dicomConfigService,
                         dicomService,
 						dicomRetrieveService,
-						currentUserService
+						currentUserService,
+						caseIssueService
 				).open()
 		);
 

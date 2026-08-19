@@ -15,6 +15,9 @@ import com.bms.processing.model.DicomStudyResult;
 import com.bms.processing.model.DicomReportResult;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.entity.CaseIssueEntity;
+import com.bms.processing.model.CaseIssueStatus;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -78,6 +81,7 @@ public class CaseRecordDialog extends Dialog {
         new LinkedHashMap<>();
 
     private final CurrentUserService currentUserService;
+    private final CaseIssueService caseIssueService;
 
     // deleted temp constructor, leaving remaining one that works with currentuserservice - updated 08182026
         public CaseRecordDialog(
@@ -92,7 +96,8 @@ public class CaseRecordDialog extends Dialog {
                 DicomConfigService dicomConfigService,
                 DicomService dicomService,
                 DicomRetrieveService dicomRetrieveService,
-                CurrentUserService currentUserService
+                CurrentUserService currentUserService,
+                CaseIssueService caseIssueService
         ) {
                 this.record = record;
                 this.caseRecordService = caseRecordService;
@@ -106,6 +111,7 @@ public class CaseRecordDialog extends Dialog {
                 this.dicomService = dicomService;
                 this.dicomRetrieveService = dicomRetrieveService;
                 this.currentUserService = currentUserService;
+                this.caseIssueService = caseIssueService;
 
                 setHeaderTitle("Patient Summary");
                 setWidth("900px");

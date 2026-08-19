@@ -16,6 +16,7 @@
         import com.bms.processing.service.DicomService;
         import com.bms.processing.service.DicomRetrieveService;
         import com.bms.processing.service.CurrentUserService;
+        import com.bms.processing.service.CaseIssueService;
         import com.vaadin.flow.component.Component;
         import com.vaadin.flow.component.UI;
         import com.vaadin.flow.component.button.Button;
@@ -122,6 +123,7 @@
         private final AuditEventService auditEventService;
 
         private final CurrentUserService currentUserService; 
+        private final CaseIssueService caseIssueService;
 
         public SummaryView(
                         CaseRecordService caseRecordService,
@@ -132,7 +134,8 @@
                         DicomConfigService dicomConfigService,
                         DicomService dicomService,
                         DicomRetrieveService dicomRetrieveService,
-                        CurrentUserService currentUserService
+                        CurrentUserService currentUserService,
+                        CaseIssueService caseIssueService
         ) {
                 this.caseRecordService = caseRecordService;
                 this.siteService = siteService;
@@ -143,6 +146,7 @@
                 this.dicomService = dicomService;
                 this.dicomRetrieveService = dicomRetrieveService;
                 this.currentUserService = currentUserService;
+                this.caseIssueService = caseIssueService;
 
                 setSizeFull();
                 setPadding(false);
@@ -816,7 +820,8 @@
                                 dicomConfigService,
                                 dicomService,
                                 dicomRetrieveService,
-                                currentUserService
+                                currentUserService,
+                                caseIssueService
                         ).open()
                 );
                 return grid;
@@ -1658,7 +1663,8 @@
                                         dicomConfigService,
                                         dicomService,
                                         dicomRetrieveService,
-                                        currentUserService
+                                        currentUserService,
+                                        caseIssueService
                                 );
 
                                 dialog.addDetachListener(event -> {

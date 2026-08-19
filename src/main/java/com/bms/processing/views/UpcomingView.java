@@ -20,6 +20,7 @@ import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.service.NotificationService;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -121,7 +122,8 @@ public class UpcomingView extends VerticalLayout {
                         dicomConfigService,
                         dicomService,
                         dicomRetrieveService,
-                        currentUserService
+                        currentUserService,
+                        caseIssueService
                 ).open()
         );
 

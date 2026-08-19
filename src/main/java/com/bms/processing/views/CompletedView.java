@@ -13,6 +13,7 @@ import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -43,6 +44,7 @@ public class CompletedView extends VerticalLayout {
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
     private final CurrentUserService currentUserService;
+    private final CaseIssueService caseIssueService;
 
     public CompletedView(
             CaseRecordService caseRecordService,
@@ -52,7 +54,9 @@ public class CompletedView extends VerticalLayout {
             DicomConfigService dicomConfigService,
             DicomService dicomService,
             DicomRetrieveService dicomRetrieveService,
-            CurrentUserService currentUserService
+            CurrentUserService currentUserService,
+            CaseIssueService caseIssueService
+
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -62,6 +66,7 @@ public class CompletedView extends VerticalLayout {
             this.dicomService = dicomService;
             this.dicomRetrieveService = dicomRetrieveService;
             this.currentUserService = currentUserService;
+            this.caseIssueService = caseIssueService;
 
         setSizeFull();
         setPadding(true);
@@ -91,7 +96,8 @@ public class CompletedView extends VerticalLayout {
                         dicomConfigService,
                         dicomService,
                         dicomRetrieveService,
-                        currentUserService
+                        currentUserService,
+                        caseIssueService
                 ).open()
         );
 

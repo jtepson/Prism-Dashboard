@@ -19,6 +19,7 @@ import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -101,7 +102,8 @@ public class ErrorsView extends VerticalLayout {
                         dicomConfigService,
                         dicomService,
                         dicomRetrieveService,
-                        currentUserService
+                        currentUserService,
+                        caseIssueService
                 ).open()
         );
 

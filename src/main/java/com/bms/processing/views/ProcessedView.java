@@ -16,6 +16,7 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -97,7 +98,8 @@ public class ProcessedView extends VerticalLayout {
                         dicomConfigService,
                         dicomService,
                         dicomRetrieveService,
-                        currentUserService
+                        currentUserService,
+                        caseIssueService
                 ).open()
         );
 

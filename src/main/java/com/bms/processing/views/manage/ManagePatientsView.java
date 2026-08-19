@@ -1,6 +1,7 @@
 package com.bms.processing.views.manage;
 
 import com.bms.processing.components.CaseRecordDialog;
+import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.layouts.MainLayout;
 import com.bms.processing.service.AuditEventService;
@@ -10,6 +11,7 @@ import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.service.DicomRetrieveService;
 import com.bms.processing.service.CurrentUserService;
+import com.bms.processing.service.CaseIssueService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -44,6 +46,7 @@ public class ManagePatientsView extends VerticalLayout {
     private final DicomService dicomService;
     private final DicomRetrieveService dicomRetrieveService;
     private final CurrentUserService currentUserService;
+    private final CaseIssueService caseIssueService;
 
     public ManagePatientsView(
             CaseRecordService caseRecordService,
@@ -53,7 +56,8 @@ public class ManagePatientsView extends VerticalLayout {
             DicomConfigService dicomConfigService,
             DicomService dicomService,
             DicomRetrieveService dicomRetrieveService,
-            CurrentUserService currentUserService
+            CurrentUserService currentUserService,
+            CaseIssueService caseIssueService
     ) {
         this.caseRecordService = caseRecordService;
         this.auditEventService = auditEventService;
@@ -63,6 +67,7 @@ public class ManagePatientsView extends VerticalLayout {
         this.dicomService = dicomService;
         this.dicomRetrieveService = dicomRetrieveService;
         this.currentUserService = currentUserService;
+        this.caseIssueService = caseIssueService;
 
         setSizeFull();
         setPadding(true);
@@ -153,7 +158,8 @@ public class ManagePatientsView extends VerticalLayout {
                         dicomConfigService,
                         dicomService,
                         dicomRetrieveService,
-                        currentUserService
+                        currentUserService,
+                        caseIssueService
                 ).open()
         );
     }
