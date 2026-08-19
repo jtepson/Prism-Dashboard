@@ -6,12 +6,15 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.layouts.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.component.combobox.ComboBox;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Route(value = "manage/audit", layout = MainLayout.class)
 @PageTitle("Audit Log")
@@ -35,21 +38,40 @@ public class ManageAuditLogView extends VerticalLayout {
 
                 Grid<AuditEventEntity> grid = new Grid<>(AuditEventEntity.class, false);
 
-                grid.addColumn(AuditEventEntity::getCreatedAt)
+                grid.addColumn(event -> formatTimestamp(event.getCreatedAt()))
                         .setHeader("Timestamp")
-                        .setAutoWidth(true);
+                        .setWidth("180px")
+                        .setFlexGrow(0)
+                        .setSortable(true);
 
                 grid.addColumn(AuditEventEntity::getCreatedBy)
                         .setHeader("User")
-                        .setAutoWidth(true);
+                        .setWidth("150px")
+                        .setFlexGrow(0);
+
+                grid.addColumn(AuditEventEntity::getCaseRecordId)
+                        .setHeader("Case ID")
+                        .setWidth("100px")
+                        .setFlexGrow(0);
 
                 grid.addColumn(AuditEventEntity::getEventType)
                         .setHeader("Event")
-                        .setAutoWidth(true);
+                        .setWidth("220px")
+                        .setFlexGrow(0);
 
                 grid.addColumn(AuditEventEntity::getMessage)
                         .setHeader("Details")
                         .setFlexGrow(1);
+
+                grid.addColumn(AuditEventEntity::getOldValue)
+                        .setHeader("Previous")
+                        .setWidth("180px")
+                        .setFlexGrow(0);
+
+                grid.addColumn(AuditEventEntity::getNewValue)
+                        .setHeader("New")
+                        .setWidth("180px")
+                        .setFlexGrow(0);
 
                 List<AuditEventEntity> events = auditEventService.getRecentAuditEvents();
 
@@ -61,31 +83,97 @@ public class ManageAuditLogView extends VerticalLayout {
                 searchField.setClearButtonVisible(true);
                 searchField.setWidth("350px");
 
-                searchField.addValueChangeListener(event -> {
-                String searchTerm = event.getValue() == null
+                ComboBox<String> eventFilter = new ComboBox<>();
+                eventFilter.setPlaceholder("Filter event");
+                eventFilter.setClearButtonVisible(true);
+                eventFilter.setWidth("220px");
+
+                eventFilter.setItems(
+                        events.stream()
+                                .map(AuditEventEntity::getEventType)
+                                .filter(java.util.Objects::nonNull)
+                                .distinct()
+                                .sorted()
+                                .toList()
+                );
+
+        Runnable applyFilters = () -> {
+                String searchTerm = searchField.getValue() == null
                         ? ""
-                        : event.getValue().trim().toLowerCase();
+                        : searchField.getValue().trim().toLowerCase();
+
+                String selectedEvent = eventFilter.getValue();
 
                 dataProvider.setFilter(auditEvent -> {
-                        if (searchTerm.isBlank()) {
-                        return true;
-                        }
+                        boolean matchesSearch =
+                                searchTerm.isBlank()
+                                        || contains(auditEvent.getCreatedBy(), searchTerm)
+                                        || contains(auditEvent.getEventType(), searchTerm)
+                                        || contains(auditEvent.getMessage(), searchTerm)
+                                        || contains(auditEvent.getOldValue(), searchTerm)
+                                        || contains(auditEvent.getNewValue(), searchTerm)
+                                        || contains(
+                                                auditEvent.getCaseRecordId() != null
+                                                        ? auditEvent.getCaseRecordId().toString()
+                                                        : null,
+                                                searchTerm
+                                        );
 
-                        return contains(auditEvent.getCreatedBy(), searchTerm)
-                                || contains(auditEvent.getEventType(), searchTerm)
-                                || contains(auditEvent.getMessage(), searchTerm);
+                        boolean matchesEvent =
+                                selectedEvent == null
+                                        || selectedEvent.equals(auditEvent.getEventType());
+
+                        return matchesSearch && matchesEvent;
                 });
-        });
+        };        
+
+        searchField.addValueChangeListener(event -> applyFilters.run());
+        eventFilter.addValueChangeListener(event -> applyFilters.run());
 
         grid.setItems(dataProvider);
 
                 grid.setSizeFull();
 
-                add(searchField, grid);
+                HorizontalLayout filters = new HorizontalLayout(
+                        searchField,
+                        eventFilter
+                );
+
+                filters.setAlignItems(
+                        com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END
+                );
+
+                add(filters, grid);
         }
 
         private boolean contains(String value, String searchTerm) {
                 return value != null
                         && value.toLowerCase().contains(searchTerm);
+        }
+
+        private String formatTimestamp(LocalDateTime value) {
+                if (value == null) {
+                        return "";
+                }
+
+                int hour = value.getHour();
+                int minute = value.getMinute();
+
+                int displayHour = hour % 12;
+                if (displayHour == 0) {
+                        displayHour = 12;
+                }
+
+                String amPm = hour >= 12 ? "PM" : "AM";
+
+                return String.format(
+                        "%02d-%02d-%04d %02d:%02d %s",
+                        value.getMonthValue(),
+                        value.getDayOfMonth(),
+                        value.getYear(),
+                        displayHour,
+                        minute,
+                        amPm
+                );
         }
 }
