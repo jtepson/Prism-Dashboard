@@ -993,14 +993,21 @@
                         .toList();
         }
 
+        //new tracker for issues instead of errors - updated 08192026
         private List<CaseRecordEntity> getErrorRecords() {
-                return caseRecordService.findAll().stream()
-                        .filter(record ->
-                                record.getPatientStatus() == PatientStatus.ON_HOLD
-                                        || record.getPatientStatus() == PatientStatus.MISSING_DATA
-                                        || record.getPatientStatus() == PatientStatus.RESCAN_REQUIRED
-                                        || record.getPatientStatus() == PatientStatus.REPORT_CORRECTION_REQUIRED
+
+                return caseIssueService
+                        .findByStatusWithCaseRecord(
+                                com.bms.processing.model.CaseIssueStatus.ACTIVE
                         )
+                        .stream()
+                        .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+                        .map(issue -> issue.getCaseRecord())
+                        .filter(record ->
+                                record != null
+                                        && record.getPatientStatus() != PatientStatus.COMPLETED
+                        )
+                        .distinct()
                         .sorted(Comparator.comparing(
                                 CaseRecordEntity::getPatientLastName,
                                 Comparator.nullsLast(String::compareToIgnoreCase)
@@ -1532,20 +1539,16 @@
                         .setHeader("Status")
                         .setAutoWidth(true);
 
+                //changing old obsolete issue tracker for widget - 08192026
                 grid.addColumn(record -> {
-                                if (record.getImekaErrorNote() != null && !record.getImekaErrorNote().isBlank()) {
-                                return "IMEKA";
-                                }
-                                if (record.getDuramapErrorNote() != null && !record.getDuramapErrorNote().isBlank()) {
-                                return "DuraMap";
-                                }
-                                if (record.getNeuroreaderErrorNote() != null && !record.getNeuroreaderErrorNote().isBlank()) {
-                                return "Neuroreader";
-                                }
-                                return "General";
-                        })
-                        .setHeader("Source")
-                        .setAutoWidth(true);
+                        return caseIssueService.findActiveByCaseRecord(record).stream()
+                                .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+                                .map(issue -> formatEnum(issue.getIssueSource()))
+                                .distinct()
+                                .collect(java.util.stream.Collectors.joining(", "));
+                })
+                .setHeader("Source")
+                .setAutoWidth(true);
 
                 grid.setItems(getErrorRecords());
 
