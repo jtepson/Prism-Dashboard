@@ -388,7 +388,7 @@ public class CaseRecordEntity {
             ? dateScanned
             : LocalDate.now();
 
-    return Period.between(dateOfBirth, referenceDate).getYears() < 18;
+    return Period.between(dateOfBirth, referenceDate).getYears() < 16;
     }
 
     public String getOwnerGroup() {
