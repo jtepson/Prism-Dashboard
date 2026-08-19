@@ -6,7 +6,7 @@ import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.repository.CaseIssueRepository;
 import com.bms.processing.model.CaseIssueType;
 import com.bms.processing.model.CaseIssueSource;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,6 +66,7 @@ public class CaseIssueService {
                 .collect(java.util.stream.Collectors.joining("\n"));
     }
 
+    @Transactional
     public CaseIssueEntity createIssue(
             CaseRecordEntity caseRecord,
             CaseIssueSource issueSource,
@@ -101,6 +102,8 @@ public class CaseIssueService {
         return savedIssue;
     }
 
+    //adding transactional here again because of *lazy proxies* - updated 08192026
+    @Transactional
     //added this for issue updated, for better tracking 08182026
     public CaseIssueEntity updateIssue(
             CaseIssueEntity issue,
@@ -143,6 +146,7 @@ public class CaseIssueService {
         return savedIssue;
     }
 
+    @Transactional
     public CaseIssueEntity resolveIssue(
         CaseIssueEntity issue,
         String resolvedBy,

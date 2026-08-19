@@ -232,8 +232,7 @@ public class ProcessedView extends VerticalLayout {
                     caseRecordService.markCompleted(record);
                     refreshProcessedGrid();
                 } catch (InvalidWorkflowTransitionException ex) {
-                    Span message = new Span(ex.getMessage());
-                    add(message);
+                    showError(ex.getMessage());
                 }
             });
 
@@ -310,5 +309,18 @@ public class ProcessedView extends VerticalLayout {
 
     private boolean containsIgnoreCase(String value, String filter) {
         return value != null && value.toLowerCase().contains(filter);
+    }
+
+    private void showError(String message) {
+        com.vaadin.flow.component.notification.Notification notification =
+                com.vaadin.flow.component.notification.Notification.show(
+                        message,
+                        3500,
+                        com.vaadin.flow.component.notification.Notification.Position.MIDDLE
+                );
+
+        notification.addThemeVariants(
+                com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR
+        );
     }
 }
