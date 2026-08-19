@@ -224,6 +224,7 @@ public class ProcessingView extends VerticalLayout {
 										createOrUpdateVendorIssue(
 												record,
 												CaseIssueSource.DURAMAP,
+												CaseIssueType.VENDOR_FAILURE,
 												noteValue
 										);
 
@@ -275,6 +276,7 @@ public class ProcessingView extends VerticalLayout {
 										createOrUpdateVendorIssue(
 												record,
 												CaseIssueSource.NEUROREADER,
+												CaseIssueType.VENDOR_FAILURE,
 												noteValue
 										);
 										refreshProcessingGrid();
@@ -326,6 +328,7 @@ public class ProcessingView extends VerticalLayout {
 										createOrUpdateVendorIssue(
 												record,
 												CaseIssueSource.IMEKA,
+												CaseIssueType.VENDOR_FAILURE,
 												noteValue
 										);
 
@@ -378,6 +381,7 @@ public class ProcessingView extends VerticalLayout {
 											createOrUpdateVendorIssue(
 													record,
 													CaseIssueSource.DURAMAP,
+													CaseIssueType.VENDOR_FAILURE,
 													noteValue
 											);
 
@@ -428,6 +432,7 @@ public class ProcessingView extends VerticalLayout {
 										createOrUpdateVendorIssue(
 												record,
 												CaseIssueSource.NEUROREADER,
+												CaseIssueType.VENDOR_FAILURE,
 												noteValue
 										);
 										refreshProcessingGrid();
@@ -950,10 +955,85 @@ public class ProcessingView extends VerticalLayout {
 		dialog.open();
 	}
 
-	//added in for third party to auto update caseissue instead of only writing the legacy vendor note - updated 08182026
+	//updating vendor specific error method - updated 08192026
+	private void promptVendorIssue(
+			CaseRecordEntity record,
+			String vendorLabel,
+			CaseIssueSource source,
+			String existingNote,
+			Consumer<String> onSave
+	) {
+		Dialog dialog = new Dialog();
+		dialog.setHeaderTitle(vendorLabel + " Error");
+		dialog.setWidth("600px");
+
+		ComboBox<CaseIssueType> issueType =
+				new ComboBox<>("Issue Category");
+
+		issueType.setItems(
+				CaseIssueType.VENDOR_FAILURE,
+				CaseIssueType.MISSING_DATA,
+				CaseIssueType.IMAGE_QUALITY,
+				CaseIssueType.QA_ARTIFACT,
+				CaseIssueType.OTHER
+		);
+
+		issueType.setValue(CaseIssueType.VENDOR_FAILURE);
+		issueType.setItemLabelGenerator(this::formatEnum);
+		issueType.setWidthFull();
+
+		TextArea note = new TextArea("Error Note");
+		note.setWidthFull();
+		note.setMinHeight("160px");
+		note.setValue(existingNote != null ? existingNote : "");
+
+		Button cancelButton =
+				new Button("Cancel", e -> dialog.close());
+
+		Button saveButton = new Button("Save");
+		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+		saveButton.addClickListener(event -> {
+			if (issueType.getValue() == null) {
+				showError("Issue category is required.");
+				return;
+			}
+
+			if (note.getValue() == null
+					|| note.getValue().trim().isEmpty()) {
+				showError("Error note is required.");
+				return;
+			}
+
+			onSave.accept(note.getValue().trim());
+
+			createOrUpdateVendorIssue(
+					record,
+					source,
+					issueType.getValue(),
+					note.getValue().trim()
+			);
+
+			dialog.close();
+		});
+
+		VerticalLayout content = new VerticalLayout(
+				issueType,
+				note
+		);
+		content.setPadding(false);
+		content.setSpacing(true);
+
+		dialog.add(content);
+		dialog.getFooter().add(cancelButton, saveButton);
+		dialog.open();
+	}
+
+	//added in for third party to auto update caseissue instead of only writing the legacy vendor note - updated again 08192026 to add in issuetypes
 	private void createOrUpdateVendorIssue(
 			CaseRecordEntity record,
 			CaseIssueSource source,
+			CaseIssueType issueType,
 			String note
 	) {
 		var existingIssue = caseIssueService.findActiveByCaseRecord(record).stream()
@@ -964,7 +1044,7 @@ public class ProcessingView extends VerticalLayout {
 			caseIssueService.updateIssue(
 					existingIssue.get(),
 					source,
-					CaseIssueType.VENDOR_FAILURE,
+					issueType,
 					false,
 					formatEnum(source) + " Vendor Failure",
 					note,
@@ -974,7 +1054,7 @@ public class ProcessingView extends VerticalLayout {
 			caseIssueService.createIssue(
 					record,
 					source,
-					CaseIssueType.VENDOR_FAILURE,
+					issueType,
 					false,
 					formatEnum(source) + " Vendor Failure",
 					note,
