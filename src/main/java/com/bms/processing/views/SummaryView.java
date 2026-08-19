@@ -361,14 +361,16 @@
         }
 
         private List<String> getSelectedSectionOrder() {
-                return List.of(
-                        order1Select.getValue(),
-                        order2Select.getValue(),
-                        order3Select.getValue(),
-                        order4Select.getValue(),
-                        order5Select.getValue()
-                );
-                }
+                return java.util.stream.Stream.of(
+                                order1Select.getValue(),
+                                order2Select.getValue(),
+                                order3Select.getValue(),
+                                order4Select.getValue(),
+                                order5Select.getValue()
+                        )
+                        .filter(java.util.Objects::nonNull)
+                        .toList();
+        }
 
         private void normalizeSectionOrderSelections() {
                 List<String> allSections = List.of(PROCESSED, PROCESSING, ERRORS, UPCOMING, COMPLETED_30);
@@ -1363,15 +1365,25 @@
 
                 grid.addColumn(CaseRecordEntity::getPatientLastName)
                         .setHeader("Last")
-                        .setAutoWidth(true);
+                        .setWidth("120px")
+                        .setFlexGrow(0);
 
-                grid.addColumn(CaseRecordEntity::getSiteName)
-                        .setHeader("Site")
-                        .setAutoWidth(true);
+                grid.addColumn(record ->
+                        caseIssueService.findActiveByCaseRecord(record).stream()
+                                .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
+                                .map(issue -> formatEnum(issue.getIssueType()))
+                                .distinct()
+                                .collect(java.util.stream.Collectors.joining(", "))
+                )
+                .setHeader("Issue")
+                .setFlexGrow(1);
 
-                grid.addComponentColumn(record -> buildStatusChip(formatEnum(record.getPatientStatus())))
-                        .setHeader("Status")
-                        .setAutoWidth(true);
+                grid.addComponentColumn(record ->
+                        buildStatusChip(formatEnum(record.getPatientStatus()))
+                )
+                .setHeader("Status")
+                .setWidth("130px")
+                .setFlexGrow(0);
 
                 grid.setItems(getErrorRecords());
 
@@ -1390,6 +1402,9 @@
                 grid.setWidthFull();
 
                 applyStandardGridStyle(grid, true);
+
+                grid.setWidthFull();
+                grid.getStyle().set("overflow-x", "hidden");
 
                 grid.setPartNameGenerator(record ->
                         selectedRecord != null
@@ -1540,15 +1555,16 @@
                         .setAutoWidth(true);
 
                 //changing old obsolete issue tracker for widget - 08192026
-                grid.addColumn(record -> {
-                        return caseIssueService.findActiveByCaseRecord(record).stream()
+                grid.addColumn(record ->
+                        caseIssueService.findActiveByCaseRecord(record).stream()
                                 .filter(issue -> Boolean.TRUE.equals(issue.getBlocking()))
-                                .map(issue -> formatEnum(issue.getIssueSource()))
+                                .map(issue -> formatEnum(issue.getIssueType()))
                                 .distinct()
-                                .collect(java.util.stream.Collectors.joining(", "));
-                })
-                .setHeader("Source")
-                .setAutoWidth(true);
+                                .collect(java.util.stream.Collectors.joining(", "))
+                )
+                .setHeader("Issue")
+                .setFlexGrow(1)
+                .setAutoWidth(false);
 
                 grid.setItems(getErrorRecords());
 
@@ -1618,6 +1634,7 @@
                 }
 
                 events.stream()
+                        .filter(event -> isRecentActivityEvent(event.getEventType()))
                         .limit(8)
                         .forEach(event ->
                                 activity.add(
@@ -1627,7 +1644,7 @@
                                                 event.getEventType()
                                         )
                                 )
-                        );
+                );
 
                 return activity;
         }
@@ -1793,6 +1810,8 @@
                         case "CASE_ERROR" -> VaadinIcon.WARNING.create();
                         case "CASE_FINALIZED" -> VaadinIcon.CHECK.create();
                         case "CASE_COMPLETED" -> VaadinIcon.CHECK_CIRCLE_O.create();
+                        case "CASE_ISSUE_CREATED" -> VaadinIcon.WARNING.create();
+                        case "CASE_ISSUE_RESOLVED" -> VaadinIcon.CHECK.create();
                         default -> VaadinIcon.INFO_CIRCLE_O.create();
                 };
         }
@@ -1804,6 +1823,8 @@
                         case "PROCESSING_STARTED", "RETURNED_TO_PROCESSING" -> "#2563eb";
                         case "IMAGES_RECEIVED" -> "#0891b2";
                         case "PATIENT_CREATED" -> "#64748b";
+                        case "CASE_ISSUE_CREATED" -> "#dc2626";
+                        case "CASE_ISSUE_RESOLVED" -> "#16a34a";
                         default -> "#64748b";
                 };
         }
@@ -1841,6 +1862,24 @@
                 String amPm = hour >= 12 ? "PM" : "AM";
 
                 return String.format("%d:%02d %s", displayHour, minute, amPm);
+        }
+
+        private boolean isRecentActivityEvent(String eventType) {
+                if (eventType == null) {
+                        return false;
+                }
+
+                return switch (eventType) {
+                        case "PATIENT_CREATED",
+                        "IMAGES_RECEIVED",
+                        "PROCESSING_STARTED",
+                        "CASE_FINALIZED",
+                        "CASE_COMPLETED",
+                        "CASE_ISSUE_CREATED",
+                        "CASE_ISSUE_RESOLVED"-> true;
+
+                        default -> false;
+                };
         }
 
         }
