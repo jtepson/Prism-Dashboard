@@ -685,23 +685,31 @@ public class CaseRecordDialog extends Dialog {
         }
         }
 
-        Details generalNotesDetails =
-                new Details("General Notes", generalNotes);
+        //updated 08192026 for better alignment in notes section
+        Span generalNotesHeader = new Span("General Notes");
+        generalNotesHeader.getStyle()
+                .set("font-weight", "700")
+                .set("font-size", "0.95rem");
 
-        Details activeIssuesDetails =
-                new Details("Active Issues", activeIssuesLayout);
+        Span activeIssuesHeader = new Span("Active Issues");
+        activeIssuesHeader.getStyle()
+                .set("font-weight", "700")
+                .set("font-size", "0.95rem")
+                .set("margin-top", "0.75rem");
 
-        Details resolvedIssuesDetails =
-                new Details("Resolved Issues", resolvedIssuesLayout);
-
-        generalNotesDetails.setOpened(true);
-        activeIssuesDetails.setOpened(!activeIssues.isEmpty());
-        resolvedIssuesDetails.setOpened(false);
+        Span resolvedIssuesHeader = new Span("Resolved Issues");
+        resolvedIssuesHeader.getStyle()
+                .set("font-weight", "700")
+                .set("font-size", "0.95rem")
+                .set("margin-top", "0.75rem");
 
         notesLayout.add(
-                generalNotesDetails,
-                activeIssuesDetails,
-                resolvedIssuesDetails
+                generalNotesHeader,
+                generalNotes,
+                activeIssuesHeader,
+                activeIssuesLayout,
+                resolvedIssuesHeader,
+                resolvedIssuesLayout
         );
 
         Details notesDetails = new Details("Notes & Issues", notesLayout);
