@@ -158,6 +158,6 @@ public class AuditEventService {
 
     public List<AuditEventEntity> getRecentAuditEvents() {
         return auditEventRepository
-                .findTop200ByTimelineEventFalseOrderByCreatedAtDesc();
+                .findTop500ByOrderByCreatedAtDesc();
     }
 }

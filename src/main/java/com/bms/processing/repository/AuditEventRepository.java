@@ -13,5 +13,9 @@ public interface AuditEventRepository
     List<AuditEventEntity> findByCaseRecordIdOrderByCreatedAtDesc(Long caseRecordId);
 
     List<AuditEventEntity> findByCaseRecordIdAndTimelineEventTrueOrderByCreatedAtDesc(Long caseRecordId);
+
     List<AuditEventEntity> findTop200ByTimelineEventFalseOrderByCreatedAtDesc();
+
+    List<AuditEventEntity> findTop500ByOrderByCreatedAtDesc();
+
 }
