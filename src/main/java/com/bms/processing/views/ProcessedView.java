@@ -27,6 +27,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
@@ -229,14 +232,9 @@ public class ProcessedView extends VerticalLayout {
                     ButtonVariant.LUMO_SUCCESS
             );
 
-            completeButton.addClickListener(event -> {
-                try {
-                    caseRecordService.markCompleted(record);
-                    refreshProcessedGrid();
-                } catch (InvalidWorkflowTransitionException ex) {
-                    showError(ex.getMessage());
-                }
-            });
+            completeButton.addClickListener(event ->
+                    openMarkCompletedDialog(record)
+            );
 
             return completeButton;
         }).setHeader("Action").setAutoWidth(true);
@@ -334,5 +332,80 @@ public class ProcessedView extends VerticalLayout {
         notification.addThemeVariants(
                 com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR
         );
+    }
+
+    //opens new mark completed dialog before finalizing just so BMS team can add their final notes and whatnot - 08202026
+    private void openMarkCompletedDialog(CaseRecordEntity record) {
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Mark Case Completed");
+            dialog.setWidth("500px");
+
+            DatePicker invoiceSentDate = new DatePicker("Invoice Sent Date");
+            invoiceSentDate.setWidthFull();
+            invoiceSentDate.setValue(record.getInvoiceSentDate());
+            invoiceSentDate.setClearButtonVisible(true);
+
+            TextArea finalNotes = new TextArea("Final Notes");
+            finalNotes.setWidthFull();
+            finalNotes.setMinHeight("120px");
+            finalNotes.setPlaceholder("Optional final notes...");
+
+            if (record.getFinalWorkflowNotes() != null) {
+                    finalNotes.setValue(record.getFinalWorkflowNotes());
+            }
+
+            VerticalLayout content = new VerticalLayout(
+                    invoiceSentDate,
+                    finalNotes
+            );
+
+            content.setPadding(false);
+            content.setSpacing(true);
+            content.setWidthFull();
+
+            dialog.add(content);
+
+            Button cancel = new Button(
+                    "Cancel",
+                    event -> dialog.close()
+            );
+
+            Button complete = new Button("Mark Completed");
+            complete.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+            complete.addClickListener(event -> {
+                    try {
+                            caseRecordService.updateInvoiceSentDate(
+                                    record,
+                                    invoiceSentDate.getValue(),
+                                    currentUserService.getUsername()
+                            );
+
+                            caseRecordService.updateFinalWorkflowNotes(
+                                    record,
+                                    finalNotes.getValue(),
+                                    currentUserService.getUsername()
+                            );
+
+                            caseRecordService.markCompleted(record);
+
+                            dialog.close();
+
+                            Notification.show("Case marked completed.");
+
+                            refreshProcessedGrid();
+
+                    } catch (InvalidWorkflowTransitionException ex) {
+                            Notification.show(
+                                    ex.getMessage(),
+                                    4000,
+                                    Notification.Position.MIDDLE
+                            );
+                    }
+            });
+
+            dialog.getFooter().add(cancel, complete);
+
+            dialog.open();
     }
 }
