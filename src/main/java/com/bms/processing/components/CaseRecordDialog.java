@@ -34,10 +34,13 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
@@ -584,34 +587,148 @@ public class CaseRecordDialog extends Dialog {
         var activeIssues = caseIssueService.findActiveByCaseRecord(record);
 
         if (activeIssues.isEmpty()) {
-        activeIssuesLayout.add(new Span("No active issues."));
+                Span empty = new Span("No active issues.");
+                empty.getStyle()
+                        .set("font-size", "0.88rem")
+                        .set("color", "#64748b");
+
+                activeIssuesLayout.add(empty);
+
         } else {
-        for (CaseIssueEntity issue : activeIssues) {
-                Button issueButton = new Button(
-                        issue.getTitle()
-                                + (Boolean.TRUE.equals(issue.getBlocking())
-                                ? " - Blocking"
-                                : "")
-                );
+                for (CaseIssueEntity issue : activeIssues) {
 
-                issueButton.setWidthFull();
+                        VerticalLayout issueCard = new VerticalLayout();
+                        issueCard.setPadding(false);
+                        issueCard.setSpacing(false);
+                        issueCard.setWidthFull();
 
-                issueButton.addClickListener(event ->
-                        new CaseIssueDialog(
-                                record,
-                                issue,
-                                caseIssueService,
-                                currentUserService,
-                                () -> {
-                                if (afterSave != null) {
-                                        afterSave.run();
-                                }
-                                }
-                        ).open()
-                );
+                        Span title = new Span(issue.getTitle());
+                        title.getStyle()
+                                .set("font-weight", "700")
+                                .set("font-size", "0.95rem")
+                                .set("color", "#1e293b");
 
-                activeIssuesLayout.add(issueButton);
-        }
+                        Span source = new Span(
+                                formatEnum(issue.getIssueSource())
+                        );
+
+                        source.getStyle()
+                                .set("font-size", "0.8rem")
+                                .set("color", "#64748b");
+
+                        Span note = new Span(
+                                nullSafe(issue.getDescription())
+                        );
+
+                        note.getStyle()
+                                .set("font-size", "0.88rem")
+                                .set("color", "#334155")
+                                .set("white-space", "pre-wrap")
+                                .set("margin-top", "0.35rem");
+
+                        String createdText = "Reported";
+
+                        if (issue.getCreatedAt() != null) {
+                                createdText += " "
+                                        + formatDateTimeCompact(issue.getCreatedAt());
+                        }
+
+                        if (issue.getCreatedBy() != null
+                                && !issue.getCreatedBy().isBlank()) {
+                                createdText += " by " + issue.getCreatedBy();
+                        }
+
+                        Span created = new Span(createdText);
+                        created.getStyle()
+                                .set("font-size", "0.78rem")
+                                .set("color", "#64748b")
+                                .set("margin-top", "0.35rem");
+
+                        Button editButton = new Button("Edit");
+                        editButton.addThemeVariants(
+                                ButtonVariant.LUMO_SMALL,
+                                ButtonVariant.LUMO_TERTIARY
+                        );
+
+                        editButton.addClickListener(event ->
+                                new CaseIssueDialog(
+                                        record,
+                                        issue,
+                                        caseIssueService,
+                                        currentUserService,
+                                        () -> {
+                                                if (afterSave != null) {
+                                                        afterSave.run();
+                                                }
+                                        }
+                                ).open()
+                        );
+
+                        Button resolveButton = new Button("Resolve");
+                        resolveButton.addThemeVariants(
+                                ButtonVariant.LUMO_SMALL,
+                                ButtonVariant.LUMO_PRIMARY
+                        );
+
+                        resolveButton.addClickListener(event ->
+                                new CaseIssueDialog(
+                                        record,
+                                        issue,
+                                        caseIssueService,
+                                        currentUserService,
+                                        () -> {
+                                                if (afterSave != null) {
+                                                        afterSave.run();
+                                                }
+                                        }
+                                ).open()
+                        );
+
+                        HorizontalLayout actions = new HorizontalLayout(
+                                editButton,
+                                resolveButton
+                        );
+
+                        actions.setPadding(false);
+                        actions.setSpacing(true);
+                        actions.setMargin(false);
+
+                        HorizontalLayout footer = new HorizontalLayout(
+                                created,
+                                actions
+                        );
+
+                        footer.setWidthFull();
+                        footer.setPadding(false);
+                        footer.setSpacing(true);
+                        footer.setAlignItems(
+                                com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER
+                        );
+                        footer.setJustifyContentMode(
+                                com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN
+                        );
+
+                        issueCard.add(
+                                title,
+                                source,
+                                note,
+                                footer
+                        );
+
+                        issueCard.getStyle()
+                                .set("border", "1px solid #e2e8f0")
+                                .set("border-radius", "10px")
+                                .set("background", "#ffffff")
+                                .set("padding", "0.85rem")
+                                .set("box-sizing", "border-box");
+
+                        if (Boolean.TRUE.equals(issue.getBlocking())) {
+                                issueCard.getStyle()
+                                        .set("border-left", "3px solid var(--lumo-error-color)");
+                        }
+
+                        activeIssuesLayout.add(issueCard);
+                }
         }
 
         VerticalLayout resolvedIssuesLayout = new VerticalLayout();
@@ -671,6 +788,22 @@ public class CaseRecordDialog extends Dialog {
                                 : "")
                 );
 
+                source.getStyle()
+                        .set("font-size", "0.82rem")
+                        .set("color", "#64748b");
+
+                note.getStyle()
+                        .set("font-size", "0.88rem")
+                        .set("color", "#334155");
+
+                resolution.getStyle()
+                        .set("font-size", "0.88rem")
+                        .set("color", "#334155");
+
+                resolvedBy.getStyle()
+                        .set("font-size", "0.8rem")
+                        .set("color", "#64748b");
+
                 issueCard.add(
                         title,
                         source,
@@ -680,8 +813,11 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 issueCard.getStyle()
-                        .set("border", "1px solid var(--lumo-contrast-20pct)")
-                        .set("border-radius", "8px");
+                        .set("border", "1px solid #e2e8f0")
+                        .set("border-radius", "10px")
+                        .set("background", "#ffffff")
+                        .set("padding", "0.75rem")
+                        .set("gap", "0.2rem");
 
                 resolvedIssuesLayout.add(issueCard);
         }
@@ -713,9 +849,6 @@ public class CaseRecordDialog extends Dialog {
                 resolvedIssuesHeader,
                 resolvedIssuesLayout
         );
-
-        Details notesDetails = new Details("Notes & Issues", notesLayout);
-        notesDetails.setOpened(false);
 
         //activity section for pt history
         VerticalLayout historyLayout = new VerticalLayout();
@@ -762,22 +895,54 @@ public class CaseRecordDialog extends Dialog {
 
         activityHistoryDetails.setOpened(false);
 
-        VerticalLayout content = new VerticalLayout();
-        content.add(patientDetails);
+        VerticalLayout overviewContent = new VerticalLayout();
+        overviewContent.setPadding(false);
+        overviewContent.setSpacing(true);
+        overviewContent.setWidthFull();
+
+        VerticalLayout issuesContent = new VerticalLayout();
+        issuesContent.setPadding(false);
+        issuesContent.setSpacing(true);
+        issuesContent.setWidthFull();
+
+        VerticalLayout filesContent = new VerticalLayout();
+        filesContent.setPadding(false);
+        filesContent.setSpacing(true);
+        filesContent.setWidthFull();
+
+        VerticalLayout dicomContent = new VerticalLayout();
+        dicomContent.setPadding(false);
+        dicomContent.setSpacing(true);
+        dicomContent.setWidthFull();
+
+        VerticalLayout activityContent = new VerticalLayout();
+        activityContent.setPadding(false);
+        activityContent.setSpacing(true);
+        activityContent.setWidthFull();
+
+
+        // new tabs: overview, issues, files, dicom, and activity. Redesigning - updated 08202026
+        overviewContent.add(
+                patientDetails,
+                workflowDetails,
+                thirdPartyDetails
+        );
+        issuesContent.add(
+                notesLayout
+        );
+        filesContent.add(
+                patientFilesSection
+        );
+        dicomContent.add(
+                dicomForm
+        );
+        activityContent.add(
+                historyLayout
+        );
+
         switch (mode) {
-            case SUMMARY -> {
-                content.add(
-                        workflowDetails,
-                        thirdPartyDetails,
-                        notesDetails,
-                        dicomDetails,
-                        patientFilesDetails,
-                        activityHistoryDetails
-                );
-            }
 
-            case UPCOMING -> {
-
+        case UPCOMING -> {
                 FormLayout upcomingForm = new FormLayout();
                 upcomingForm.setWidthFull();
                 upcomingForm.setResponsiveSteps(
@@ -801,25 +966,13 @@ public class CaseRecordDialog extends Dialog {
 
                 upcomingDetails.setOpened(true);
 
-                content.add(
-                        upcomingDetails,
-                        notesDetails
+                overviewContent.addComponentAtIndex(
+                        1,
+                        upcomingDetails
                 );
-            }
+        }
 
-            case PROCESSING -> {
-
-                content.add(
-                        workflowDetails,
-                        thirdPartyDetails,
-                        notesDetails,
-                        dicomDetails,
-                        patientFilesDetails,
-                        activityHistoryDetails
-                );
-            }
-            case PROCESSED -> {
-
+        case PROCESSED -> {
                 FormLayout bmsReviewForm = new FormLayout();
                 bmsReviewForm.setWidthFull();
                 bmsReviewForm.setResponsiveSteps(
@@ -829,27 +982,27 @@ public class CaseRecordDialog extends Dialog {
 
                 bmsReviewForm.add(
                         invoiceSentDate,
-                        buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
-                        buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate()))
+                        buildDisplayField(
+                                "Processed Date",
+                                formatDateTimeCompact(record.getProcessedDate())
+                        ),
+                        buildDisplayField(
+                                "Completed Date",
+                                formatDateTimeCompact(record.getCompletedDate())
+                        )
                 );
 
                 bmsReviewForm.add(finalWorkflowNotes);
 
-                Details bmsReviewDetails = new Details("BMS Review", bmsReviewForm);
+                Details bmsReviewDetails =
+                        new Details("BMS Review", bmsReviewForm);
+
                 bmsReviewDetails.setOpened(true);
 
-                content.add(
-                        workflowDetails,
-                        thirdPartyDetails,
-                        bmsReviewDetails,
-                        notesDetails,
-                        dicomDetails,
-                        patientFilesDetails,
-                        activityHistoryDetails
-                );
-                }
-            case COMPLETED -> {
+                overviewContent.add(bmsReviewDetails);
+        }
 
+        case COMPLETED -> {
                 FormLayout archiveForm = new FormLayout();
                 archiveForm.setWidthFull();
                 archiveForm.setResponsiveSteps(
@@ -858,27 +1011,33 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 archiveForm.add(
-                        buildDisplayField("Processed Date", formatDateTimeCompact(record.getProcessedDate())),
-                        buildDisplayField("Completed Date", formatDateTimeCompact(record.getCompletedDate())),
-                        buildDisplayField("Invoice Sent Date", formatDate(record.getInvoiceSentDate())),
-                        buildDisplayField("Final Workflow Notes", nullSafe(record.getFinalWorkflowNotes()))
+                        buildDisplayField(
+                                "Processed Date",
+                                formatDateTimeCompact(record.getProcessedDate())
+                        ),
+                        buildDisplayField(
+                                "Completed Date",
+                                formatDateTimeCompact(record.getCompletedDate())
+                        ),
+                        buildDisplayField(
+                                "Invoice Sent Date",
+                                formatDate(record.getInvoiceSentDate())
+                        ),
+                        buildDisplayField(
+                                "Final Workflow Notes",
+                                nullSafe(record.getFinalWorkflowNotes())
+                        )
                 );
 
-                Details archiveDetails = new Details("Archived Record", archiveForm);
+                Details archiveDetails =
+                        new Details("Archived Record", archiveForm);
+
                 archiveDetails.setOpened(true);
 
-                content.add(
-                        workflowDetails,
-                        thirdPartyDetails,
-                        archiveDetails,
-                        notesDetails,
-                        dicomDetails,
-                        patientFilesDetails,
-                        activityHistoryDetails
-                );
-            }
-            case ERRORS -> {
+                overviewContent.add(archiveDetails);
+        }
 
+        case ERRORS -> {
                 FormLayout errorReviewForm = new FormLayout();
                 errorReviewForm.setWidthFull();
                 errorReviewForm.setResponsiveSteps(
@@ -887,33 +1046,95 @@ public class CaseRecordDialog extends Dialog {
                 );
 
                 errorReviewForm.add(
-                        buildDisplayField("Workflow Status", formatEnum(record.getPatientStatus())),
-                        buildDisplayField("General Notes", nullSafe(record.getNotes())),
-                        buildDisplayField("IMEKA Error Note", nullSafe(record.getImekaErrorNote())),
-                        buildDisplayField("DuraMap Error Note", nullSafe(record.getDuramapErrorNote())),
-                        buildDisplayField("Neuroreader Error Note", nullSafe(record.getNeuroreaderErrorNote()))
+                        buildDisplayField(
+                                "Workflow Status",
+                                formatEnum(record.getPatientStatus())
+                        ),
+                        buildDisplayField(
+                                "General Notes",
+                                nullSafe(record.getNotes())
+                        )
                 );
 
-                TextArea resolutionNotes = new TextArea("Resolution Notes");
+                TextArea resolutionNotes =
+                        new TextArea("Resolution Notes");
+
                 resolutionNotes.setWidthFull();
-                resolutionNotes.setPlaceholder("Add resolution notes here later...");
 
                 errorReviewForm.add(resolutionNotes);
 
-                Details errorReviewDetails = new Details("Error Review", errorReviewForm);
+                Details errorReviewDetails =
+                        new Details("Error Review", errorReviewForm);
+
                 errorReviewDetails.setOpened(true);
 
-                content.add(
-                        workflowDetails,
-                        thirdPartyDetails,
-                        errorReviewDetails,
-                        notesDetails,
-                        dicomDetails,
-                        patientFilesDetails,
-                        activityHistoryDetails
-                );
-            }
+                overviewContent.add(errorReviewDetails);
         }
+
+        case SUMMARY, PROCESSING -> {
+        }
+        }
+
+        //actual tab builds here. - 08202026
+        Tab overviewTab = new Tab("Overview");
+        Tab issuesTab = new Tab("Issues");
+        Tab filesTab = new Tab("Files");
+        Tab dicomTab = new Tab("DICOM");
+        Tab activityTab = new Tab("Activity");
+
+        Tabs tabs = new Tabs(
+                overviewTab,
+                issuesTab,
+                filesTab,
+                dicomTab,
+                activityTab
+        );
+
+        tabs.setWidthFull();
+
+        Div tabContent = new Div();
+        tabContent.setWidthFull();
+
+        Map<Tab, Component> tabPages = new LinkedHashMap<>();
+
+        tabPages.put(overviewTab, overviewContent);
+        tabPages.put(issuesTab, issuesContent);
+        tabPages.put(filesTab, filesContent);
+        tabPages.put(dicomTab, dicomContent);
+        tabPages.put(activityTab, activityContent);
+
+        tabPages.values().forEach(page ->
+                page.setVisible(false)
+        );
+
+        overviewContent.setVisible(true);
+
+        tabs.addSelectedChangeListener(event -> {
+        tabPages.values().forEach(page ->
+                page.setVisible(false)
+        );
+
+        Component selectedPage =
+                tabPages.get(event.getSelectedTab());
+
+        if (selectedPage != null) {
+                selectedPage.setVisible(true);
+        }
+        });
+
+        tabContent.add(
+                overviewContent,
+                issuesContent,
+                filesContent,
+                dicomContent,
+                activityContent
+        );
+
+        VerticalLayout content = new VerticalLayout(
+                tabs,
+                tabContent
+        );
+
         content.setPadding(false);
         content.setSpacing(true);
         content.setWidthFull();

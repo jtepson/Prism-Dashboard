@@ -197,7 +197,7 @@ public class ProcessingView extends VerticalLayout {
 									showError(ex.getMessage());
 								}
 							},
-							"Uploaded",
+							"Upload",
 							() -> promptVendorIssue(
 									record,
 									"IMEKA",
@@ -256,7 +256,7 @@ public class ProcessingView extends VerticalLayout {
 								showError(ex.getMessage());
 							}
 						},
-						"Completed",
+						"Complete",
 						() -> promptVendorIssue(
 								record,
 								"Neuroreader",
