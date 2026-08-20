@@ -27,6 +27,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.dialog.DialogVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -35,6 +36,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.icon.Icon;
@@ -117,13 +119,60 @@ public class CaseRecordDialog extends Dialog {
                 this.currentUserService = currentUserService;
                 this.caseIssueService = caseIssueService;
 
-                setHeaderTitle("Patient Summary");
-                setWidth("900px");
+                setWidth("960px");
+                setHeight("820px");
+                setMaxWidth("95vw");
+                setMaxHeight("92vh");
+
+                addThemeVariants(DialogVariant.LUMO_NO_PADDING);
 
                 buildDialog();
         }
 
     private void buildDialog() {
+        Span dialogTitle = new Span("Patient Summary");
+        dialogTitle.getStyle()
+                .set("font-size", "1.05rem")
+                .set("font-weight", "700")
+                .set("color", "white");
+
+        Button closeButton = new Button(
+                VaadinIcon.CLOSE_SMALL.create()
+        );
+
+        closeButton.addThemeVariants(
+                ButtonVariant.LUMO_TERTIARY_INLINE
+        );
+
+        closeButton.getStyle()
+                .set("color", "white")
+                .set("min-width", "36px")
+                .set("width", "36px")
+                .set("height", "36px");
+
+        closeButton.addClickListener(event -> close());
+
+        HorizontalLayout dialogHeader = new HorizontalLayout(
+                dialogTitle,
+                closeButton
+        );
+
+        dialogHeader.setWidthFull();
+        dialogHeader.setAlignItems(
+                FlexComponent.Alignment.CENTER
+        );
+
+        dialogHeader.setJustifyContentMode(
+                FlexComponent.JustifyContentMode.BETWEEN
+        );
+
+        dialogHeader.getStyle()
+                .set("background", "#004f50")
+                .set("padding", "0.9rem 1.35rem")
+                .set("box-sizing", "border-box")
+                .set("border-radius", "12px 12px 0 0")
+                .set("min-height", "64px");
+
         TextField lastName = new TextField("Last Name");
         lastName.setValue(nullSafe(record.getPatientLastName()));
 
@@ -199,8 +248,10 @@ public class CaseRecordDialog extends Dialog {
         );
         patientForm.add(lastName, firstName, patientId, siteField, dateOfBirth, dateScanned, sex);
 
-        Details patientDetails = new Details("Patient Information", patientForm);
-        patientDetails.setOpened(true);
+        VerticalLayout patientSection = buildOverviewSection(
+                "Patient Information",
+                patientForm
+        );
 
         FormLayout workflowForm = new FormLayout();
         workflowForm.setWidthFull();
@@ -227,8 +278,10 @@ public class CaseRecordDialog extends Dialog {
                 )
         );
 
-        Details workflowDetails = new Details("Workflow Details", workflowForm);
-        workflowDetails.setOpened(false);
+        VerticalLayout workflowSection = buildOverviewSection(
+                "Workflow Details",
+                workflowForm
+        );
 
         FormLayout thirdPartyForm = new FormLayout();
         thirdPartyForm.setWidthFull();
@@ -346,8 +399,10 @@ public class CaseRecordDialog extends Dialog {
                 );
         }
         
-        Details thirdPartyDetails = new Details("Third Party Details", thirdPartyForm);
-        thirdPartyDetails.setOpened(false);
+        VerticalLayout thirdPartySection = buildOverviewSection(
+                "Third Party Processing",
+                thirdPartyForm
+        );
 
         TextField studyInstanceUid = new TextField("Study Instance UID");
         studyInstanceUid.setWidthFull();
@@ -493,23 +548,75 @@ public class CaseRecordDialog extends Dialog {
                 accessionNumber.clear();
         });
 
-        VerticalLayout dicomActions = new VerticalLayout(
+        //new dicom tab layout - 08202026
+        queryArchiveButton.setText("Link Study");
+        findReportsButton.setText("Find Reports");
+        clearDicomLinkButton.setText("Clear Link");
+
+        queryArchiveButton.setIcon(null);
+        findReportsButton.setIcon(null);
+        clearDicomLinkButton.setIcon(null);
+
+        queryArchiveButton.setWidth("160px");
+        findReportsButton.setWidth("160px");
+        clearDicomLinkButton.setWidth("160px");
+
+        clearDicomLinkButton.getStyle()
+                .set("color", "var(--lumo-error-text-color)");
+
+        HorizontalLayout dicomActions = new HorizontalLayout(
                 queryArchiveButton,
                 findReportsButton,
                 clearDicomLinkButton
         );
+
         dicomActions.setPadding(false);
         dicomActions.setSpacing(true);
+        dicomActions.setWidthFull();
 
-        dicomForm.add(
-                buildDisplayField(
-                        "Study Linked",
-                        Boolean.TRUE.equals(record.getDicomLinked()) ? "Yes" : "No"
-                ),
+        studyInstanceUid.setPlaceholder("Enter Study Instance UID");
+        accessionNumber.setPlaceholder("Enter Accession Number");
+
+        VerticalLayout dicomPanel = new VerticalLayout();
+        dicomPanel.setPadding(false);
+        dicomPanel.setSpacing(true);
+        dicomPanel.setWidthFull();
+
+        Span dicomTitle = new Span("DICOM");
+        dicomTitle.getStyle()
+                .set("font-size", "1rem")
+                .set("font-weight", "700")
+                .set("color", "#1e293b");
+
+        Span dicomDescription =
+                new Span("Link this case to a DICOM study or view available reports.");
+
+        dicomDescription.getStyle()
+                .set("font-size", "0.88rem")
+                .set("color", "#64748b");
+
+        Div divider = new Div();
+        divider.setWidthFull();
+        divider.getStyle()
+                .set("height", "1px")
+                .set("background", "#e2e8f0")
+                .set("margin", "0.35rem 0 0.65rem");
+
+        dicomPanel.add(
+                dicomTitle,
+                dicomDescription,
+                divider,
+                dicomActions,
                 studyInstanceUid,
-                accessionNumber,
-                dicomActions
+                accessionNumber
         );
+
+        dicomPanel.getStyle()
+                .set("border", "1px solid #e2e8f0")
+                .set("border-radius", "10px")
+                .set("background", "#ffffff")
+                .set("padding", "1.25rem")
+                .set("box-sizing", "border-box");
 
         Details dicomDetails = new Details("DICOM", dicomForm);
         dicomDetails.setOpened(false);
@@ -866,19 +973,68 @@ public class CaseRecordDialog extends Dialog {
 
         } else {
 
+        //new audit events tab design - 08202026
         auditEvents.forEach(event -> {
 
-                Span eventText = new Span(
-                        formatActivityTime(event.getCreatedAt())
-                                + "  "
-                                + event.getMessage()
+                HorizontalLayout row = new HorizontalLayout();
+                row.setWidthFull();
+                row.setPadding(false);
+                row.setSpacing(true);
+                row.setAlignItems(
+                        com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.START
                 );
 
-                eventText.getStyle()
-                        .set("padding", "0.35rem 0")
-                        .set("display", "block");
+                row.getStyle()
+                        .set("padding", "0.75rem 0")
+                        .set("border-bottom", "1px solid #e2e8f0");
 
-                historyLayout.add(eventText);
+                Span time = new Span(
+                        formatActivityTime(event.getCreatedAt())
+                );
+
+                time.getStyle()
+                        .set("font-size", "0.8rem")
+                        .set("font-weight", "600")
+                        .set("color", "#64748b")
+                        .set("min-width", "78px")
+                        .set("flex-shrink", "0");
+
+                VerticalLayout eventContent = new VerticalLayout();
+                eventContent.setPadding(false);
+                eventContent.setSpacing(false);
+                eventContent.setWidthFull();
+
+                Span eventType = new Span(
+                        formatAuditEventType(event.getEventType())
+                );
+
+                eventType.getStyle()
+                        .set("font-size", "0.88rem")
+                        .set("font-weight", "700")
+                        .set("color", "#1e293b");
+
+                Span message = new Span(
+                        event.getMessage() == null
+                                ? ""
+                                : event.getMessage()
+                );
+
+                message.getStyle()
+                        .set("font-size", "0.84rem")
+                        .set("color", "#64748b")
+                        .set("white-space", "normal");
+
+                eventContent.add(
+                        eventType,
+                        message
+                );
+
+                row.add(
+                        time,
+                        eventContent
+                );
+
+                historyLayout.add(row);
         });
         }
 
@@ -922,11 +1078,6 @@ public class CaseRecordDialog extends Dialog {
 
 
         // new tabs: overview, issues, files, dicom, and activity. Redesigning - updated 08202026
-        overviewContent.add(
-                patientDetails,
-                workflowDetails,
-                thirdPartyDetails
-        );
         issuesContent.add(
                 notesLayout
         );
@@ -934,7 +1085,7 @@ public class CaseRecordDialog extends Dialog {
                 patientFilesSection
         );
         dicomContent.add(
-                dicomForm
+                dicomPanel
         );
         activityContent.add(
                 historyLayout
@@ -959,16 +1110,22 @@ public class CaseRecordDialog extends Dialog {
                         invoiceSentDate
                 );
 
-                Details upcomingDetails = new Details(
+                VerticalLayout upcomingSection = buildOverviewSection(
                         "Upcoming Information",
                         upcomingForm
                 );
 
-                upcomingDetails.setOpened(true);
+                overviewContent.add(
+                        patientSection,
+                        upcomingSection
+                );
+        }
 
-                overviewContent.addComponentAtIndex(
-                        1,
-                        upcomingDetails
+        case PROCESSING -> {
+                overviewContent.add(
+                        patientSection,
+                        workflowSection,
+                        thirdPartySection
                 );
         }
 
@@ -994,12 +1151,17 @@ public class CaseRecordDialog extends Dialog {
 
                 bmsReviewForm.add(finalWorkflowNotes);
 
-                Details bmsReviewDetails =
-                        new Details("BMS Review", bmsReviewForm);
+                VerticalLayout bmsReviewSection = buildOverviewSection(
+                        "BMS Review",
+                        bmsReviewForm
+                );
 
-                bmsReviewDetails.setOpened(true);
-
-                overviewContent.add(bmsReviewDetails);
+                overviewContent.add(
+                        patientSection,
+                        workflowSection,
+                        thirdPartySection,
+                        bmsReviewSection
+                );
         }
 
         case COMPLETED -> {
@@ -1029,12 +1191,17 @@ public class CaseRecordDialog extends Dialog {
                         )
                 );
 
-                Details archiveDetails =
-                        new Details("Archived Record", archiveForm);
+                VerticalLayout archiveSection = buildOverviewSection(
+                        "Archived Record",
+                        archiveForm
+                );
 
-                archiveDetails.setOpened(true);
-
-                overviewContent.add(archiveDetails);
+                overviewContent.add(
+                        patientSection,
+                        workflowSection,
+                        thirdPartySection,
+                        archiveSection
+                );
         }
 
         case ERRORS -> {
@@ -1063,15 +1230,25 @@ public class CaseRecordDialog extends Dialog {
 
                 errorReviewForm.add(resolutionNotes);
 
-                Details errorReviewDetails =
-                        new Details("Error Review", errorReviewForm);
+                VerticalLayout errorReviewSection = buildOverviewSection(
+                        "Error Review",
+                        errorReviewForm
+                );
 
-                errorReviewDetails.setOpened(true);
-
-                overviewContent.add(errorReviewDetails);
+                overviewContent.add(
+                        patientSection,
+                        workflowSection,
+                        thirdPartySection,
+                        errorReviewSection
+                );
         }
 
-        case SUMMARY, PROCESSING -> {
+        case SUMMARY -> {
+                overviewContent.add(
+                        patientSection,
+                        workflowSection,
+                        thirdPartySection
+                );
         }
         }
 
@@ -1092,8 +1269,35 @@ public class CaseRecordDialog extends Dialog {
 
         tabs.setWidthFull();
 
+        tabs.getStyle()
+                .set("background", "#ffffff")
+                .set("border-bottom", "1px solid #e2e8f0")
+                .set("padding", "0 1rem");
+
+        for (Tab tab : List.of(
+                overviewTab,
+                issuesTab,
+                filesTab,
+                dicomTab,
+                activityTab
+        )) {
+                tab.getStyle()
+                        .set("font-size", "0.9rem")
+                        .set("font-weight", "500")
+                        .set("padding-left", "0.75rem")
+                        .set("padding-right", "0.75rem");
+        }
+
         Div tabContent = new Div();
         tabContent.setWidthFull();
+
+        tabContent.getStyle()
+                .set("padding", "1rem 1.25rem 1.25rem")
+                .set("box-sizing", "border-box")
+                .set("background", "#f8fafc")
+                .set("overflow-y", "auto")
+                .set("flex", "1")
+                .set("min-height", "0");
 
         Map<Tab, Component> tabPages = new LinkedHashMap<>();
 
@@ -1131,13 +1335,18 @@ public class CaseRecordDialog extends Dialog {
         );
 
         VerticalLayout content = new VerticalLayout(
+                dialogHeader,
                 tabs,
                 tabContent
         );
 
         content.setPadding(false);
-        content.setSpacing(true);
+        content.setSpacing(false);
         content.setWidthFull();
+        content.setHeightFull();
+
+        content.getStyle()
+                .set("overflow", "hidden");
 
         Button moveCaseButton = new Button("Move Case");
         moveCaseButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
@@ -1514,6 +1723,7 @@ public class CaseRecordDialog extends Dialog {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("Select DICOM Study");
                 dialog.setWidth("900px");
+        
 
                 Grid<DicomStudyResult> grid =
                         new Grid<>(DicomStudyResult.class, false);
@@ -2116,6 +2326,76 @@ if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
                         case COMPLETED -> 4;
                         default -> -1;
                 };
+        }
+
+        //helper for new dialog design - 08202026
+        private VerticalLayout buildOverviewSection(
+                String title,
+                Component content
+        ) {
+                VerticalLayout section = new VerticalLayout();
+                section.setPadding(false);
+                section.setSpacing(false);
+                section.setWidthFull();
+
+                Span sectionTitle = new Span(title);
+                sectionTitle.getStyle()
+                        .set("font-size", "0.95rem")
+                        .set("font-weight", "700")
+                        .set("color", "#1e293b")
+                        .set("margin-bottom", "0.45rem");
+
+                Div card = new Div();
+                card.setWidthFull();
+                card.add(content);
+
+                card.getStyle()
+                        .set("border", "1px solid #e2e8f0")
+                        .set("border-radius", "10px")
+                        .set("background", "#ffffff")
+                        .set("padding", "1rem")
+                        .set("box-sizing", "border-box");
+
+                section.add(
+                        sectionTitle,
+                        card
+                );
+
+                return section;
+        }
+
+        //activity history helper
+        private String formatAuditEventType(String eventType) {
+                if (eventType == null || eventType.isBlank()) {
+                        return "Activity";
+                }
+
+                String formatted = eventType
+                        .replace("_", " ")
+                        .toLowerCase();
+
+                String[] words = formatted.split(" ");
+                StringBuilder result = new StringBuilder();
+
+                for (String word : words) {
+                        if (word.isBlank()) {
+                                continue;
+                        }
+
+                        if (!result.isEmpty()) {
+                                result.append(" ");
+                        }
+
+                        result.append(
+                                Character.toUpperCase(word.charAt(0))
+                        );
+
+                        if (word.length() > 1) {
+                                result.append(word.substring(1));
+                        }
+                }
+
+                return result.toString();
         }
 
 }
