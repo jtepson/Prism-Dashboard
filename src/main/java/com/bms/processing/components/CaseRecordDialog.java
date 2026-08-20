@@ -138,6 +138,9 @@ public class CaseRecordDialog extends Dialog {
                 .set("font-size", "1.05rem")
                 .set("font-weight", "700")
                 .set("color", "white");
+                
+        getElement().getStyle()
+                .set("overflow", "hidden");
 
         Button closeButton = new Button(
                 VaadinIcon.CLOSE_SMALL.create()

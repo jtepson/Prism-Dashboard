@@ -449,3 +449,12 @@ vaadin-side-nav-item::part(link) {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
+
+vaadin-dialog-overlay::part(overlay) {
+    overflow: hidden;
+}
+
+vaadin-dialog-overlay::part(overlay) {
+    overflow: hidden;
+    border-radius: var(--lumo-border-radius-l);
+}
