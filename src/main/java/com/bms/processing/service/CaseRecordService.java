@@ -792,6 +792,43 @@ public class CaseRecordService {
         return savedRecord;
     }
 
+    public CaseRecordEntity updateFinalWorkflowNotes(
+            CaseRecordEntity record,
+            String finalWorkflowNotes,
+            String username
+    ) {
+        validateRecord(record);
+
+        if (record.getPatientStatus() != PatientStatus.PROCESSED
+                && record.getPatientStatus() != PatientStatus.COMPLETED) {
+            throw new InvalidWorkflowTransitionException(
+                    "Final workflow notes can only be updated for processed or completed cases."
+            );
+        }
+
+        String previousValue = record.getFinalWorkflowNotes();
+        String newValue = trimToNull(finalWorkflowNotes);
+
+        if (java.util.Objects.equals(previousValue, newValue)) {
+            return record;
+        }
+
+        record.setFinalWorkflowNotes(newValue);
+
+        CaseRecordEntity savedRecord = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "FINAL_WORKFLOW_NOTES_UPDATED",
+                savedRecord,
+                "Final Workflow Notes",
+                previousValue,
+                newValue,
+                username
+        );
+
+        return savedRecord;
+    }
+
     public CaseRecordEntity returnToProcessing(CaseRecordEntity record) {
         validateRecord(record);
 

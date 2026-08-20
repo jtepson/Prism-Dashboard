@@ -611,7 +611,9 @@ public class CaseRecordDialog extends Dialog {
 
         TextArea finalWorkflowNotes = new TextArea("Final Workflow Notes");
         finalWorkflowNotes.setWidthFull();
-        finalWorkflowNotes.setValue("");
+        finalWorkflowNotes.setValue(
+                nullSafe(record.getFinalWorkflowNotes())
+        );
 
         TextArea duramapError = new TextArea("DuraMap Error Note");
         duramapError.setWidthFull();
@@ -922,30 +924,47 @@ public class CaseRecordDialog extends Dialog {
         }
 
         case PROCESSED -> {
-                FormLayout bmsReviewForm = new FormLayout();
-                bmsReviewForm.setWidthFull();
-                bmsReviewForm.setResponsiveSteps(
+
+                FormLayout bmsReviewFields = new FormLayout();
+                bmsReviewFields.setWidthFull();
+                bmsReviewFields.setResponsiveSteps(
                         new FormLayout.ResponsiveStep("0", 1),
-                        new FormLayout.ResponsiveStep("700px", 2)
+                        new FormLayout.ResponsiveStep("600px", 2)
                 );
 
-                bmsReviewForm.add(
+                bmsReviewFields.add(
                         invoiceSentDate,
                         buildDisplayField(
                                 "Processed Date",
                                 formatDateTimeCompact(record.getProcessedDate())
-                        ),
-                        buildDisplayField(
-                                "Completed Date",
-                                formatDateTimeCompact(record.getCompletedDate())
                         )
                 );
 
-                bmsReviewForm.add(finalWorkflowNotes);
+                //only show Completed Date if the case actually has one
+                if (record.getCompletedDate() != null) {
+                        bmsReviewFields.add(
+                                buildDisplayField(
+                                        "Completed Date",
+                                        formatDateTimeCompact(record.getCompletedDate())
+                                )
+                        );
+                }
+
+                finalWorkflowNotes.setWidthFull();
+                finalWorkflowNotes.setMinHeight("110px");
+
+                VerticalLayout bmsReviewContent = new VerticalLayout(
+                        bmsReviewFields,
+                        finalWorkflowNotes
+                );
+
+                bmsReviewContent.setPadding(false);
+                bmsReviewContent.setSpacing(true);
+                bmsReviewContent.setWidthFull();
 
                 VerticalLayout bmsReviewSection = buildOverviewSection(
                         "BMS Review",
-                        bmsReviewForm
+                        bmsReviewContent
                 );
 
                 overviewContent.add(
@@ -1223,29 +1242,32 @@ public class CaseRecordDialog extends Dialog {
                 }
 
                 if (afterSave != null) {
-                    if (mode == Mode.PROCESSING) {
+                        if (mode == Mode.PROCESSING) {
 
-                        record.setNotes(generalNotes.getValue());
-                        record.setImekaErrorNote(imekaError.getValue());
-                        record.setDuramapErrorNote(duramapError.getValue());
-                        record.setNeuroreaderErrorNote(neuroreaderError.getValue());
+                                record.setNotes(generalNotes.getValue());
+                                record.setImekaErrorNote(imekaError.getValue());
+                                record.setDuramapErrorNote(duramapError.getValue());
+                                record.setNeuroreaderErrorNote(neuroreaderError.getValue());
 
-                        caseRecordService.saveEditedCase(record);
-                    }
+                                caseRecordService.saveEditedCase(record);
+                        }
 
-                    if (mode == Mode.PROCESSED) {
-                        record.setFinalWorkflowNotes(finalWorkflowNotes.getValue());
-                        caseRecordService.saveEditedCase(record);
-                    }
+                        if (mode == Mode.PROCESSED) {
+                                caseRecordService.updateFinalWorkflowNotes(
+                                        record,
+                                        finalWorkflowNotes.getValue(),
+                                        currentUserService.getUsername()
+                                );
+                        }
 
-                    if (canEditInvoice) {
-                        caseRecordService.updateInvoiceSentDate(
-                                record,
-                                invoiceSentDate.getValue(),
-                                currentUserService.getUsername()
-                        );
-                    }
-                    afterSave.run();
+                        if (canEditInvoice) {
+                                caseRecordService.updateInvoiceSentDate(
+                                        record,
+                                        invoiceSentDate.getValue(),
+                                        currentUserService.getUsername()
+                                );
+                        }
+                        afterSave.run();
                 }
 
                 close();
@@ -1377,6 +1399,7 @@ public class CaseRecordDialog extends Dialog {
         VerticalLayout wrapper = new VerticalLayout();
         wrapper.setPadding(false);
         wrapper.setSpacing(false);
+        wrapper.setWidthFull();
         wrapper.getStyle().set("gap", "0.25rem");
 
         Span labelSpan = new Span(label);
@@ -2027,26 +2050,26 @@ if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
         }
 
         private Component buildComparisonField(
-        String label,
-        String value,
-        boolean matches
-) {
-        VerticalLayout wrapper = new VerticalLayout();
-        wrapper.setPadding(false);
-        wrapper.setSpacing(false);
-        wrapper.getStyle().set("gap", "0.25rem");
+                String label,
+                String value,
+                boolean matches
+        ) {
+                VerticalLayout wrapper = new VerticalLayout();
+                wrapper.setPadding(false);
+                wrapper.setSpacing(false);
+                wrapper.getStyle().set("gap", "0.25rem");
 
-        Span labelSpan = new Span(label);
-        labelSpan.getStyle()
-                .set("font-size", "0.82rem")
-                .set("font-weight", "600")
-                .set("color", "#64748b");
+                Span labelSpan = new Span(label);
+                labelSpan.getStyle()
+                        .set("font-size", "0.82rem")
+                        .set("font-weight", "600")
+                        .set("color", "#64748b");
 
-        Div valueBox = new Div();
-        valueBox.setText(
-                value == null || value.isBlank()
-                        ? "-"
-                        : value
+                Div valueBox = new Div();
+                valueBox.setText(
+                        value == null || value.isBlank()
+                                ? "-"
+                                : value
         );
 
         valueBox.getStyle()
