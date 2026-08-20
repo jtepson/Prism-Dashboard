@@ -9,6 +9,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.component.notification.Notification;
@@ -49,56 +50,41 @@ public class PatientFilesSection extends VerticalLayout {
                 refresh();
         }
 
+        //minimal grid - updated 08202026
         private void buildGrid() {
                 grid.setWidthFull();
                 grid.setAllRowsVisible(true);
 
                 grid.addColumn(PatientFileEntity::getOriginalFileName)
                         .setHeader("File Name")
-                        .setAutoWidth(true)
                         .setFlexGrow(1);
 
-                grid.addColumn(PatientFileEntity::getFileType)
-                        .setHeader("File Type")
-                        .setAutoWidth(true);
-
                 grid.addColumn(file ->
-                        file.getFileSize() != null
-                                ? formatFileSize(file.getFileSize())
-                                : ""
-                        )
-                        .setHeader("Size")
-                        .setAutoWidth(true);
-
-                grid.addColumn(file ->
-                        file.getCreatedAt() != null
-                                ? file.getCreatedAt().toString().replace("T", " ")
-                                : ""
+                                file.getCreatedAt() != null
+                                        ? file.getCreatedAt().toLocalDate().toString()
+                                        : ""
                         )
                         .setHeader("Uploaded")
-                        .setAutoWidth(true);
+                        .setWidth("130px")
+                        .setFlexGrow(0);
 
                 grid.addColumn(file ->
-                        file.getUploadedBy() != null
-                                ? file.getUploadedBy()
-                                : ""
+                                file.getUploadedBy() != null
+                                        ? file.getUploadedBy()
+                                        : ""
                         )
                         .setHeader("Uploaded By")
-                        .setAutoWidth(true);
+                        .setWidth("160px")
+                        .setFlexGrow(0);
 
-                grid.addColumn(file ->
-                                file.getFileDate() != null
-                                        ? file.getFileDate().toString()
-                                        : "")
-                        .setHeader("File Date")
-                        .setAutoWidth(true);
-
-                grid.addColumn(PatientFileEntity::getSource)
-                        .setHeader("Source")
-                        .setAutoWidth(true);
-
-                //custom view behavior per file type - updated 08182026
                 grid.addComponentColumn(file -> {
+                        HorizontalLayout actions = new HorizontalLayout();
+                        actions.setPadding(false);
+                        actions.setSpacing(true);
+                        actions.setAlignItems(
+                                com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER
+                        );
+
                         String contentType = file.getContentType();
 
                         boolean viewable =
@@ -106,34 +92,37 @@ public class PatientFilesSection extends VerticalLayout {
                                         || "image/jpeg".equalsIgnoreCase(contentType)
                                         || "image/png".equalsIgnoreCase(contentType);
 
-                        if (!viewable) {
-                                Span notAvailable = new Span("-");
-                                notAvailable.getStyle()
-                                        .set("color", "var(--lumo-secondary-text-color)");
+                        if (viewable) {
+                                Anchor view = new Anchor(
+                                        "/patient-files/" + file.getId() + "/view",
+                                        "View"
+                                );
 
-                                return notAvailable;
+                                view.setTarget("_blank");
+
+                                view.getStyle()
+                                        .set("text-decoration", "none");
+                                        
+                                actions.add(view);
                         }
 
-                        Anchor view = new Anchor(
-                                "/patient-files/" + file.getId() + "/view",
-                                "View"
-                        );
-
-                        view.setTarget("_blank");
-
-                        return view;
-                })
-                .setHeader("View")
-                .setAutoWidth(true);
-
-                grid.addComponentColumn(file -> {
                         Anchor download = new Anchor(
                                 "/patient-files/" + file.getId() + "/download",
                                 "Download"
                         );
+
                         download.getElement().setAttribute("download", true);
-                        return download;
-                }).setHeader("Download").setAutoWidth(true);
+
+                        download.getStyle()
+                                .set("text-decoration", "none");
+
+                        actions.add(download);
+
+                        return actions;
+                })
+                .setHeader("")
+                .setWidth("180px")
+                .setFlexGrow(0);
         }
 
         public void refresh() {

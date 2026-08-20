@@ -966,14 +966,14 @@ public class CaseRecordDialog extends Dialog {
                         .set("border-bottom", "1px solid #e2e8f0");
 
                 Span time = new Span(
-                        formatActivityTime(event.getCreatedAt())
+                        formatActivityDateTime(event.getCreatedAt())
                 );
 
                 time.getStyle()
                         .set("font-size", "0.8rem")
                         .set("font-weight", "600")
                         .set("color", "#64748b")
-                        .set("min-width", "78px")
+                        .set("min-width", "145px")
                         .set("flex-shrink", "0");
 
                 VerticalLayout eventContent = new VerticalLayout();
@@ -2373,6 +2373,33 @@ if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
                 }
 
                 return result.toString();
+        }
+
+        //time and date for activity log dialog - 08202026
+        private String formatActivityDateTime(LocalDateTime value) {
+                if (value == null) {
+                        return "";
+                }
+
+                int hour = value.getHour();
+                int minute = value.getMinute();
+
+                int displayHour = hour % 12;
+                if (displayHour == 0) {
+                        displayHour = 12;
+                }
+
+                String amPm = hour >= 12 ? "PM" : "AM";
+
+                return String.format(
+                        "%02d/%02d/%02d  %d:%02d %s",
+                        value.getMonthValue(),
+                        value.getDayOfMonth(),
+                        value.getYear() % 100,
+                        displayHour,
+                        minute,
+                        amPm
+                );
         }
 
 }
