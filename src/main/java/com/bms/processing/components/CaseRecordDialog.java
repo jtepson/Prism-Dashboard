@@ -53,41 +53,44 @@ import java.util.Map;
 
 public class CaseRecordDialog extends Dialog {
 
-    public enum Mode {
-        SUMMARY,
-        UPCOMING,
-        PROCESSING,
-        PROCESSED,
-        COMPLETED,
-        ERRORS
-    }
-    
-    private final CaseRecordService caseRecordService;
-    private final AuditEventService auditEventService;
-    private final SiteService siteService;
-    private final CaseRecordEntity record;
-    private final Mode mode;
-    private final Runnable afterSave;
+        public enum Mode {
+                SUMMARY,
+                UPCOMING,
+                PROCESSING,
+                PROCESSED,
+                COMPLETED,
+                ERRORS
+        }
+        
+        private final CaseRecordService caseRecordService;
+        private final AuditEventService auditEventService;
+        private final SiteService siteService;
+        private final CaseRecordEntity record;
+        private final Mode mode;
+        private final Runnable afterSave;
 
-    //updated 6122026 to include patient file upload constructors and parameters
-    private final PatientFileService patientFileService;
-    private final String baseStoragePath;
+        //updated 6122026 to include patient file upload constructors and parameters
+        private final PatientFileService patientFileService;
+        private final String baseStoragePath;
 
-    //updated 6122026 to also include DICCM fields
-    private final DicomConfigService dicomConfigService;
-    private final DicomService dicomService;
+        //updated 6122026 to also include DICCM fields
+        private final DicomConfigService dicomConfigService;
+        private final DicomService dicomService;
 
-    //updated 6152026 to gear towards retrievals for DICOM
-    private final DicomRetrieveService dicomRetrieveService;
-    
-    private PatientFilesSection patientFilesSection;
-    private DatePicker imekaUploadedDate;
+        //updated 6152026 to gear towards retrievals for DICOM
+        private final DicomRetrieveService dicomRetrieveService;
+        
+        private PatientFilesSection patientFilesSection;
+        private DatePicker imekaUploadedDate;
 
-    private final Map<String, String[]> pendingDicomDemographicChanges =
-        new LinkedHashMap<>();
+        private final Map<String, String[]> pendingDicomDemographicChanges =
+                new LinkedHashMap<>();
 
-    private final CurrentUserService currentUserService;
-    private final CaseIssueService caseIssueService;
+        private final CurrentUserService currentUserService;
+        private final CaseIssueService caseIssueService;
+
+        private VerticalLayout activeIssuesLayout;
+        private VerticalLayout resolvedIssuesLayout;
 
     // deleted temp constructor, leaving remaining one that works with currentuserservice - updated 08182026
         public CaseRecordDialog(
@@ -663,249 +666,17 @@ public class CaseRecordDialog extends Dialog {
 
         generalNotes.setReadOnly(!canEditGeneralNotes);
 
-        VerticalLayout activeIssuesLayout = new VerticalLayout();
+        activeIssuesLayout = new VerticalLayout();
         activeIssuesLayout.setPadding(false);
         activeIssuesLayout.setSpacing(true);
         activeIssuesLayout.setWidthFull();
 
-        var activeIssues = caseIssueService.findActiveByCaseRecord(record);
-
-        if (activeIssues.isEmpty()) {
-                Span empty = new Span("No active issues.");
-                empty.getStyle()
-                        .set("font-size", "0.88rem")
-                        .set("color", "#64748b");
-
-                activeIssuesLayout.add(empty);
-
-        } else {
-                for (CaseIssueEntity issue : activeIssues) {
-
-                        VerticalLayout issueCard = new VerticalLayout();
-                        issueCard.setPadding(false);
-                        issueCard.setSpacing(false);
-                        issueCard.setWidthFull();
-
-                        Span title = new Span(issue.getTitle());
-                        title.getStyle()
-                                .set("font-weight", "700")
-                                .set("font-size", "0.95rem")
-                                .set("color", "#1e293b");
-
-                        Span source = new Span(
-                                formatEnum(issue.getIssueSource())
-                        );
-
-                        source.getStyle()
-                                .set("font-size", "0.8rem")
-                                .set("color", "#64748b");
-
-                        Span note = new Span(
-                                nullSafe(issue.getDescription())
-                        );
-
-                        note.getStyle()
-                                .set("font-size", "0.88rem")
-                                .set("color", "#334155")
-                                .set("white-space", "pre-wrap")
-                                .set("margin-top", "0.35rem");
-
-                        String createdText = "Reported";
-
-                        if (issue.getCreatedAt() != null) {
-                                createdText += " "
-                                        + formatDateTimeCompact(issue.getCreatedAt());
-                        }
-
-                        if (issue.getCreatedBy() != null
-                                && !issue.getCreatedBy().isBlank()) {
-                                createdText += " by " + issue.getCreatedBy();
-                        }
-
-                        Span created = new Span(createdText);
-                        created.getStyle()
-                                .set("font-size", "0.78rem")
-                                .set("color", "#64748b")
-                                .set("margin-top", "0.35rem");
-
-                        Button editButton = new Button("Edit");
-                        editButton.addThemeVariants(
-                                ButtonVariant.LUMO_SMALL,
-                                ButtonVariant.LUMO_TERTIARY
-                        );
-
-                        editButton.addClickListener(event ->
-                                new CaseIssueDialog(
-                                        record,
-                                        issue,
-                                        caseIssueService,
-                                        currentUserService,
-                                        () -> {
-                                                if (afterSave != null) {
-                                                        afterSave.run();
-                                                }
-                                        }
-                                ).open()
-                        );
-
-                        Button resolveButton = new Button("Resolve");
-                        resolveButton.addThemeVariants(
-                                ButtonVariant.LUMO_SMALL,
-                                ButtonVariant.LUMO_PRIMARY
-                        );
-
-                        resolveButton.addClickListener(event ->
-                                new CaseIssueDialog(
-                                        record,
-                                        issue,
-                                        caseIssueService,
-                                        currentUserService,
-                                        () -> {
-                                                if (afterSave != null) {
-                                                        afterSave.run();
-                                                }
-                                        }
-                                ).open()
-                        );
-
-                        HorizontalLayout actions = new HorizontalLayout(
-                                editButton,
-                                resolveButton
-                        );
-
-                        actions.setPadding(false);
-                        actions.setSpacing(true);
-                        actions.setMargin(false);
-
-                        HorizontalLayout footer = new HorizontalLayout(
-                                created,
-                                actions
-                        );
-
-                        footer.setWidthFull();
-                        footer.setPadding(false);
-                        footer.setSpacing(true);
-                        footer.setAlignItems(
-                                com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER
-                        );
-                        footer.setJustifyContentMode(
-                                com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN
-                        );
-
-                        issueCard.add(
-                                title,
-                                source,
-                                note,
-                                footer
-                        );
-
-                        issueCard.getStyle()
-                                .set("border", "1px solid #e2e8f0")
-                                .set("border-radius", "10px")
-                                .set("background", "#ffffff")
-                                .set("padding", "0.85rem")
-                                .set("box-sizing", "border-box");
-
-                        if (Boolean.TRUE.equals(issue.getBlocking())) {
-                                issueCard.getStyle()
-                                        .set("border-left", "3px solid var(--lumo-error-color)");
-                        }
-
-                        activeIssuesLayout.add(issueCard);
-                }
-        }
-
-        VerticalLayout resolvedIssuesLayout = new VerticalLayout();
+        resolvedIssuesLayout = new VerticalLayout();
         resolvedIssuesLayout.setPadding(false);
         resolvedIssuesLayout.setSpacing(true);
         resolvedIssuesLayout.setWidthFull();
 
-        var resolvedIssues = caseIssueService.findByCaseRecord(record).stream()
-                .filter(issue -> issue.getStatus() == CaseIssueStatus.RESOLVED)
-                .sorted((a, b) -> {
-                if (a.getResolvedAt() == null && b.getResolvedAt() == null) {
-                        return 0;
-                }
-                if (a.getResolvedAt() == null) {
-                        return 1;
-                }
-                if (b.getResolvedAt() == null) {
-                        return -1;
-                }
-
-                return b.getResolvedAt().compareTo(a.getResolvedAt());
-                })
-                .toList();
-
-        if (resolvedIssues.isEmpty()) {
-        resolvedIssuesLayout.add(new Span("No resolved issues."));
-        } else {
-        for (CaseIssueEntity issue : resolvedIssues) {
-                VerticalLayout issueCard = new VerticalLayout();
-                issueCard.setPadding(true);
-                issueCard.setSpacing(false);
-                issueCard.setWidthFull();
-
-                Span title = new Span(issue.getTitle());
-                title.getStyle().set("font-weight", "700");
-
-                Span source = new Span(
-                        "Source: "
-                                + formatEnum(issue.getIssueSource())
-                );
-
-                Span note = new Span(
-                        "Issue: "
-                                + nullSafe(issue.getDescription())
-                );
-
-                Span resolution = new Span(
-                        "Resolution: "
-                                + nullSafe(issue.getResolutionNote())
-                );
-
-                Span resolvedBy = new Span(
-                        "Resolved by "
-                                + nullSafe(issue.getResolvedBy())
-                                + (issue.getResolvedAt() != null
-                                ? " on " + formatDateTimeCompact(issue.getResolvedAt())
-                                : "")
-                );
-
-                source.getStyle()
-                        .set("font-size", "0.82rem")
-                        .set("color", "#64748b");
-
-                note.getStyle()
-                        .set("font-size", "0.88rem")
-                        .set("color", "#334155");
-
-                resolution.getStyle()
-                        .set("font-size", "0.88rem")
-                        .set("color", "#334155");
-
-                resolvedBy.getStyle()
-                        .set("font-size", "0.8rem")
-                        .set("color", "#64748b");
-
-                issueCard.add(
-                        title,
-                        source,
-                        note,
-                        resolution,
-                        resolvedBy
-                );
-
-                issueCard.getStyle()
-                        .set("border", "1px solid #e2e8f0")
-                        .set("border-radius", "10px")
-                        .set("background", "#ffffff")
-                        .set("padding", "0.75rem")
-                        .set("gap", "0.2rem");
-
-                resolvedIssuesLayout.add(issueCard);
-        }
-        }
+        refreshIssues();
 
         //updated 08192026 for better alignment in notes section
         //added a whole bunch of new shit 08202026 to account for ADDING an issue - stupid me.
@@ -927,7 +698,7 @@ public class CaseRecordDialog extends Dialog {
         );
 
         addIssueButton.getStyle()
-                .set("color", "var(--lumo-primary-text-color)");
+                .set("color", "var(--lumo-error-text-color)");
 
         addIssueButton.addClickListener(event ->
                 new CaseIssueDialog(
@@ -936,6 +707,8 @@ public class CaseRecordDialog extends Dialog {
                         caseIssueService,
                         currentUserService,
                         () -> {
+                                refreshIssues();
+
                                 if (afterSave != null) {
                                         afterSave.run();
                                 }
@@ -2444,4 +2217,290 @@ if (!java.util.Objects.equals(oldScanDate, dateScanned.getValue())) {
                 );
         }
 
+        private void refreshIssues() {
+                activeIssuesLayout.removeAll();
+                resolvedIssuesLayout.removeAll();
+
+                var activeIssues =
+                        caseIssueService.findActiveByCaseRecord(record);
+
+                if (activeIssues.isEmpty()) {
+                        Span empty = new Span("No active issues.");
+
+                        empty.getStyle()
+                                .set("font-size", "0.88rem")
+                                .set("color", "#64748b");
+
+                        activeIssuesLayout.add(empty);
+
+                } else {
+                        for (CaseIssueEntity issue : activeIssues) {
+
+                                VerticalLayout issueCard = new VerticalLayout();
+                                issueCard.setPadding(false);
+                                issueCard.setSpacing(false);
+                                issueCard.setWidthFull();
+
+                                Span title = new Span(issue.getTitle());
+                                title.getStyle()
+                                        .set("font-weight", "700")
+                                        .set("font-size", "0.95rem")
+                                        .set("color", "#1e293b");
+
+                                Span source = new Span(
+                                        formatEnum(issue.getIssueSource())
+                                );
+
+                                source.getStyle()
+                                        .set("font-size", "0.8rem")
+                                        .set("color", "#64748b");
+
+                                Span note = new Span(
+                                        nullSafe(issue.getDescription())
+                                );
+
+                                note.getStyle()
+                                        .set("font-size", "0.88rem")
+                                        .set("color", "#334155")
+                                        .set("white-space", "pre-wrap")
+                                        .set("margin-top", "0.35rem");
+
+                                String createdText = "Reported";
+
+                                if (issue.getCreatedAt() != null) {
+                                        createdText += " "
+                                                + formatDateTimeCompact(
+                                                        issue.getCreatedAt()
+                                                );
+                                }
+
+                                if (issue.getCreatedBy() != null
+                                        && !issue.getCreatedBy().isBlank()) {
+                                        createdText += " by "
+                                                + issue.getCreatedBy();
+                                }
+
+                                Span created = new Span(createdText);
+
+                                created.getStyle()
+                                        .set("font-size", "0.78rem")
+                                        .set("color", "#64748b")
+                                        .set("margin-top", "0.35rem");
+
+                                Button editButton = new Button("Edit");
+
+                                editButton.addThemeVariants(
+                                        ButtonVariant.LUMO_SMALL,
+                                        ButtonVariant.LUMO_TERTIARY
+                                );
+
+                                editButton.addClickListener(event ->
+                                        new CaseIssueDialog(
+                                                record,
+                                                issue,
+                                                caseIssueService,
+                                                currentUserService,
+                                                () -> {
+                                                        refreshIssues();
+
+                                                        if (afterSave != null) {
+                                                                afterSave.run();
+                                                        }
+                                                }
+                                        ).open()
+                                );
+
+                                Button resolveButton = new Button("Resolve");
+
+                                resolveButton.addThemeVariants(
+                                        ButtonVariant.LUMO_SMALL,
+                                        ButtonVariant.LUMO_PRIMARY
+                                );
+
+                                resolveButton.addClickListener(event ->
+                                        new CaseIssueDialog(
+                                                record,
+                                                issue,
+                                                caseIssueService,
+                                                currentUserService,
+                                                () -> {
+                                                        refreshIssues();
+
+                                                        if (afterSave != null) {
+                                                                afterSave.run();
+                                                        }
+                                                }
+                                        ).open()
+                                );
+
+                                HorizontalLayout actions =
+                                        new HorizontalLayout(
+                                                editButton,
+                                                resolveButton
+                                        );
+
+                                actions.setPadding(false);
+                                actions.setSpacing(true);
+                                actions.setMargin(false);
+
+                                HorizontalLayout footer =
+                                        new HorizontalLayout(
+                                                created,
+                                                actions
+                                        );
+
+                                footer.setWidthFull();
+                                footer.setPadding(false);
+                                footer.setSpacing(true);
+
+                                footer.setAlignItems(
+                                        FlexComponent.Alignment.CENTER
+                                );
+
+                                footer.setJustifyContentMode(
+                                        FlexComponent.JustifyContentMode.BETWEEN
+                                );
+
+                                issueCard.add(
+                                        title,
+                                        source,
+                                        note,
+                                        footer
+                                );
+
+                                issueCard.getStyle()
+                                        .set("border", "1px solid #e2e8f0")
+                                        .set("border-radius", "10px")
+                                        .set("background", "#ffffff")
+                                        .set("padding", "0.85rem")
+                                        .set("box-sizing", "border-box");
+
+                                if (Boolean.TRUE.equals(issue.getBlocking())) {
+                                        issueCard.getStyle()
+                                                .set(
+                                                        "border-left",
+                                                        "3px solid var(--lumo-error-color)"
+                                                );
+                                }
+
+                                activeIssuesLayout.add(issueCard);
+                        }
+                }
+
+                var resolvedIssues =
+                        caseIssueService.findByCaseRecord(record)
+                                .stream()
+                                .filter(issue ->
+                                        issue.getStatus()
+                                                == CaseIssueStatus.RESOLVED
+                                )
+                                .sorted((a, b) -> {
+                                        if (a.getResolvedAt() == null
+                                                && b.getResolvedAt() == null) {
+                                                return 0;
+                                        }
+
+                                        if (a.getResolvedAt() == null) {
+                                                return 1;
+                                        }
+
+                                        if (b.getResolvedAt() == null) {
+                                                return -1;
+                                        }
+
+                                        return b.getResolvedAt()
+                                                .compareTo(a.getResolvedAt());
+                                })
+                                .toList();
+
+                if (resolvedIssues.isEmpty()) {
+                        Span empty = new Span("No resolved issues.");
+
+                        empty.getStyle()
+                                .set("font-size", "0.88rem")
+                                .set("color", "#64748b");
+
+                        resolvedIssuesLayout.add(empty);
+
+                } else {
+                        for (CaseIssueEntity issue : resolvedIssues) {
+
+                                VerticalLayout issueCard = new VerticalLayout();
+                                issueCard.setPadding(true);
+                                issueCard.setSpacing(false);
+                                issueCard.setWidthFull();
+
+                                Span title = new Span(issue.getTitle());
+                                title.getStyle()
+                                        .set("font-weight", "700");
+
+                                Span source = new Span(
+                                        "Source: "
+                                                + formatEnum(
+                                                        issue.getIssueSource()
+                                                )
+                                );
+
+                                Span note = new Span(
+                                        "Issue: "
+                                                + nullSafe(
+                                                        issue.getDescription()
+                                                )
+                                );
+
+                                Span resolution = new Span(
+                                        "Resolution: "
+                                                + nullSafe(
+                                                        issue.getResolutionNote()
+                                                )
+                                );
+
+                                Span resolvedBy = new Span(
+                                        "Resolved by "
+                                                + nullSafe(issue.getResolvedBy())
+                                                + (
+                                                issue.getResolvedAt() != null
+                                                        ? " on "
+                                                        + formatDateTimeCompact(
+                                                                issue.getResolvedAt()
+                                                        )
+                                                        : ""
+                                        )
+                                );
+
+                                source.getStyle()
+                                        .set("font-size", "0.82rem")
+                                        .set("color", "#64748b");
+
+                                note.getStyle()
+                                        .set("font-size", "0.88rem")
+                                        .set("color", "#334155");
+
+                                resolution.getStyle()
+                                        .set("font-size", "0.88rem")
+                                        .set("color", "#334155");
+
+                                resolvedBy.getStyle()
+                                        .set("font-size", "0.8rem")
+                                        .set("color", "#64748b");
+
+                                issueCard.add(
+                                        title,
+                                        source,
+                                        note,
+                                        resolution,
+                                        resolvedBy
+                                );
+
+                                issueCard.getStyle()
+                                        .set("border", "1px solid #e2e8f0")
+                                        .set("border-radius", "10px")
+                                        .set("background", "#ffffff")
+                                        .set("padding", "0.75rem")
+                                        .set("gap", "0.2rem");
+
+                                resolvedIssuesLayout.add(issueCard);
+                        }
+                }
+        }
 }
