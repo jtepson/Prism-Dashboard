@@ -908,15 +908,57 @@ public class CaseRecordDialog extends Dialog {
         }
 
         //updated 08192026 for better alignment in notes section
+        //added a whole bunch of new shit 08202026 to account for ADDING an issue - stupid me.
         Span generalNotesHeader = new Span("General Notes");
-        generalNotesHeader.getStyle()
+                generalNotesHeader.getStyle()
+                        .set("font-weight", "700")
+                        .set("font-size", "0.95rem");
+
+                Span activeIssuesHeader = new Span("Active Issues");
+        activeIssuesHeader.getStyle()
                 .set("font-weight", "700")
                 .set("font-size", "0.95rem");
 
-        Span activeIssuesHeader = new Span("Active Issues");
-        activeIssuesHeader.getStyle()
-                .set("font-weight", "700")
-                .set("font-size", "0.95rem")
+        Button addIssueButton = new Button("Add Issue");
+
+        addIssueButton.addThemeVariants(
+                ButtonVariant.LUMO_SMALL,
+                ButtonVariant.LUMO_TERTIARY
+        );
+
+        addIssueButton.getStyle()
+                .set("color", "var(--lumo-primary-text-color)");
+
+        addIssueButton.addClickListener(event ->
+                new CaseIssueDialog(
+                        record,
+                        null,
+                        caseIssueService,
+                        currentUserService,
+                        () -> {
+                                if (afterSave != null) {
+                                        afterSave.run();
+                                }
+                        }
+                ).open()
+        );
+
+        HorizontalLayout activeIssuesHeaderRow = new HorizontalLayout(
+                activeIssuesHeader,
+                addIssueButton
+        );
+
+        activeIssuesHeaderRow.setWidthFull();
+        activeIssuesHeaderRow.setPadding(false);
+        activeIssuesHeaderRow.setSpacing(true);
+        activeIssuesHeaderRow.setAlignItems(
+                FlexComponent.Alignment.CENTER
+        );
+        activeIssuesHeaderRow.setJustifyContentMode(
+                FlexComponent.JustifyContentMode.BETWEEN
+        );
+
+        activeIssuesHeaderRow.getStyle()
                 .set("margin-top", "0.75rem");
 
         Span resolvedIssuesHeader = new Span("Resolved Issues");
@@ -928,7 +970,7 @@ public class CaseRecordDialog extends Dialog {
         notesLayout.add(
                 generalNotesHeader,
                 generalNotes,
-                activeIssuesHeader,
+                activeIssuesHeaderRow,
                 activeIssuesLayout,
                 resolvedIssuesHeader,
                 resolvedIssuesLayout
