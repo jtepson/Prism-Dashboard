@@ -582,30 +582,7 @@ public class CaseRecordDialog extends Dialog {
         dicomPanel.setSpacing(true);
         dicomPanel.setWidthFull();
 
-        Span dicomTitle = new Span("DICOM");
-        dicomTitle.getStyle()
-                .set("font-size", "1rem")
-                .set("font-weight", "700")
-                .set("color", "#1e293b");
-
-        Span dicomDescription =
-                new Span("Link this case to a DICOM study or view available reports.");
-
-        dicomDescription.getStyle()
-                .set("font-size", "0.88rem")
-                .set("color", "#64748b");
-
-        Div divider = new Div();
-        divider.setWidthFull();
-        divider.getStyle()
-                .set("height", "1px")
-                .set("background", "#e2e8f0")
-                .set("margin", "0.35rem 0 0.65rem");
-
         dicomPanel.add(
-                dicomTitle,
-                dicomDescription,
-                divider,
                 dicomActions,
                 studyInstanceUid,
                 accessionNumber
