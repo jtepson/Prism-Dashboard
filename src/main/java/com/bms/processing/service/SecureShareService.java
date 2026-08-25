@@ -281,6 +281,43 @@ public class SecureShareService {
                 && share.getVerifiedAt() != null;
     }
 
+    @Transactional(readOnly = true)
+    public PatientFileEntity getAuthorizedFile(
+            CaseSecureShareEntity share,
+            Long fileId
+    ) {
+        if (share == null || fileId == null) {
+            throw new SecureShareAccessException(
+                    "File is not available."
+            );
+        }
+
+        validateShareAccess(share);
+
+        return share.getFiles().stream()
+                .filter(file -> fileId.equals(file.getId()))
+                .findFirst()
+                .orElseThrow(() ->
+                        new SecureShareAccessException(
+                                "File is not available through this share."
+                        )
+                );
+    }
+
+    @Transactional
+    public void recordDownload(CaseSecureShareEntity share) {
+        validateShareAccess(share);
+
+        int currentDownloads = share.getDownloadCount() == null
+                ? 0
+                : share.getDownloadCount();
+
+        share.setDownloadCount(currentDownloads + 1);
+        share.setLastAccessedAt(LocalDateTime.now());
+
+        repository.save(share);
+    }
+
     public boolean isActive(CaseSecureShareEntity share) {
         if (share == null) {
             return false;
@@ -356,4 +393,5 @@ public class SecureShareService {
             String rawToken
     ) {
     }
+    
 }
