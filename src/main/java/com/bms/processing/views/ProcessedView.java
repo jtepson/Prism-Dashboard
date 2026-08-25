@@ -17,6 +17,7 @@ import com.bms.processing.components.CaseIssueDialog;
 import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.service.SecureShareService;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -52,6 +53,7 @@ public class ProcessedView extends VerticalLayout {
     private final DicomRetrieveService dicomRetrieveService;
     private final CurrentUserService currentUserService;
     private final CaseIssueService caseIssueService;
+    private final SecureShareService secureShareService;
 
     public ProcessedView(
             CaseRecordService caseRecordService,
@@ -62,7 +64,8 @@ public class ProcessedView extends VerticalLayout {
             DicomService dicomService,
             DicomRetrieveService dicomRetrieveService,
             CurrentUserService currentUserService,
-            CaseIssueService caseIssueService
+            CaseIssueService caseIssueService,
+            SecureShareService secureShareService
     ) {
             this.caseRecordService = caseRecordService;
             this.auditEventService = auditEventService;
@@ -73,6 +76,7 @@ public class ProcessedView extends VerticalLayout {
             this.dicomRetrieveService = dicomRetrieveService;
             this.currentUserService = currentUserService;
             this.caseIssueService = caseIssueService;
+            this.secureShareService = secureShareService;
 
         setSizeFull();
         setPadding(true);
@@ -103,7 +107,8 @@ public class ProcessedView extends VerticalLayout {
                         dicomService,
                         dicomRetrieveService,
                         currentUserService,
-                        caseIssueService
+                        caseIssueService,
+                        secureShareService
                 ).open()
         );
 

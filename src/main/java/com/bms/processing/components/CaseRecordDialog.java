@@ -9,6 +9,7 @@ import com.bms.processing.entity.SiteEntity;
 import com.bms.processing.entity.AuditEventEntity;
 import com.bms.processing.service.AuditEventService;
 import com.bms.processing.service.PatientFileService;
+import com.bms.processing.service.SecureShareAccessException;
 import com.bms.processing.service.DicomConfigService;
 import com.bms.processing.service.DicomService;
 import com.bms.processing.model.DicomStudyResult;
@@ -19,6 +20,7 @@ import com.bms.processing.entity.CaseIssueEntity;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.model.PatientStatus;
+import com.bms.processing.service.SecureShareService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.Component;
@@ -92,6 +94,9 @@ public class CaseRecordDialog extends Dialog {
         private VerticalLayout activeIssuesLayout;
         private VerticalLayout resolvedIssuesLayout;
 
+        //updated 08252026 for secure sharing of files
+        private final SecureShareService secureShareService;
+
     // deleted temp constructor, leaving remaining one that works with currentuserservice - updated 08182026
         public CaseRecordDialog(
                 CaseRecordEntity record,
@@ -106,7 +111,8 @@ public class CaseRecordDialog extends Dialog {
                 DicomService dicomService,
                 DicomRetrieveService dicomRetrieveService,
                 CurrentUserService currentUserService,
-                CaseIssueService caseIssueService
+                CaseIssueService caseIssueService,
+                SecureShareService secureShareService
         ) {
                 this.record = record;
                 this.caseRecordService = caseRecordService;
@@ -121,6 +127,7 @@ public class CaseRecordDialog extends Dialog {
                 this.dicomRetrieveService = dicomRetrieveService;
                 this.currentUserService = currentUserService;
                 this.caseIssueService = caseIssueService;
+                this.secureShareService = secureShareService;
 
                 setWidth("960px");
                 setHeight("820px");

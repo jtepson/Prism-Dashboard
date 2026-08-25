@@ -17,6 +17,7 @@
         import com.bms.processing.service.DicomRetrieveService;
         import com.bms.processing.service.CurrentUserService;
         import com.bms.processing.service.CaseIssueService;
+        import com.bms.processing.service.SecureShareService;
         import com.vaadin.flow.component.Component;
         import com.vaadin.flow.component.UI;
         import com.vaadin.flow.component.button.Button;
@@ -125,6 +126,8 @@
         private final CurrentUserService currentUserService; 
         private final CaseIssueService caseIssueService;
 
+        private final SecureShareService secureShareService;
+
         public SummaryView(
                         CaseRecordService caseRecordService,
                         SiteService siteService,
@@ -135,7 +138,8 @@
                         DicomService dicomService,
                         DicomRetrieveService dicomRetrieveService,
                         CurrentUserService currentUserService,
-                        CaseIssueService caseIssueService
+                        CaseIssueService caseIssueService,
+                        SecureShareService secureShareService
         ) {
                 this.caseRecordService = caseRecordService;
                 this.siteService = siteService;
@@ -147,6 +151,7 @@
                 this.dicomRetrieveService = dicomRetrieveService;
                 this.currentUserService = currentUserService;
                 this.caseIssueService = caseIssueService;
+                this.secureShareService = secureShareService;
 
                 setSizeFull();
                 setPadding(false);
@@ -823,7 +828,8 @@
                                 dicomService,
                                 dicomRetrieveService,
                                 currentUserService,
-                                caseIssueService
+                                caseIssueService,
+                                secureShareService
                         ).open()
                 );
                 return grid;
@@ -1684,7 +1690,8 @@
                                         dicomService,
                                         dicomRetrieveService,
                                         currentUserService,
-                                        caseIssueService
+                                        caseIssueService,
+                                        secureShareService
                                 );
 
                                 dialog.addDetachListener(event -> {
@@ -1876,7 +1883,7 @@
                         "CASE_FINALIZED",
                         "CASE_COMPLETED",
                         "CASE_ISSUE_CREATED",
-                        "CASE_ISSUE_RESOLVED"-> true;
+                        "CASE_ISSUE_RESOLVED" -> true;
 
                         default -> false;
                 };

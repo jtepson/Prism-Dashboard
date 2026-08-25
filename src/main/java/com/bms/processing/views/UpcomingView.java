@@ -21,6 +21,7 @@ import com.bms.processing.service.CaseIssueService;
 import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.service.NotificationService;
 import com.bms.processing.service.CaseIssueService;
+import com.bms.processing.service.SecureShareService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -61,6 +62,7 @@ public class UpcomingView extends VerticalLayout {
     private final CaseIssueService caseIssueService;
     private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
+    private final SecureShareService secureShareService;
 
     public UpcomingView(
                 CaseRecordService caseRecordService,
@@ -73,7 +75,8 @@ public class UpcomingView extends VerticalLayout {
                 DicomRetrieveService dicomRetrieveService,
                 CaseIssueService caseIssueService,
                 CurrentUserService currentUserService,
-                NotificationService notificationService
+                NotificationService notificationService,
+                SecureShareService secureShareService
     ) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -86,6 +89,7 @@ public class UpcomingView extends VerticalLayout {
         this.caseIssueService = caseIssueService;
         this.currentUserService = currentUserService;
         this.notificationService = notificationService;
+        this.secureShareService = secureShareService;
 
         setSizeFull();
         setPadding(true);
@@ -124,7 +128,8 @@ public class UpcomingView extends VerticalLayout {
                         dicomService,
                         dicomRetrieveService,
                         currentUserService,
-                        caseIssueService
+                        caseIssueService,
+                        secureShareService
                 ).open()
         );
 

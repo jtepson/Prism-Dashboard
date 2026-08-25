@@ -21,6 +21,7 @@ import com.bms.processing.service.CurrentUserService;
 import com.bms.processing.model.CaseIssueSource;
 import com.bms.processing.model.CaseIssueStatus;
 import com.bms.processing.model.CaseIssueType;
+import com.bms.processing.service.SecureShareService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -71,6 +72,7 @@ public class ProcessingView extends VerticalLayout {
 	private final DicomRetrieveService dicomRetrieveService;
 	private final CurrentUserService currentUserService;
 	private final CaseIssueService caseIssueService;
+	private final SecureShareService secureShareService;
 
     public ProcessingView(
 			CaseRecordService caseRecordService,
@@ -82,7 +84,8 @@ public class ProcessingView extends VerticalLayout {
 			DicomService dicomService,
 			DicomRetrieveService dicomRetrieveService,
 			CurrentUserService currentUserService,
-			CaseIssueService caseIssueService
+			CaseIssueService caseIssueService,
+			SecureShareService secureShareService
 	) {
         this.caseRecordService = caseRecordService;
         this.siteService = siteService;
@@ -94,6 +97,7 @@ public class ProcessingView extends VerticalLayout {
 		this.dicomRetrieveService = dicomRetrieveService;
 		this.currentUserService = currentUserService;
 		this.caseIssueService = caseIssueService;
+		this.secureShareService = secureShareService;
 
 		setSizeFull();
         setPadding(true);
@@ -123,7 +127,8 @@ public class ProcessingView extends VerticalLayout {
                         dicomService,
 						dicomRetrieveService,
 						currentUserService,
-						caseIssueService
+						caseIssueService,
+						secureShareService
 				).open()
 		);
 
