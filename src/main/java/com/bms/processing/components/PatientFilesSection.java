@@ -17,6 +17,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.component.notification.Notification;
@@ -65,23 +66,29 @@ public class PatientFilesSection extends VerticalLayout {
                 buildGrid();
 
                 Button secureShareButton = new Button(
-                        "Create Secure Share",
+                        "Share Files...",
                         event -> openSecureShareDialog()
-                );
-
-                secureShareButton.addThemeVariants(
-                        ButtonVariant.LUMO_SMALL
                 );
 
                 secureShareButton.getStyle()
                         .set("color", "var(--lumo-primary-text-color)");
 
+                HorizontalLayout fileActions = new HorizontalLayout(
+                        buildUpload(),
+                        secureShareButton
+                );
+
+                fileActions.setPadding(false);
+                fileActions.setSpacing(true);
+                fileActions.setAlignItems(FlexComponent.Alignment.CENTER);
+
                 add(
                         buildUploadInstructions(),
-                        buildUpload(),
-                        secureShareButton,
+                        fileActions,
                         grid
                 );
+
+                refresh();
 
                 refresh();
         }

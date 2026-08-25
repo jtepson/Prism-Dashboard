@@ -1177,7 +1177,6 @@ public class CaseRecordDialog extends Dialog {
                 .set("overflow", "hidden");
 
         Button moveCaseButton = new Button("Move Case");
-        moveCaseButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 
         moveCaseButton.addClickListener(event ->
                 openMoveCaseDialog()
