@@ -3,6 +3,11 @@ package com.bms.processing.components;
 import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.service.PatientFileService;
+import com.bms.processing.service.SecureShareService;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
@@ -21,11 +26,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 
 public class PatientFilesSection extends VerticalLayout {
 
         private final CaseRecordEntity record;
         private final PatientFileService patientFileService;
+        private final SecureShareService secureShareService;
+
         private final String baseStoragePath;
 
         private final Grid<PatientFileEntity> grid =
@@ -34,17 +44,24 @@ public class PatientFilesSection extends VerticalLayout {
         public PatientFilesSection(
                 CaseRecordEntity record,
                 PatientFileService patientFileService,
+                SecureShareService secureShareService,
                 @Value("${prism.files.storage-path}") String baseStoragePath
         ) {
                 this.record = record;
                 this.patientFileService = patientFileService;
                 this.baseStoragePath = baseStoragePath;
+                this.secureShareService = secureShareService;
 
                 setPadding(false);
                 setSpacing(true);
                 setWidthFull();
 
                 buildGrid();
+
+                Button secureShareButton = new Button(
+                        "Create Secure Share",
+                        event -> openSecureShareDialog()
+                );
 
                 add(buildUploadInstructions(), buildUpload(), grid);
                 refresh();
@@ -266,5 +283,201 @@ public class PatientFilesSection extends VerticalLayout {
                 double mb = kb / 1024.0;
 
                 return String.format("%.1f MB", mb);
+        }
+
+        //helper for secure sharing button - 08252026
+        private void openSecureShareDialog() {
+                List<PatientFileEntity> files =
+                        patientFileService.findFilesForCase(record.getId());
+
+                if (files.isEmpty()) {
+                        showError("There are no files available to share.");
+                        return;
+                }
+
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Create Secure Share");
+                dialog.setWidth("600px");
+
+                TextField recipientName = new TextField("Recipient Name");
+                recipientName.setWidthFull();
+
+                TextField recipientEmail = new TextField("Recipient Email");
+                recipientEmail.setWidthFull();
+
+                DatePicker expirationDate = new DatePicker("Expires");
+                expirationDate.setValue(
+                        java.time.LocalDate.now().plusDays(7)
+                );
+                expirationDate.setMin(java.time.LocalDate.now());
+                expirationDate.setWidthFull();
+
+                Checkbox allowView = new Checkbox("Allow View", true);
+                Checkbox allowDownload = new Checkbox("Allow Download", true);
+
+                Grid<PatientFileEntity> fileGrid =
+                        new Grid<>(PatientFileEntity.class, false);
+
+                fileGrid.setSelectionMode(
+                        Grid.SelectionMode.MULTI
+                );
+
+                fileGrid.addColumn(
+                        PatientFileEntity::getOriginalFileName
+                ).setHeader("File");
+
+                fileGrid.addColumn(
+                        PatientFileEntity::getFileType
+                ).setHeader("Type")
+                        .setWidth("120px")
+                        .setFlexGrow(0);
+
+                fileGrid.setItems(files);
+                fileGrid.setAllRowsVisible(true);
+                fileGrid.setWidthFull();
+
+                Span fileLabel = new Span("Select Files");
+                fileLabel.getStyle()
+                        .set("font-weight", "600");
+
+                Button createButton = new Button("Create Share");
+
+                createButton.addClickListener(event -> {
+                        if (recipientName.isEmpty()) {
+                        showError("Recipient name is required.");
+                        return;
+                        }
+
+                        if (recipientEmail.isEmpty()) {
+                        showError("Recipient email is required.");
+                        return;
+                        }
+
+                        if (expirationDate.getValue() == null) {
+                        showError("Expiration date is required.");
+                        return;
+                        }
+
+                        var selectedFiles =
+                                new HashSet<>(fileGrid.getSelectedItems());
+
+                        if (selectedFiles.isEmpty()) {
+                        showError("Select at least one file.");
+                        return;
+                        }
+
+                        try {
+                        var created = secureShareService.createShare(
+                                record,
+                                recipientName.getValue(),
+                                recipientEmail.getValue(),
+                                selectedFiles,
+                                expirationDate.getValue()
+                                        .plusDays(1)
+                                        .atStartOfDay(),
+                                allowView.getValue(),
+                                allowDownload.getValue(),
+                                null,
+                                null
+                        );
+
+                        dialog.close();
+
+                        showShareCreatedDialog(
+                                created.rawToken()
+                        );
+
+                        } catch (Exception ex) {
+                        showError(ex.getMessage());
+                        }
+                });
+
+                Button cancelButton = new Button(
+                        "Cancel",
+                        event -> dialog.close()
+                );
+
+                HorizontalLayout permissions =
+                        new HorizontalLayout(
+                                allowView,
+                                allowDownload
+                        );
+
+                VerticalLayout content = new VerticalLayout(
+                        recipientName,
+                        recipientEmail,
+                        expirationDate,
+                        permissions,
+                        fileLabel,
+                        fileGrid
+                );
+
+                content.setPadding(false);
+                content.setWidthFull();
+
+                dialog.add(content);
+
+                dialog.getFooter().add(
+                        cancelButton,
+                        createButton
+                );
+
+                dialog.open();
+        }
+
+        //result dialog - 08252026
+        private void showShareCreatedDialog(
+                String rawToken
+        ) {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Secure Share Created");
+                dialog.setWidth("550px");
+
+                TextField shareLink = new TextField(
+                        "Secure Share Link"
+                );
+
+                shareLink.setValue(
+                        "/share/" + rawToken
+                );
+
+                shareLink.setReadOnly(true);
+                shareLink.setWidthFull();
+
+                Button copyButton = new Button(
+                        "Copy Link"
+                );
+
+                copyButton.addClickListener(event -> {
+                        shareLink.getElement()
+                                .executeJs(
+                                        "navigator.clipboard.writeText($0)",
+                                        shareLink.getValue()
+                                );
+
+                        showSuccess("Share link copied.");
+                });
+
+                Button closeButton = new Button(
+                        "Close",
+                        event -> dialog.close()
+                );
+
+                VerticalLayout content =
+                        new VerticalLayout(
+                                new Span(
+                                        "Send this link to the intended recipient."
+                                ),
+                                shareLink,
+                                copyButton
+                        );
+
+                content.setPadding(false);
+                content.setWidthFull();
+
+                dialog.add(content);
+                dialog.getFooter().add(closeButton);
+
+                dialog.open();
         }
 }

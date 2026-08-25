@@ -842,8 +842,14 @@ public class CaseRecordDialog extends Dialog {
         });
         }
 
+        //updated 08252026 for share button
         patientFilesSection =
-                new PatientFilesSection(record, patientFileService, baseStoragePath);
+                new PatientFilesSection(
+                        record,
+                        patientFileService,
+                        secureShareService,
+                        baseStoragePath
+                );
 
         Details patientFilesDetails =
                 new Details("Patient Files", patientFilesSection);
