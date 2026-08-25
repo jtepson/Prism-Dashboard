@@ -11,12 +11,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.file.Path;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
-@RestController
+@Controller
 @RequestMapping("/share")
 public class SecureShareController {
 
@@ -30,50 +33,80 @@ public class SecureShareController {
 
     // validate secure share link
     @GetMapping("/{token}")
-    public ResponseEntity<String> openShare(
-            @PathVariable String token
+    public String openShare(
+            @PathVariable String token,
+            HttpSession session,
+            Model model
     ) {
         try {
             CaseSecureShareEntity share =
                     secureShareService.validateToken(token);
 
-            return ResponseEntity.ok(
-                    "Secure share available for "
-                            + share.getRecipientEmail()
-            );
+            boolean verified =
+                    isSessionVerified(
+                            share.getId(),
+                            session
+                    );
+
+            model.addAttribute("token", token);
+            model.addAttribute("share", share);
+            model.addAttribute("verified", verified);
+
+            if (verified) {
+                model.addAttribute(
+                        "files",
+                        share.getFiles()
+                );
+            }
+
+            return "secure-share";
 
         } catch (SecureShareAccessException ex) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(ex.getMessage());
+            model.addAttribute(
+                    "errorMessage",
+                    ex.getMessage()
+            );
+
+            return "secure-share";
         }
     }
 
     // send secure share verification code
     @PostMapping("/{token}/code")
-    public ResponseEntity<String> sendCode(
-            @PathVariable String token
+    public String sendCode(
+            @PathVariable String token,
+            RedirectAttributes redirectAttributes
     ) {
         try {
             secureShareService.sendAccessCode(token);
 
-            return ResponseEntity.ok(
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
                     "Verification code sent."
             );
 
+            redirectAttributes.addFlashAttribute(
+                    "codeSent",
+                    true
+            );
+
         } catch (SecureShareAccessException ex) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(ex.getMessage());
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    ex.getMessage()
+            );
         }
+
+        return "redirect:/share/" + token;
     }
 
     // verify secure share verification code - updated 08252026
     @PostMapping("/{token}/verify")
-    public ResponseEntity<String> verifyCode(
+    public String verifyCode(
             @PathVariable String token,
             @RequestParam String code,
-            HttpSession session
+            HttpSession session,
+            RedirectAttributes redirectAttributes
     ) {
         try {
             CaseSecureShareEntity share =
@@ -87,15 +120,24 @@ public class SecureShareController {
                     LocalDateTime.now().plusMinutes(15)
             );
 
-            return ResponseEntity.ok(
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
                     "Verification successful."
             );
 
         } catch (SecureShareAccessException ex) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(ex.getMessage());
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    ex.getMessage()
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "codeSent",
+                    true
+            );
         }
+
+        return "redirect:/share/" + token;
     }
 
     //secure view endpoint - updated 08252026

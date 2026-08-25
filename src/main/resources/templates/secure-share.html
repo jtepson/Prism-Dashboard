@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism Secure File Access</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f8;
+            color: #1e293b;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 760px;
+            background: white;
+            border: 1px solid #dbe3e8;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            background: #004f50;
+            color: white;
+            padding: 22px 28px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            opacity: 0.85;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #ecfdf5;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .section-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            border: none;
+            border-radius: 8px;
+            background: #006f70;
+            color: white;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .button.secondary {
+            background: #eef2f5;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 13px;
+            color: #64748b;
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eef2f5;
+            font-size: 14px;
+        }
+
+        .actions {
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .actions a {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page">
+
+    <div class="card">
+
+        <div class="header">
+            <h1>Prism Secure File Access</h1>
+            <p>Temporary protected file sharing</p>
+        </div>
+
+        <div class="content">
+
+            <div th:if="${successMessage}"
+                 class="message success"
+                 th:text="${successMessage}">
+            </div>
+
+            <div th:if="${errorMessage}"
+                 class="message error"
+                 th:text="${errorMessage}">
+            </div>
+
+            <div th:if="${share != null and !verified}">
+
+                <h2 class="section-title">
+                    Verification Required
+                </h2>
+
+                <p class="muted">
+                    A verification code will be sent to the recipient email address associated with this secure share.
+                </p>
+
+                <form th:if="${!codeSent}"
+                      th:action="@{'/share/' + ${token} + '/code'}"
+                      method="post">
+
+                      <input type="hidden"
+                             th:name="${_csrf.parameterName}"
+                             th:value="${_csrf.token}">
+
+                    <button class="button" type="submit">
+                        Send Verification Code
+                    </button>
+
+                </form>
+
+                <form th:if="${codeSent}"
+                      th:action="@{'/share/' + ${token} + '/verify'}"
+                      method="post">
+
+                      <input type="hidden"
+                             th:name="${_csrf.parameterName}"
+                             th:value="${_csrf.token}">
+
+                    <input
+                            type="text"
+                            name="code"
+                            inputmode="numeric"
+                            maxlength="6"
+                            placeholder="Enter 6-digit verification code"
+                            required>
+
+                    <button class="button" type="submit">
+                        Verify
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div th:if="${share != null and verified}">
+
+                <h2 class="section-title">
+                    Shared Files
+                </h2>
+
+                <p class="muted">
+                    Access is limited to the files included in this secure share.
+                </p>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th>File</th>
+                        <th class="actions"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="file : ${files}">
+
+                        <td th:text="${file.originalFileName}">
+                            File
+                        </td>
+
+                        <td class="actions">
+
+                            <a class="button secondary"
+                               th:if="${share.allowView}"
+                               th:href="@{'/share/' + ${token} + '/files/' + ${file.id} + '/view'}"
+                               target="_blank">
+                                View
+                            </a>
+
+                            <a class="button"
+                               th:if="${share.allowDownload}"
+                               th:href="@{'/share/' + ${token} + '/files/' + ${file.id} + '/download'}">
+                                Download
+                            </a>
+
+                        </td>
+
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
