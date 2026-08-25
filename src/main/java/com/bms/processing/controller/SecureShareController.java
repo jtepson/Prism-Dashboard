@@ -6,6 +6,9 @@ import com.bms.processing.service.SecureShareService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/share")
 public class SecureShareController {
@@ -58,16 +61,23 @@ public class SecureShareController {
         }
     }
 
-    // verify secure share verification code
+    // verify secure share verification code - updated 08252026
     @PostMapping("/{token}/verify")
     public ResponseEntity<String> verifyCode(
             @PathVariable String token,
-            @RequestParam String code
+            @RequestParam String code,
+            HttpSession session
     ) {
         try {
-            secureShareService.verifyAccessCode(
-                    token,
-                    code
+            CaseSecureShareEntity share =
+                    secureShareService.verifyAccessCode(
+                            token,
+                            code
+                    );
+
+            session.setAttribute(
+                    sessionKey(share.getId()),
+                    LocalDateTime.now().plusMinutes(15)
             );
 
             return ResponseEntity.ok(
@@ -79,5 +89,32 @@ public class SecureShareController {
                     .badRequest()
                     .body(ex.getMessage());
         }
+    }
+
+    private String sessionKey(Long shareId) {
+        return "secureShareVerified:" + shareId;
+    }
+
+    private boolean isSessionVerified(
+            Long shareId,
+            HttpSession session
+    ) {
+        Object value = session.getAttribute(
+                sessionKey(shareId)
+        );
+
+        if (!(value instanceof LocalDateTime expiresAt)) {
+            return false;
+        }
+
+        if (!expiresAt.isAfter(LocalDateTime.now())) {
+            session.removeAttribute(
+                    sessionKey(shareId)
+            );
+
+            return false;
+        }
+
+        return true;
     }
 }
