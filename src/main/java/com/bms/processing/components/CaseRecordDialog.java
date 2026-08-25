@@ -843,11 +843,12 @@ public class CaseRecordDialog extends Dialog {
         }
 
         //updated 08252026 for share button
-        patientFilesSection =
+        PatientFilesSection patientFilesSection =
                 new PatientFilesSection(
                         record,
                         patientFileService,
                         secureShareService,
+                        currentUserService,
                         baseStoragePath
                 );
 

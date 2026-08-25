@@ -4,6 +4,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.service.PatientFileService;
 import com.bms.processing.service.SecureShareService;
+import com.bms.processing.service.CurrentUserService;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -41,16 +42,20 @@ public class PatientFilesSection extends VerticalLayout {
         private final Grid<PatientFileEntity> grid =
                 new Grid<>(PatientFileEntity.class, false);
 
+        private final CurrentUserService currentUserService;
+
         public PatientFilesSection(
                 CaseRecordEntity record,
                 PatientFileService patientFileService,
                 SecureShareService secureShareService,
+                CurrentUserService currentUserService,
                 @Value("${prism.files.storage-path}") String baseStoragePath
         ) {
                 this.record = record;
                 this.patientFileService = patientFileService;
                 this.baseStoragePath = baseStoragePath;
                 this.secureShareService = secureShareService;
+                this.currentUserService = currentUserService;
 
                 setPadding(false);
                 setSpacing(true);
@@ -378,7 +383,7 @@ public class PatientFilesSection extends VerticalLayout {
                                 allowView.getValue(),
                                 allowDownload.getValue(),
                                 null,
-                                null
+                                currentUserService.getUsername()
                         );
 
                         dialog.close();
