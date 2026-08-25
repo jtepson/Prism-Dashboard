@@ -57,6 +57,15 @@ public class CaseSecureShareEntity {
     @Column(name = "last_accessed_at")
     private LocalDateTime lastAccessedAt;
 
+    @Column(name = "access_code_expires_at")
+    private LocalDateTime accessCodeExpiresAt;
+
+    @Column(name = "access_code_attempts", nullable = false)
+    private Integer accessCodeAttempts = 0;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
     @ManyToMany
     @JoinTable(
             name = "case_secure_share_file",
@@ -187,5 +196,29 @@ public class CaseSecureShareEntity {
 
     public void setFiles(Set<PatientFileEntity> files) {
         this.files = files;
+    }
+
+    public LocalDateTime getAccessCodeExpiresAt() {
+        return accessCodeExpiresAt;
+    }
+
+    public void setAccessCodeExpiresAt(LocalDateTime accessCodeExpiresAt) {
+        this.accessCodeExpiresAt = accessCodeExpiresAt;
+    }
+
+    public Integer getAccessCodeAttempts() {
+        return accessCodeAttempts;
+    }
+
+    public void setAccessCodeAttempts(Integer accessCodeAttempts) {
+        this.accessCodeAttempts = accessCodeAttempts;
+    }
+
+    public LocalDateTime getVerifiedAt() {
+        return verifiedAt;
+    }
+
+    public void setVerifiedAt(LocalDateTime verifiedAt) {
+        this.verifiedAt = verifiedAt;
     }
 }

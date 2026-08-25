@@ -4,6 +4,7 @@ import com.bms.processing.entity.CaseRecordEntity;
 import com.bms.processing.entity.CaseSecureShareEntity;
 import com.bms.processing.entity.PatientFileEntity;
 import com.bms.processing.repository.CaseSecureShareRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,12 @@ public class SecureShareService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final CaseSecureShareRepository repository;
+
+    private static final int ACCESS_CODE_LENGTH = 6;
+    private static final int ACCESS_CODE_MAX_ATTEMPTS = 5;
+
+    private final BCryptPasswordEncoder passwordEncoder =
+            new BCryptPasswordEncoder();
 
     public SecureShareService(CaseSecureShareRepository repository) {
         this.repository = repository;
@@ -160,6 +167,100 @@ public class SecureShareService {
                 .findByCaseRecordIdOrderByCreatedAtDesc(
                         caseRecord.getId()
                 );
+    }
+
+    @Transactional
+    public String generateAccessCode(Long shareId) {
+        CaseSecureShareEntity share = repository.findById(shareId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Secure share not found.")
+                );
+
+        validateShareAccess(share);
+
+        int codeValue = SECURE_RANDOM.nextInt(1_000_000);
+
+        String code = String.format(
+                "%0" + ACCESS_CODE_LENGTH + "d",
+                codeValue
+        );
+
+        share.setAccessCodeHash(
+                passwordEncoder.encode(code)
+        );
+
+        share.setAccessCodeExpiresAt(
+                LocalDateTime.now().plusMinutes(10)
+        );
+
+        share.setAccessCodeAttempts(0);
+        share.setVerifiedAt(null);
+
+        repository.save(share);
+
+        return code;
+    }
+
+    @Transactional
+    public CaseSecureShareEntity verifyAccessCode(
+            String rawToken,
+            String accessCode
+    ) {
+        CaseSecureShareEntity share = validateToken(rawToken);
+
+        if (accessCode == null || accessCode.isBlank()) {
+            throw new SecureShareAccessException(
+                    "Verification code is required."
+            );
+        }
+
+        if (share.getAccessCodeHash() == null
+                || share.getAccessCodeExpiresAt() == null) {
+            throw new SecureShareAccessException(
+                    "A verification code has not been requested."
+            );
+        }
+
+        if (share.getAccessCodeExpiresAt()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new SecureShareAccessException(
+                    "Verification code has expired."
+            );
+        }
+
+        int attempts = share.getAccessCodeAttempts() == null
+                ? 0
+                : share.getAccessCodeAttempts();
+
+        if (attempts >= ACCESS_CODE_MAX_ATTEMPTS) {
+            throw new SecureShareAccessException(
+                    "Too many verification attempts."
+            );
+        }
+
+        if (!passwordEncoder.matches(
+                accessCode.trim(),
+                share.getAccessCodeHash()
+        )) {
+            share.setAccessCodeAttempts(attempts + 1);
+            repository.save(share);
+
+            throw new SecureShareAccessException(
+                    "Invalid verification code."
+            );
+        }
+
+        share.setVerifiedAt(LocalDateTime.now());
+        share.setAccessCodeAttempts(0);
+
+        return repository.save(share);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isVerified(CaseSecureShareEntity share) {
+        return share != null
+                && share.getVerifiedAt() != null;
     }
 
     public boolean isActive(CaseSecureShareEntity share) {
