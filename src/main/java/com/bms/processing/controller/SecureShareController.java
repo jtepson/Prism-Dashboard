@@ -31,7 +31,7 @@ public class SecureShareController {
         this.secureShareService = secureShareService;
     }
 
-    // validate secure share link
+    // validate secure share link - updated 08252026
     @GetMapping("/{token}")
     public String openShare(
             @PathVariable String token,
@@ -52,6 +52,14 @@ public class SecureShareController {
             model.addAttribute("share", share);
             model.addAttribute("verified", verified);
 
+            boolean codeSent = Boolean.TRUE.equals(
+                    session.getAttribute(
+                            "secureShareCodeSent_" + share.getId()
+                    )
+            );
+
+            model.addAttribute("codeSent", codeSent);
+
             if (verified) {
                 model.addAttribute(
                         "files",
@@ -71,23 +79,27 @@ public class SecureShareController {
         }
     }
 
-    // send secure share verification code
+    // send secure share verification code- updated 08252026 after but not letting verification code being entered in access window
     @PostMapping("/{token}/code")
     public String sendCode(
             @PathVariable String token,
+            HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
         try {
             secureShareService.sendAccessCode(token);
 
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
-                    "Verification code sent."
+            CaseSecureShareEntity share =
+                    secureShareService.validateToken(token);
+
+            session.setAttribute(
+                    "secureShareCodeSent_" + share.getId(),
+                    true
             );
 
             redirectAttributes.addFlashAttribute(
-                    "codeSent",
-                    true
+                    "successMessage",
+                    "Verification code sent."
             );
 
         } catch (SecureShareAccessException ex) {
@@ -123,6 +135,10 @@ public class SecureShareController {
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Verification successful."
+            );
+
+            session.removeAttribute(
+                    "secureShareCodeSent_" + share.getId()
             );
 
         } catch (SecureShareAccessException ex) {

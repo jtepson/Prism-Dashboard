@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.core.annotation.Order;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,28 +25,6 @@ import java.util.Set;
 @EnableWebSecurity
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
-
-        @Bean
-                public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-                http.oauth2Login(oauth2 ->
-                        oauth2.userInfoEndpoint(userInfo ->
-                                userInfo.oidcUserService(oidcUserService())
-                        )
-                );
-
-                // allow temporary secure share access
-                http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/share/**").permitAll()
-                );
-
-                http.with(
-                        VaadinSecurityConfigurer.vaadin(),
-                        vaadin -> vaadin.oauth2LoginPage("/oauth2/authorization/keycloak")
-                );
-
-                return http.build();
-        }
 
         @Bean
         public OidcUserService oidcUserService() {
@@ -84,7 +63,46 @@ public class SecurityConfig {
                                         oidcUser.getUserInfo(),
                                         "preferred_username"
                                 );
-                                }
-                        };
-                }
+                        }
+                };
         }
+
+        @Bean
+        @Order(1)
+        public SecurityFilterChain secureShareSecurityFilterChain(
+                        HttpSecurity http
+                ) throws Exception {
+
+                // allow external secure share flow without Keycloak
+                http.securityMatcher("/share/**");
+
+                http.authorizeHttpRequests(auth ->
+                        auth.anyRequest().permitAll()
+                );
+
+                return http.build();
+        }
+
+        @Bean
+        @Order(2)
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http
+                ) throws Exception {
+
+                http.oauth2Login(oauth2 ->
+                        oauth2.userInfoEndpoint(userInfo ->
+                                userInfo.oidcUserService(oidcUserService())
+                        )
+                );
+
+                http.with(
+                        VaadinSecurityConfigurer.vaadin(),
+                        vaadin ->
+                                vaadin.oauth2LoginPage(
+                                        "/oauth2/authorization/keycloak"
+                                )
+                );
+
+                return http.build();
+        }
+}

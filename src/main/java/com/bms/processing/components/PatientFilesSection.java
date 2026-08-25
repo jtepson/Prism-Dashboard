@@ -10,6 +10,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
@@ -68,7 +69,20 @@ public class PatientFilesSection extends VerticalLayout {
                         event -> openSecureShareDialog()
                 );
 
-                add(buildUploadInstructions(), buildUpload(), grid);
+                secureShareButton.addThemeVariants(
+                        ButtonVariant.LUMO_SMALL
+                );
+
+                secureShareButton.getStyle()
+                        .set("color", "var(--lumo-primary-text-color)");
+
+                add(
+                        buildUploadInstructions(),
+                        buildUpload(),
+                        secureShareButton,
+                        grid
+                );
+
                 refresh();
         }
 
