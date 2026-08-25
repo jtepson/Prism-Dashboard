@@ -7,6 +7,7 @@ import com.bms.processing.repository.CaseSecureShareRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,13 +32,16 @@ public class SecureShareService {
 
     private final CaseSecureShareRepository repository;
     private final EmailService emailService;
+    private final String externalBaseUrl;
 
     public SecureShareService(
             CaseSecureShareRepository repository,
-            EmailService emailService
+            EmailService emailService,
+            @Value("${prism.external-base-url}") String externalBaseUrl
     ) {
         this.repository = repository;
         this.emailService = emailService;
+        this.externalBaseUrl = externalBaseUrl;
     }
 
     @Transactional
@@ -334,6 +338,34 @@ public class SecureShareService {
 
         return share.getMaxDownloads() == null
                 || share.getDownloadCount() < share.getMaxDownloads();
+    }
+
+    public String buildShareUrl(String rawToken) {
+        String baseUrl = externalBaseUrl.endsWith("/")
+                ? externalBaseUrl.substring(
+                        0,
+                        externalBaseUrl.length() - 1
+                )
+                : externalBaseUrl;
+
+        return baseUrl + "/share/" + rawToken;
+    }
+
+    public void sendShareLink(
+            CreatedSecureShare created
+    ) {
+        String shareUrl =
+                buildShareUrl(created.rawToken());
+
+        CaseSecureShareEntity share =
+                created.share();
+
+        emailService.sendSecureShareLink(
+                share.getRecipientEmail(),
+                share.getRecipientName(),
+                shareUrl,
+                share.getExpiresAt()
+        );
     }
 
     private void validateShareAccess(CaseSecureShareEntity share) {

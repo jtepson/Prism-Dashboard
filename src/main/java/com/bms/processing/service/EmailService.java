@@ -5,6 +5,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 public class EmailService {
@@ -80,5 +81,32 @@ public class EmailService {
                 + "If you did not request this code, you can ignore this email.";
 
         sendEmail(to, subject, body);
+    }
+
+    // sends secure share link
+    public void sendSecureShareLink(
+            String to,
+            String recipientName,
+            String shareUrl,
+            LocalDateTime expiresAt
+    ) {
+        String subject = "Prism Secure File Access";
+
+        String body =
+                "Hello " + recipientName + ",\n\n"
+                + "Prism Clinical Imaging has securely shared files with you.\n\n"
+                + "Access the files here:\n"
+                + shareUrl + "\n\n"
+                + "This secure link expires on "
+                + expiresAt.toLocalDate()
+                + ".\n\n"
+                + "You will be asked to verify your email address with a one-time code before accessing the files.\n\n"
+                + "If you were not expecting these files, please disregard this message.";
+
+        sendEmail(
+                to,
+                subject,
+                body
+        );
     }
 }

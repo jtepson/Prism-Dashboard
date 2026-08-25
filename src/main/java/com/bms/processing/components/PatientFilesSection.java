@@ -50,7 +50,7 @@ public class PatientFilesSection extends VerticalLayout {
                 PatientFileService patientFileService,
                 SecureShareService secureShareService,
                 CurrentUserService currentUserService,
-                @Value("${prism.files.storage-path}") String baseStoragePath
+                String baseStoragePath
         ) {
                 this.record = record;
                 this.patientFileService = patientFileService;
@@ -400,10 +400,15 @@ public class PatientFilesSection extends VerticalLayout {
                                 currentUserService.getUsername()
                         );
 
+                        secureShareService.sendShareLink(created);
+
                         dialog.close();
 
                         showShareCreatedDialog(
-                                created.rawToken()
+                                secureShareService.buildShareUrl(
+                                        created.rawToken()
+                                ),
+                                created.share().getRecipientEmail()
                         );
 
                         } catch (Exception ex) {
@@ -446,33 +451,44 @@ public class PatientFilesSection extends VerticalLayout {
 
         //result dialog - 08252026
         private void showShareCreatedDialog(
-                String rawToken
+                String shareUrl,
+                String recipientEmail
         ) {
                 Dialog dialog = new Dialog();
                 dialog.setHeaderTitle("Secure Share Created");
                 dialog.setWidth("550px");
 
-                TextField shareLink = new TextField(
-                        "Secure Share Link"
+                Span confirmation = new Span(
+                        "Secure access instructions were sent to "
+                                + recipientEmail
+                                + "."
                 );
 
-                shareLink.setValue(
-                        "/share/" + rawToken
+                confirmation.getStyle()
+                        .set("font-weight", "600");
+
+                Span fallback = new Span(
+                        "If the recipient does not receive the email, you can copy the secure link below."
                 );
 
+                fallback.getStyle()
+                        .set("color", "var(--lumo-secondary-text-color)")
+                        .set("font-size", "0.9rem");
+
+                TextField shareLink =
+                        new TextField("Secure Share Link");
+
+                shareLink.setValue(shareUrl);
                 shareLink.setReadOnly(true);
                 shareLink.setWidthFull();
 
-                Button copyButton = new Button(
-                        "Copy Link"
-                );
+                Button copyButton = new Button("Copy Link");
 
                 copyButton.addClickListener(event -> {
-                        shareLink.getElement()
-                                .executeJs(
-                                        "navigator.clipboard.writeText($0)",
-                                        shareLink.getValue()
-                                );
+                        shareLink.getElement().executeJs(
+                                "navigator.clipboard.writeText($0)",
+                                shareLink.getValue()
+                        );
 
                         showSuccess("Share link copied.");
                 });
@@ -484,14 +500,14 @@ public class PatientFilesSection extends VerticalLayout {
 
                 VerticalLayout content =
                         new VerticalLayout(
-                                new Span(
-                                        "Send this link to the intended recipient."
-                                ),
+                                confirmation,
+                                fallback,
                                 shareLink,
                                 copyButton
                         );
 
                 content.setPadding(false);
+                content.setSpacing(true);
                 content.setWidthFull();
 
                 dialog.add(content);
