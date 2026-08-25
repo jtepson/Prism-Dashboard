@@ -23,16 +23,21 @@ public class SecureShareService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    private final CaseSecureShareRepository repository;
-
     private static final int ACCESS_CODE_LENGTH = 6;
     private static final int ACCESS_CODE_MAX_ATTEMPTS = 5;
 
     private final BCryptPasswordEncoder passwordEncoder =
             new BCryptPasswordEncoder();
 
-    public SecureShareService(CaseSecureShareRepository repository) {
+    private final CaseSecureShareRepository repository;
+    private final EmailService emailService;
+
+    public SecureShareService(
+            CaseSecureShareRepository repository,
+            EmailService emailService
+    ) {
         this.repository = repository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -199,6 +204,19 @@ public class SecureShareService {
         repository.save(share);
 
         return code;
+    }
+
+    @Transactional
+    public void sendAccessCode(String rawToken) {
+        CaseSecureShareEntity share = validateToken(rawToken);
+
+        String accessCode = generateAccessCode(share.getId());
+
+        emailService.sendSecureShareAccessCode(
+                share.getRecipientEmail(),
+                share.getRecipientName(),
+                accessCode
+        );
     }
 
     @Transactional

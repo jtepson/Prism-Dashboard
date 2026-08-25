@@ -63,4 +63,22 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    // sends secure share verification code for temp share - 08252026
+    public void sendSecureShareAccessCode(
+            String to,
+            String recipientName,
+            String accessCode
+    ) {
+        String subject = "Prism Secure File Access - Verification Code";
+
+        String body =
+                "Hello " + recipientName + ",\n\n"
+                + "Your Prism secure file access verification code is:\n\n"
+                + accessCode + "\n\n"
+                + "This code expires in 10 minutes.\n\n"
+                + "If you did not request this code, you can ignore this email.";
+
+        sendEmail(to, subject, body);
+    }
 }

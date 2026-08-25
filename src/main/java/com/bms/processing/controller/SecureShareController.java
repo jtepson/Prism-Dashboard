@@ -38,4 +38,46 @@ public class SecureShareController {
                     .body(ex.getMessage());
         }
     }
+
+    // send secure share verification code
+    @PostMapping("/{token}/code")
+    public ResponseEntity<String> sendCode(
+            @PathVariable String token
+    ) {
+        try {
+            secureShareService.sendAccessCode(token);
+
+            return ResponseEntity.ok(
+                    "Verification code sent."
+            );
+
+        } catch (SecureShareAccessException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(ex.getMessage());
+        }
+    }
+
+    // verify secure share verification code
+    @PostMapping("/{token}/verify")
+    public ResponseEntity<String> verifyCode(
+            @PathVariable String token,
+            @RequestParam String code
+    ) {
+        try {
+            secureShareService.verifyAccessCode(
+                    token,
+                    code
+            );
+
+            return ResponseEntity.ok(
+                    "Verification successful."
+            );
+
+        } catch (SecureShareAccessException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(ex.getMessage());
+        }
+    }
 }
