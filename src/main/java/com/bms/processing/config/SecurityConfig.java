@@ -25,61 +25,66 @@ import java.util.Set;
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        @Bean
+                public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.oauth2Login(oauth2 ->
-                oauth2.userInfoEndpoint(userInfo ->
-                        userInfo.oidcUserService(oidcUserService())
-                )
-        );
-
-        http.with(
-                VaadinSecurityConfigurer.vaadin(),
-                vaadin -> vaadin.oauth2LoginPage("/oauth2/authorization/keycloak")
-        );
-
-        return http.build();
-    }
-
-    @Bean
-    public OidcUserService oidcUserService() {
-        OidcUserService delegate = new OidcUserService();
-
-        return new OidcUserService() {
-            @Override
-            public OidcUser loadUser(OidcUserRequest userRequest) {
-                OidcUser oidcUser = delegate.loadUser(userRequest);
-
-                Set<GrantedAuthority> authorities = new HashSet<>(oidcUser.getAuthorities());
-
-                List<String> groups = oidcUser.getClaimAsStringList("groups");
-
-                if (groups != null) {
-                    groups.forEach(group ->
-                            authorities.add(new SimpleGrantedAuthority(
-                                    "GROUP_" + group.toUpperCase()
-                            ))
-                    );
-                }
-
-                Map<String, Object> realmAccess = oidcUser.getClaim("realm_access");
-
-                if (realmAccess != null && realmAccess.get("roles") instanceof List<?> roles) {
-                    roles.forEach(role ->
-                            authorities.add(new SimpleGrantedAuthority(
-                                    "ROLE_" + role.toString().toUpperCase()
-                            ))
-                    );
-                }
-
-                return new DefaultOidcUser(
-                        authorities,
-                        oidcUser.getIdToken(),
-                        oidcUser.getUserInfo(),
-                        "preferred_username"
+                http.oauth2Login(oauth2 ->
+                        oauth2.userInfoEndpoint(userInfo ->
+                                userInfo.oidcUserService(oidcUserService())
+                        )
                 );
-            }
-        };
-    }
-}
+
+                // allow temporary secure share access
+                http.authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/share/**").permitAll()
+                );
+
+                http.with(
+                        VaadinSecurityConfigurer.vaadin(),
+                        vaadin -> vaadin.oauth2LoginPage("/oauth2/authorization/keycloak")
+                );
+
+                return http.build();
+        }
+
+        @Bean
+        public OidcUserService oidcUserService() {
+                OidcUserService delegate = new OidcUserService();
+
+                return new OidcUserService() {
+                        @Override
+                        public OidcUser loadUser(OidcUserRequest userRequest) {
+                                OidcUser oidcUser = delegate.loadUser(userRequest);
+
+                                Set<GrantedAuthority> authorities = new HashSet<>(oidcUser.getAuthorities());
+
+                                List<String> groups = oidcUser.getClaimAsStringList("groups");
+
+                                if (groups != null) {
+                                groups.forEach(group ->
+                                        authorities.add(new SimpleGrantedAuthority(
+                                                "GROUP_" + group.toUpperCase()
+                                        ))
+                                );
+                                }
+
+                                Map<String, Object> realmAccess = oidcUser.getClaim("realm_access");
+
+                                if (realmAccess != null && realmAccess.get("roles") instanceof List<?> roles) {
+                                roles.forEach(role ->
+                                        authorities.add(new SimpleGrantedAuthority(
+                                                "ROLE_" + role.toString().toUpperCase()
+                                        ))
+                                );
+                                }
+
+                                return new DefaultOidcUser(
+                                        authorities,
+                                        oidcUser.getIdToken(),
+                                        oidcUser.getUserInfo(),
+                                        "preferred_username"
+                                );
+                                }
+                        };
+                }
+        }
