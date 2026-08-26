@@ -843,7 +843,7 @@ public class CaseRecordDialog extends Dialog {
         }
 
         //updated 08252026 for share button
-        PatientFilesSection patientFilesSection =
+        patientFilesSection =
                 new PatientFilesSection(
                         record,
                         patientFileService,
