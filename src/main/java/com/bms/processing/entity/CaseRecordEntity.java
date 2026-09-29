@@ -34,14 +34,31 @@ public class CaseRecordEntity {
     private String patientId;
 
     private String siteName;
-        @Column(name = "owner_group")
-        private String ownerGroup;
 
-        @Column(name = "assigned_to_user")
-        private String assignedToUser;
+    @Column(name = "owner_group")
+    private String ownerGroup;
+
+    @Column(name = "assigned_to_user")
+    private String assignedToUser;
 
     @Enumerated(EnumType.STRING)
     private PatientStatus patientStatus;
+
+    // Patient deletion
+    @Column(name = "deletion_status", nullable = false)
+    private String deletionStatus = "ACTIVE";
+
+    @Column(name = "deletion_requested_at")
+    private LocalDateTime deletionRequestedAt;
+
+    @Column(name = "deletion_requested_by")
+    private String deletionRequestedBy;
+
+    @Column(name = "deletion_reason", columnDefinition = "TEXT")
+    private String deletionReason;
+
+    @Column(name = "deletion_eligible_at")
+    private LocalDateTime deletionEligibleAt;
 
     private LocalDate imagesReceivedDate;
 
@@ -438,5 +455,49 @@ public class CaseRecordEntity {
 
     public void setDicomLinked(Boolean dicomLinked) {
         this.dicomLinked = dicomLinked;
+    }
+
+    public String getDeletionStatus() {
+        return deletionStatus;
+    }
+
+    public void setDeletionStatus(String deletionStatus) {
+        this.deletionStatus = deletionStatus;
+    }
+
+    public LocalDateTime getDeletionRequestedAt() {
+        return deletionRequestedAt;
+    }
+
+    public void setDeletionRequestedAt(LocalDateTime deletionRequestedAt) {
+        this.deletionRequestedAt = deletionRequestedAt;
+    }
+
+    public String getDeletionRequestedBy() {
+        return deletionRequestedBy;
+    }
+
+    public void setDeletionRequestedBy(String deletionRequestedBy) {
+        this.deletionRequestedBy = deletionRequestedBy;
+    }
+
+    public String getDeletionReason() {
+        return deletionReason;
+    }
+
+    public void setDeletionReason(String deletionReason) {
+        this.deletionReason = deletionReason;
+    }
+
+    public LocalDateTime getDeletionEligibleAt() {
+        return deletionEligibleAt;
+    }
+
+    public void setDeletionEligibleAt(LocalDateTime deletionEligibleAt) {
+        this.deletionEligibleAt = deletionEligibleAt;
+    }
+
+    public boolean isPendingDeletion() {
+        return "PENDING_DELETION".equals(deletionStatus);
     }
 }
