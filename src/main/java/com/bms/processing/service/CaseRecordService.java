@@ -6,6 +6,7 @@ import com.bms.processing.model.ThirdPartyStatus;
 import com.bms.processing.repository.CaseRecordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,7 +35,7 @@ public class CaseRecordService {
     }
 
     public List<CaseRecordEntity> findAll() {
-        return repository.findAll();
+        return repository.findByDeletionStatusOrderByIdDesc("ACTIVE");
     }
 
     public CaseRecordEntity save(CaseRecordEntity record) {
@@ -932,6 +933,98 @@ public class CaseRecordService {
         );
 
         return savedRecord;
+    }
+
+    //new deletion patient logic for admin specific viewing - 09292026
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public CaseRecordEntity markForDeletion(
+            Long caseId,
+            String reason,
+            String username
+    ) {
+        if (reason == null || reason.isBlank()) {
+            throw new InvalidWorkflowTransitionException(
+                    "A deletion reason is required."
+            );
+        }
+
+        CaseRecordEntity record = repository.findById(caseId)
+                .orElseThrow(() -> new InvalidWorkflowTransitionException(
+                        "Patient not found."
+                ));
+
+        if (record.isPendingDeletion()) {
+            throw new InvalidWorkflowTransitionException(
+                    "Patient is already marked for deletion."
+            );
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        record.setDeletionStatus("PENDING_DELETION");
+        record.setDeletionRequestedAt(now);
+        record.setDeletionRequestedBy(username);
+        record.setDeletionReason(reason.trim());
+        record.setDeletionEligibleAt(now.plusDays(30));
+
+        CaseRecordEntity saved = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "PATIENT_DELETION_REQUESTED",
+                saved,
+                "Patient marked for deletion",
+                record.getPatientStatus().name(),
+                reason.trim(),
+                username
+        );
+
+        return saved;
+    }
+
+    //restore patient logic
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public CaseRecordEntity restorePatient(
+            Long caseId,
+            String username
+    ) {
+        CaseRecordEntity record = repository.findById(caseId)
+                .orElseThrow(() -> new InvalidWorkflowTransitionException(
+                        "Patient not found."
+                ));
+
+        if (!record.isPendingDeletion()) {
+            throw new InvalidWorkflowTransitionException(
+                    "Patient is not marked for deletion."
+            );
+        }
+
+        record.setDeletionStatus("ACTIVE");
+        record.setDeletionRequestedAt(null);
+        record.setDeletionRequestedBy(null);
+        record.setDeletionReason(null);
+        record.setDeletionEligibleAt(null);
+
+        CaseRecordEntity saved = repository.save(record);
+
+        auditEventService.logTimelineEvent(
+                "PATIENT_RESTORED",
+                saved,
+                "Patient restored",
+                "PENDING_DELETION",
+                "ACTIVE",
+                username
+        );
+
+        return saved;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CaseRecordEntity> findPendingDeletion() {
+        return repository.findByDeletionStatusOrderByDeletionRequestedAtDesc(
+                "PENDING_DELETION"
+        );
     }
 
     private String trimToNull(String value) {
