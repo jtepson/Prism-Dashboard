@@ -14,4 +14,6 @@ public interface CaseSecureShareRepository
     List<CaseSecureShareEntity> findByCaseRecordIdOrderByCreatedAtDesc(
             Long caseRecordId
     );
+
+    List<CaseSecureShareEntity> findByCaseRecordId(Long caseRecordId);
 }

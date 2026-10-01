@@ -44,4 +44,6 @@ public interface CaseRecordRepository extends JpaRepository<CaseRecordEntity, Lo
         List<CaseRecordEntity> findByDeletionStatusOrderByDeletionRequestedAtDesc(
                 String deletionStatus
         );
+
+        void deleteByCaseRecord(CaseRecordEntity caseRecord);
 }
