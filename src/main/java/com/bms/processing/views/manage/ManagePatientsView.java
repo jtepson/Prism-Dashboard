@@ -141,6 +141,16 @@ public class ManagePatientsView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true);
 
+        if (currentUserService.isAdmin()) {
+                grid.addColumn(record ->
+                                record.isPendingDeletion()
+                                        ? "MARKED FOR DELETION"
+                                        : "ACTIVE")
+                        .setHeader("Deletion Status")
+                        .setSortable(true)
+                        .setAutoWidth(true);
+        }
+
         grid.addColumn(record ->
                         record.getDateScanned() != null
                                 ? record.getDateScanned().toString()
@@ -174,8 +184,12 @@ public class ManagePatientsView extends VerticalLayout {
                 ? ""
                 : searchField.getValue().trim().toLowerCase();
 
+        //updated for delete logic 10012026
         grid.setItems(
-                caseRecordService.findAll().stream()
+                (currentUserService.isAdmin()
+                        ? caseRecordService.findAllForAdmin()
+                        : caseRecordService.findAll())
+                        .stream()
                         .filter(record ->
                                 filter.isEmpty()
                                         || contains(record.getPatientLastName(), filter)
@@ -188,6 +202,7 @@ public class ManagePatientsView extends VerticalLayout {
                                                         : "",
                                                 filter
                                         )
+                                        || contains(record.getDeletionStatus(), filter)
                         )
                         .toList()
         );

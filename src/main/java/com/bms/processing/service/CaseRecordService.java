@@ -1027,6 +1027,11 @@ public class CaseRecordService {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CaseRecordEntity> findAllForAdmin() {
+        return repository.findAll();
+    }
+
     private String trimToNull(String value) {
         if (value == null) {
             return null;
