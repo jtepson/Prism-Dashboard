@@ -296,6 +296,48 @@ public class CaseRecordDialog extends Dialog {
                 workflowForm
         );
 
+        //show deletion information 10012026
+        VerticalLayout deletionSection = new VerticalLayout();
+        deletionSection.setPadding(false);
+        deletionSection.setSpacing(false);
+        deletionSection.setWidthFull();
+
+        if (record.isPendingDeletion() && currentUserService.isAdmin()) {
+                FormLayout deletionForm = new FormLayout();
+                deletionForm.setWidthFull();
+                deletionForm.setResponsiveSteps(
+                        new FormLayout.ResponsiveStep("0", 1),
+                        new FormLayout.ResponsiveStep("700px", 2)
+                );
+
+                deletionForm.add(
+                        buildDisplayField(
+                                "Requested By",
+                                nullSafe(record.getDeletionRequestedBy())
+                        ),
+                        buildDisplayField(
+                                "Requested At",
+                                formatDateTimeCompact(record.getDeletionRequestedAt())
+                        ),
+                        buildDisplayField(
+                                "Permanent Deletion Eligible",
+                                formatDateTimeCompact(record.getDeletionEligibleAt())
+                        ),
+                        buildDisplayField(
+                                "Reason",
+                                nullSafe(record.getDeletionReason())
+                        )
+                );
+
+                deletionSection = buildOverviewSection(
+                        "Marked for Deletion",
+                        deletionForm
+                );
+
+                deletionSection.getStyle()
+                        .set("border-left", "3px solid var(--lumo-error-color)");
+        }
+
         FormLayout thirdPartyForm = new FormLayout();
         thirdPartyForm.setWidthFull();
         thirdPartyForm.setResponsiveSteps(
@@ -1080,6 +1122,11 @@ public class CaseRecordDialog extends Dialog {
         }
         }
 
+        if (record.isPendingDeletion()
+                && currentUserService.isAdmin()) {
+                overviewContent.addComponentAsFirst(deletionSection);
+        }
+
         //actual tab builds here. - 08202026
         Tab overviewTab = new Tab("Overview");
         Tab issuesTab = new Tab("Issues");
@@ -1176,6 +1223,24 @@ public class CaseRecordDialog extends Dialog {
         content.getStyle()
                 .set("overflow", "hidden");
 
+
+        Button restorePatientButton = new Button("Restore Patient");
+
+        restorePatientButton.addThemeVariants(
+                ButtonVariant.LUMO_PRIMARY,
+                ButtonVariant.LUMO_SUCCESS
+        );
+
+        restorePatientButton.setVisible(
+                currentUserService != null
+                        && currentUserService.isAdmin()
+                        && record.isPendingDeletion()
+        );
+
+        restorePatientButton.addClickListener(event ->
+                openRestorePatientDialog()
+        );
+
         //delete button for admins 10012026
         Button deletePatientButton = new Button("Delete Patient");
 
@@ -1192,7 +1257,7 @@ public class CaseRecordDialog extends Dialog {
                 openDeletePatientDialog()
         );
        
-                Button moveCaseButton = new Button("Move Case");
+        Button moveCaseButton = new Button("Move Case");
 
         moveCaseButton.addClickListener(event ->
                 openMoveCaseDialog()
@@ -1313,12 +1378,14 @@ public class CaseRecordDialog extends Dialog {
         //updated for delete button 10012026
         if (mode == Mode.COMPLETED) {
                 getFooter().add(
+                        restorePatientButton,
                         deletePatientButton,
                         moveCaseButton,
                         cancelButton
                 );
         } else {
                 getFooter().add(
+                        restorePatientButton,
                         deletePatientButton,
                         moveCaseButton,
                         cancelButton,
@@ -1327,6 +1394,58 @@ public class CaseRecordDialog extends Dialog {
         }
 
     }
+
+    //restore patient logic 10012026
+    private void openRestorePatientDialog() {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Restore Patient");
+                dialog.setWidth("500px");
+
+                Span message = new Span(
+                        "Restore this patient to the dashboard? "
+                                + "The patient will return to its previous workflow status."
+                );
+
+                Button cancel = new Button(
+                        "Cancel",
+                        event -> dialog.close()
+                );
+
+                Button restore = new Button("Restore Patient");
+                restore.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY,
+                        ButtonVariant.LUMO_SUCCESS
+                );
+
+                restore.addClickListener(event -> {
+                        try {
+                                caseRecordService.restorePatient(
+                                        record.getId(),
+                                        currentUserService.getUsername()
+                                );
+
+                                Notification.show(
+                                        "Patient restored.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+
+                                if (afterSave != null) {
+                                        afterSave.run();
+                                }
+
+                                dialog.close();
+                                close();
+
+                        } catch (InvalidWorkflowTransitionException ex) {
+                                showError(ex.getMessage());
+                        }
+                });
+
+                dialog.add(message);
+                dialog.getFooter().add(cancel, restore);
+                dialog.open();
+        }
 
     //delete dialog 10012026
     private void openDeletePatientDialog() {
