@@ -1176,7 +1176,23 @@ public class CaseRecordDialog extends Dialog {
         content.getStyle()
                 .set("overflow", "hidden");
 
-        Button moveCaseButton = new Button("Move Case");
+        //delete button for admins 10012026
+        Button deletePatientButton = new Button("Delete Patient");
+
+        deletePatientButton.getStyle()
+                .set("color", "var(--lumo-error-text-color)");
+
+        deletePatientButton.setVisible(
+                currentUserService != null
+                        && currentUserService.isAdmin()
+                        && !record.isPendingDeletion()
+        );
+
+        deletePatientButton.addClickListener(event ->
+                openDeletePatientDialog()
+        );
+       
+                Button moveCaseButton = new Button("Move Case");
 
         moveCaseButton.addClickListener(event ->
                 openMoveCaseDialog()
@@ -1294,13 +1310,16 @@ public class CaseRecordDialog extends Dialog {
 
         add(content);
 
+        //updated for delete button 10012026
         if (mode == Mode.COMPLETED) {
                 getFooter().add(
+                        deletePatientButton,
                         moveCaseButton,
                         cancelButton
                 );
         } else {
                 getFooter().add(
+                        deletePatientButton,
                         moveCaseButton,
                         cancelButton,
                         saveButton
