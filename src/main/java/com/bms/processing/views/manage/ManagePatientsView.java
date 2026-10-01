@@ -141,16 +141,6 @@ public class ManagePatientsView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        if (currentUserService.isAdmin()) {
-                grid.addColumn(record ->
-                                record.isPendingDeletion()
-                                        ? "MARKED FOR DELETION"
-                                        : "ACTIVE")
-                        .setHeader("Deletion Status")
-                        .setSortable(true)
-                        .setAutoWidth(true);
-        }
-
         grid.addColumn(record ->
                         record.getDateScanned() != null
                                 ? record.getDateScanned().toString()
