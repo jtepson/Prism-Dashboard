@@ -1328,6 +1328,83 @@ public class CaseRecordDialog extends Dialog {
 
     }
 
+    //delete dialog 10012026
+    private void openDeletePatientDialog() {
+                Dialog dialog = new Dialog();
+                dialog.setHeaderTitle("Delete Patient");
+                dialog.setWidth("500px");
+
+                Span warning = new Span(
+                        "This patient will be removed from normal dashboard views "
+                                + "and marked for deletion. The patient can be restored "
+                                + "by an administrator during the 30-day restoration period."
+                );
+
+                warning.getStyle()
+                        .set("color", "var(--lumo-error-text-color)")
+                        .set("font-weight", "600");
+
+                TextArea reason = new TextArea("Reason for deletion");
+                reason.setWidthFull();
+                reason.setMinHeight("120px");
+                reason.setRequired(true);
+
+                Button cancel = new Button(
+                        "Cancel",
+                        event -> dialog.close()
+                );
+
+                Button confirm = new Button("Delete Patient");
+                confirm.addThemeVariants(
+                        ButtonVariant.LUMO_PRIMARY,
+                        ButtonVariant.LUMO_ERROR
+                );
+
+                confirm.addClickListener(event -> {
+                        if (reason.getValue() == null
+                                || reason.getValue().trim().isEmpty()) {
+                                showError("A deletion reason is required.");
+                                return;
+                        }
+
+                        try {
+                                caseRecordService.markForDeletion(
+                                        record.getId(),
+                                        reason.getValue().trim(),
+                                        currentUserService.getUsername()
+                                );
+
+                                Notification.show(
+                                        "Patient marked for deletion.",
+                                        3000,
+                                        Notification.Position.MIDDLE
+                                );
+
+                                if (afterSave != null) {
+                                        afterSave.run();
+                                }
+
+                                dialog.close();
+                                close();
+
+                        } catch (InvalidWorkflowTransitionException ex) {
+                                showError(ex.getMessage());
+                        }
+                });
+
+                VerticalLayout content = new VerticalLayout(
+                        warning,
+                        reason
+                );
+
+                content.setPadding(false);
+                content.setSpacing(true);
+
+                dialog.add(content);
+                dialog.getFooter().add(cancel, confirm);
+                dialog.open();
+        }
+    
     private void openMoveCaseDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Move Case");
