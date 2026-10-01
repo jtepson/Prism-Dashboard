@@ -205,6 +205,25 @@ public class PatientFileService {
         return savedFile;
     }
 
+    // Permanent patient file cleanup 10012026
+    public void deleteFilesForCase(Long caseRecordId) throws IOException {
+        List<PatientFileEntity> files =
+                repository.findByCaseRecordIdOrderByFileDateDesc(caseRecordId);
+
+        for (PatientFileEntity file : files) {
+            if (file.getStoragePath() == null
+                    || file.getStoragePath().isBlank()) {
+                continue;
+            }
+
+            Path path = Path.of(file.getStoragePath());
+
+            Files.deleteIfExists(path);
+        }
+
+        repository.deleteAll(files);
+    }
+    
     public List<String> getAllowedExtensions() {
         return allowedExtensions;
     }
